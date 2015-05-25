@@ -90,18 +90,28 @@ function functions(title,callback){
                                 var obj = res.rows.item(i);
                                 var month = obj.fechaini.split('/');
                                 if( String(month[1])==String(curDate.m) && String(month[2])==String(curDate.y) ){
+                                    /*
+                                    Formato = {[{titulo:'01/05/2015',eventos:[...]}],[{titulo:'02/05/2015',eventos:[...]}]}
+                                    */
                                     if(tmp[month[1]+'/'+month[2]]==null){
-                                        tmp[month[1]+'/'+month[2]] = {
-                                            'titulo':month[1]+'/'+month[2],
+                                        tmp[month[1]+'/'+month[2]] = [];
+                                    }
+                                    if(tmp[month[1]+'/'+month[2]][month[0]+'/'+month[1]+'/'+month[2]]==null){
+                                        tmp[month[1]+'/'+month[2]][month[0]+'/'+month[1]+'/'+month[2]] = {
+                                            'titulo':month[0]+'/'+month[1]+'/'+month[2],
                                             'eventos':[]
                                         };
                                     }
-                                    tmp[month[1]+'/'+month[2]].eventos.push(obj);
+                                    tmp[month[1]+'/'+month[2]][month[0]+'/'+month[1]+'/'+month[2]].eventos.push(obj);
                                 }
                             }
                         }
+                        console.log(JSON.stringify(tmp));
                         var today = curDate.m+'/'+curDate.y;
-                        elements = tmp[today];
+                        elements = [];
+                        for(var id in tmp[today]){
+                            elements.push(tmp[today][id]);
+                        }
                         callback();
                     },
                     function(tx,error){
@@ -212,15 +222,17 @@ function refreshWidgets(page){
             $(".eventoItem").on("click",function(ev){
                 ev.preventDefault();
                 var selected = $(this).attr('href');
-                for(var id in elements.eventos){
-                    var tmpDay = elements.eventos[id];
-                    if(tmpDay.id==selected){
-                        var det = tmpDay.descripcion == null ? 'Sin Descripción' : tmpDay.descripcion;
-                        var message = "Titulo: " + tmpDay.nombre + "\n" + "Fecha Inicio:" + tmpDay.fechaini + " a las " + tmpDay.horaini + "\n" + "Fecha Fin: " + tmpDay.fechafin + " a las " + tmpDay.horafin + "\n" + "Descripción: " + det + "\n";
-                        if(navigator.notification){
-                            navigator.notification.alert(message,null,'Detalle de Evento','Aceptar');
-                        } else {
-                            console.log(message);
+                for(var id in elements){
+                    for(var i in elements[id].eventos){
+                        var tmpDay = elements[id].eventos[i];
+                        if(tmpDay.id==selected){
+                            var det = tmpDay.descripcion == null ? 'Sin Descripción' : tmpDay.descripcion;
+                            var message = "Titulo: " + tmpDay.nombre + "\n" + "Fecha Inicio:" + tmpDay.fechaini + " a las " + tmpDay.horaini + "\n" + "Fecha Fin: " + tmpDay.fechafin + " a las " + tmpDay.horafin + "\n" + "Descripción: " + det + "\n";
+                            if(navigator.notification){
+                                navigator.notification.alert(message,null,'Detalle de Evento','Aceptar');
+                            } else {
+                                console.log(message);
+                            }
                         }
                     }
                 }
@@ -266,39 +278,50 @@ function login()
     var _user = $("[name='user']").val();
     var _pass = $("[name='pass']").val();
     var params = { 'user':_user,'pass':_pass };
-    $.ajax({
-        url:'http://didactica.pablogarin.cl/login.php',
-        data: params,
-        dataType:'json',
-        success : function(resp){
-            if(resp.state==0){
-                window.localStorage.setItem('user', resp.user);
-                window.localStorage.setItem('token', resp.hash);
-                $("#nav-header").show();
-                navigator.notification.alert(
-                    'Ingreso Exitoso!',
-                    function(){
-                        user = resp.user;
-                        loadPage('home');
-                    },
-                    'Login',
-                    'Aceptar'
-                );
-            } else {
-                if(resp.state==1){
-                    navigator.notification.alert(resp.message,function(){$("input[name='pass']").val('');$('input[name=user]').focus();},'Error de Login','Aceptar');
-                    $.mobile.loading('hide');
+    if(navigator.connection.type==Connection.NONE){
+        navigator.notification.alert(
+            "Para realizar login debe tener conexión a internet.",
+            function(){
+                $.mobile.loading('hide');
+            },
+            "Problema de conección.",
+            "Aceptar"
+        );
+    } else {
+        $.ajax({
+            url:'http://didactica.pablogarin.cl/login.php',
+            data: params,
+            dataType:'json',
+            success : function(resp){
+                if(resp.state==0){
+                    window.localStorage.setItem('user', resp.user);
+                    window.localStorage.setItem('token', resp.hash);
+                    $("#nav-header").show();
+                    navigator.notification.alert(
+                        'Ingreso Exitoso!',
+                        function(){
+                            user = resp.user;
+                            loadPage('home');
+                        },
+                        'Login',
+                        'Aceptar'
+                    );
                 } else {
-                    navigator.notification.alert('Lo sentimos, ocurrió un error durante el Login. Por favor intntelo nuevamente.',null,'Error','Aceptar');
-                    $.mobile.loading('hide');
+                    if(resp.state==1){
+                        navigator.notification.alert(resp.message,function(){$("input[name='pass']").val('');$('input[name=user]').focus();},'Error de Login','Aceptar');
+                        $.mobile.loading('hide');
+                    } else {
+                        navigator.notification.alert('Lo sentimos, ocurrió un error durante el Login. Por favor intntelo nuevamente.',null,'Error','Aceptar');
+                        $.mobile.loading('hide');
+                    }
                 }
+            },
+            error: function(response,error,exception){
+                $.mobile.loading('hide');
+                navigator.notification.alert('No se pudo realizar el login',function(){$("input[name='pass']").val('');$('input[name=user]').focus();},'Error de Login','Aceptar');
             }
-        },
-        error: function(response,error,exception){
-            $.mobile.loading('hide');
-            navigator.notification.alert('No se pudo realizar el login',function(){$("input[name='pass']").val('');$('input[name=user]').focus();},'Error de Login','Aceptar');
-        }
-    });
+        });
+    }
     return false;
 }
 function logout(){
