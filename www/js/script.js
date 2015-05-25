@@ -38,7 +38,6 @@ function onDeviceReady()
         day = String(day);
     }
     curDate = {'y':year,'m':month,'d':day};
-    console.log(curDate);
     user = window.localStorage.getItem("user");
     sequence = window.localStorage.getItem('sequence');
     if( sequence==null ){
@@ -108,20 +107,22 @@ function functions(title,callback){
                     callback();
                 },
                 function(tx,error){
-                    console.log("Error:")
-                    console.log(error);
+                    console.log("Error:"+error.message);
+                    callback();
                 }
             );
             break;
         default:
             elements = [];
+            callback();
             break;
     }
 }
 function loadPage(page){
-    //$("#menu_lateral").panel('close');
+    $("#menu_lateral").panel('close');
     $.mobile.loading('show',{text: "Cargando...",textVisible: true,theme: "z",html: ""});
     if(current!=page){
+        console.log("Loading page: "+page);
         $("#contenido").html("");
         current = page;
         historyStack.push(page);
