@@ -21,6 +21,7 @@ function onDeviceReady()
     /*var evento = new Evento(function(){
         console.log('evento');
     });*/
+    alert("Ready");
     sql = new SQLHelper();
     var date = new Date();
     var year = date.getFullYear()
