@@ -21,6 +21,7 @@ function onDeviceReady()
     /*var evento = new Evento(function(){
         console.log('evento');
     });*/
+    console.log('onDeviceReady');
     sql = new SQLHelper();
     var date = new Date();
     var year = date.getFullYear()
@@ -66,7 +67,6 @@ function functions(title,callback){
         case 'planificacion':
             $.ajax({
                 url:'http://didactica.pablogarin.cl/get.php?table=unidad&usuario='+user,
-                async:false,
                 dataType: 'JSON',
                 success: function(resp){
                     elements = [];
@@ -92,27 +92,30 @@ function functions(title,callback){
                             console.log(JSON.stringify(obj));
                             console.log(JSON.stringify(curDate));
                             if( String(month[1])==String(curDate.m) && String(month[2])==String(curDate.y) ){
-                                if(tmp[obj.fechaini]==null){
-                                    tmp[obj.fechaini] = {
-                                        'titulo':obj.fechaini,
+                                if(tmp[month[1]+'/'+month[2]]==null){
+                                    tmp[month[1]+'/'+month[2]] = {
+                                        'titulo':month[1]+'/'+month[2],
                                         'eventos':[]
                                     };
                                 }
-                                tmp[obj.fechaini].eventos.push(obj);
-                                console.log(JSON.stringify(tmp));
+                                tmp[month[1]+'/'+month[2]].eventos.push(obj);
+                                console.log(JSON.stringify(tmp[curDate.m+'/'+curDate.y]));
                             }
                         }
                     }
-                    elements = tmp;
+                    var today = curDate.m+'/'+curDate.y;
+                    elements = tmp[today];
                     callback();
                 },
-                function(tx){
-                    console.log("Error:" + tx.message);
+                function(tx,error){
+                    console.log("Error:"+error.message);
+                    callback();
                 }
             );
             break;
         default:
             elements = [];
+            callback();
             break;
     }
 }
@@ -120,6 +123,7 @@ function loadPage(page){
     $("#menu_lateral").panel('close');
     $.mobile.loading('show',{text: "Cargando...",textVisible: true,theme: "z",html: ""});
     if(current!=page){
+        console.log("Loading page: "+page);
         $("#contenido").html("");
         current = page;
         historyStack.push(page);

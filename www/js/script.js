@@ -92,18 +92,19 @@ function functions(title,callback){
                             console.log(JSON.stringify(obj));
                             console.log(JSON.stringify(curDate));
                             if( String(month[1])==String(curDate.m) && String(month[2])==String(curDate.y) ){
-                                if(tmp[obj.fechaini]==null){
-                                    tmp[obj.fechaini] = {
-                                        'titulo':obj.fechaini,
+                                if(tmp[month[1]+'/'+month[2]]==null){
+                                    tmp[month[1]+'/'+month[2]] = {
+                                        'titulo':month[1]+'/'+month[2],
                                         'eventos':[]
                                     };
                                 }
-                                tmp[obj.fechaini].eventos.push(obj);
-                                console.log(JSON.stringify(tmp));
+                                tmp[month[1]+'/'+month[2]].eventos.push(obj);
+                                console.log(JSON.stringify(tmp[curDate.m+'/'+curDate.y]));
                             }
                         }
                     }
-                    elements = tmp;
+                    var today = curDate.m+'/'+curDate.y;
+                    elements = tmp[today];
                     callback();
                 },
                 function(tx,error){
@@ -204,10 +205,11 @@ function refreshWidgets(page){
                 newMonth = newMonth<10 ? String('0'+newMonth) : String(newMonth);
                 curDate.m = newMonth;
                 curDate.y = String(newYear);
-                functions('home');
-                $("#contenido").html(compileTemplate('home')(elements));
-                refreshWidgets('home');
-                $.mobile.loading('hide');
+                functions('home',function(){
+                    $("#contenido").html(compileTemplate('home')(elements));
+                    refreshWidgets('home');
+                    $.mobile.loading('hide');
+                });
             });
             $(".eventoItem").off("click");
             $(".eventoItem").on("click",function(ev){
