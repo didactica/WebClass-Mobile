@@ -1,5 +1,6 @@
 include('js/SQLHelper.js');
 include('model/Evento.js');
+include('model/Planificacion.js');
 
 document.addEventListener("deviceready",onDeviceReady,false);
 document.addEventListener("backbutton",backButton, false);
@@ -20,6 +21,7 @@ var downloaded = false;
 function onDeviceReady()
 {
     sql = new SQLHelper();
+    createTables();
     var date = new Date();
     var year = date.getFullYear()
     var month = date.getMonth()+1;
@@ -59,23 +61,36 @@ function onDeviceReady()
         loadPage('home');
     }
 }
+function createTables(){
+    var obj = new Planificacion(new SQLHelper());
+    obj = new Evento(new SQLHelper());
+}
 function functions(title,callback){
     switch(title){
         case 'planificacion':
-            $.ajax({
-                url:'http://didactica.pablogarin.cl/get.php?table=unidad&usuario='+user,
-                dataType: 'JSON',
-                success: function(resp){
-                    elements = [];
-                    var res = resp.rows;
-                    for(var id in res){
-                      elements.push(res[id]);
+            downloadData(function(){
+                (new SQLHelper()).queryDB(
+                    "SELECT * FROM unidad ORDER BY fechaini",
+                    [],
+                    function(tx,res){
+                        elements = [];
+                        if( res!=null && res.rows!=null ){
+                            for(var i = 0; i<res.rows.length;i++){
+                                var obj = res.rows.item(i);
+                                elements.push(obj);
+                            }
+                        }
+                        console.log(JSON.stringify(elements));
+                        callback();
+                    },
+                    function(tx,error){
+                        console.log("Error:"+error.message);
+                        callback();
                     }
-                }
+                );
             });
             break;
         case 'home':
-            include('model/Evento.js');
             downloadData(function(){
                 (new SQLHelper()).queryDB(
                     "SELECT * FROM evento ORDER BY fechaini",
@@ -350,7 +365,30 @@ function include(script){
 function downloadData(callback){
     if(!downloaded){
         downloaded = true;
+        $.ajax({
+            url: 'http://didactica.pablogarin.cl/getJSON.php?service=syncData&user='+user+"&sequence="+sequence,
+            type: 'POST',
+            dataType: 'json',
+            success: function(resp){
+                elements = [];
+                if(typeof resp.rows != 'undefined'){
+                    var res = resp.rows;
+                    for(var className in res){
+                        var curRow = res[className];
+                        for(var id in curRow){
+                            var ins = curRow[id];
+                            var obj = eval("new "+className+"(new SQLHelper())");
+                            obj.insert(ins);
+                        }
+                    }
+                }
+                callback();
+            }
+        });
+        /*
         getEventos(callback);
+        getPlanificaciones(callback);
+        */
         var mainInterval = window.setInterval(getEventos(callback),(1000*60*10));
     } else {
         callback();
@@ -374,6 +412,28 @@ function getEventos(callback){
                         var ins = res[id];
                         ev.insert(ins);
                     }
+                }
+                callback();
+            }
+        });
+    }
+}
+function getPlanificaciones(callback){
+    if(navigator.connection.type==Connection.NONE){
+        console.log("Saltando descarga: Sin conexion a internet.");
+        callback();
+    } else {
+        $.ajax({
+            url:'http://didactica.pablogarin.cl/getJSON.php?service=planificacion&user='+user,
+            dataType: 'JSON',
+            success: function(resp){
+                elements = [];
+                var res = resp.rows;
+                for(var id in res){
+                  var ins = res[id];
+                  var pl = new Planificacion(new SQLHelper());
+                  pl.insert(ins);
+                  console.log(JSON.stringify(pl));
                 }
                 callback();
             }
