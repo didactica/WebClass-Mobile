@@ -1,0 +1,15 @@
+<ul id="unidades" data-role="listview">
+    <li><a href="23">Mock Up</a></li>
+    {{#.}}
+    {{#if this.unidadnombre}}
+    <li>
+    	<a href="{{this.unidadid}}">
+    		<h3>{{this.unidadnombre}}</h3>
+    		<p>
+    			
+    		</p>
+    	</a>
+    </li>
+    {{/if}}
+    {{/.}}
+</ul>
