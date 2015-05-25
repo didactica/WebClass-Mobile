@@ -21,7 +21,6 @@ function onDeviceReady()
     /*var evento = new Evento(function(){
         console.log('evento');
     });*/
-    alert("Ready");
     sql = new SQLHelper();
     var date = new Date();
     var year = date.getFullYear()
@@ -38,6 +37,7 @@ function onDeviceReady()
         day = String(day);
     }
     curDate = {'y':year,'m':month,'d':day};
+    console.log(curDate);
     user = window.localStorage.getItem("user");
     sequence = window.localStorage.getItem('sequence');
     if( sequence==null ){
@@ -67,7 +67,6 @@ function functions(title,callback){
         case 'planificacion':
             $.ajax({
                 url:'http://didactica.pablogarin.cl/get.php?table=unidad&usuario='+user,
-                async:false,
                 dataType: 'JSON',
                 success: function(resp){
                     elements = [];
@@ -107,8 +106,9 @@ function functions(title,callback){
                     elements = tmp;
                     callback();
                 },
-                function(tx){
-                    console.log("Error:" + tx.message);
+                function(tx,error){
+                    console.log("Error:")
+                    console.log(error);
                 }
             );
             break;
@@ -118,7 +118,7 @@ function functions(title,callback){
     }
 }
 function loadPage(page){
-    $("#menu_lateral").panel('close');
+    //$("#menu_lateral").panel('close');
     $.mobile.loading('show',{text: "Cargando...",textVisible: true,theme: "z",html: ""});
     if(current!=page){
         $("#contenido").html("");
