@@ -48,8 +48,7 @@ Evento.prototype.selectId = function(id,callback){
     });
 }
 Evento.prototype.insert = function(vals){
-    console.log(JSON.stringify(vals));
-    var query = "INSERT INTO evento VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    var query = "INSERT OR REPLACE INTO evento VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     if( typeof vals != 'undefined' ){
         this.id = parseInt(vals.id);
         this.nombre = vals.nombre;
@@ -66,7 +65,6 @@ Evento.prototype.insert = function(vals){
         this.visible =  parseInt(vals.visible);
         this.colegio = parseInt(vals.colegio);
     }
-    console.log(JSON.stringify(this));
     var insertObject = [
         this.id,
         this.nombre,
@@ -83,46 +81,9 @@ Evento.prototype.insert = function(vals){
         this.visible,
         this.colegio
     ];
-    this.con.queryDB(query,insertObject,null,function(){
-        this.update(vals);
+    this.con.queryDB(query,insertObject,null,function(tx,error){
+        console.log(error.message);
     });
-}
-Evento.prototype.update = function(vals){
-    var query = "UPDATE evento SET nombre=?, descripcion=?,curso=?,tipo=?,fechaini=?,fechafin=?,horaini=?,horafin=?,estado=?,creacion=?,modificacion=?,visible=?,colegio=? where id=?)";
-    if( typeof vals != 'undefined' ){
-        this.id = parseInt(vals.id);
-        this.nombre = vals.nombre;
-        this.descripcion = vals.descripcion;
-        this.curso = parseInt(vals.curso);
-        this.tipo = parseInt(vals.tipo);
-        this.fechaini = vals.fechaini;
-        this.fechafin = vals.fechafin;
-        this.horaini = vals.horaini;
-        this.horafin = vals.horafin;
-        this.estado = vals.estado;
-        this.creacion = vals.creacion;
-        this.modificacion = vals.modificacion;
-        this.visible =  parseInt(vals.visible);
-        this.colegio = parseInt(vals.colegio);
-    }
-    console.log(JSON.stringify(this));
-    var insertObject = [
-        this.nombre,
-        this.descripcion,
-        this.curso,
-        this.tipo,
-        this.fechaini,
-        this.fechafin,
-        this.horaini,
-        this.horafin,
-        this.estado,
-        this.creacion,
-        this.modificacion,
-        this.visible,
-        this.colegio,
-        this.id
-    ];
-    this.con.queryDB(query,insertObject);
 }
 /*
 id int(11)

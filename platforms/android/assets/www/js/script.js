@@ -15,13 +15,13 @@ var curDate;
 var months = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var alertUp = false;
 var sequence = 0;
+var downloaded = false;
 
 function onDeviceReady()
 {
     /*var evento = new Evento(function(){
         console.log('evento');
     });*/
-    console.log('onDeviceReady');
     sql = new SQLHelper();
     var date = new Date();
     var year = date.getFullYear()
@@ -79,39 +79,37 @@ function functions(title,callback){
             break;
         case 'home':
             include('model/Evento.js');
-            (new SQLHelper()).queryDB(
-                "SELECT * FROM evento ORDER BY fechaini",
-                [],
-                function(tx,res){
-                    var tmp = {};
-                    if( res!=null && res.rows!=null ){
-                        for(var i = 0; i<res.rows.length;i++){
-                            var obj = res.rows.item(i);
-                            var month = obj.fechaini.split('/');
-                            console.log(month);
-                            console.log(JSON.stringify(obj));
-                            console.log(JSON.stringify(curDate));
-                            if( String(month[1])==String(curDate.m) && String(month[2])==String(curDate.y) ){
-                                if(tmp[month[1]+'/'+month[2]]==null){
-                                    tmp[month[1]+'/'+month[2]] = {
-                                        'titulo':month[1]+'/'+month[2],
-                                        'eventos':[]
-                                    };
+            downloadData(function(){
+                (new SQLHelper()).queryDB(
+                    "SELECT * FROM evento ORDER BY fechaini",
+                    [],
+                    function(tx,res){
+                        var tmp = {};
+                        if( res!=null && res.rows!=null ){
+                            for(var i = 0; i<res.rows.length;i++){
+                                var obj = res.rows.item(i);
+                                var month = obj.fechaini.split('/');
+                                if( String(month[1])==String(curDate.m) && String(month[2])==String(curDate.y) ){
+                                    if(tmp[month[1]+'/'+month[2]]==null){
+                                        tmp[month[1]+'/'+month[2]] = {
+                                            'titulo':month[1]+'/'+month[2],
+                                            'eventos':[]
+                                        };
+                                    }
+                                    tmp[month[1]+'/'+month[2]].eventos.push(obj);
                                 }
-                                tmp[month[1]+'/'+month[2]].eventos.push(obj);
-                                console.log(JSON.stringify(tmp[curDate.m+'/'+curDate.y]));
                             }
                         }
+                        var today = curDate.m+'/'+curDate.y;
+                        elements = tmp[today];
+                        callback();
+                    },
+                    function(tx,error){
+                        console.log("Error:"+error.message);
+                        callback();
                     }
-                    var today = curDate.m+'/'+curDate.y;
-                    elements = tmp[today];
-                    callback();
-                },
-                function(tx,error){
-                    console.log("Error:"+error.message);
-                    callback();
-                }
-            );
+                );
+            });
             break;
         default:
             elements = [];
@@ -123,7 +121,6 @@ function loadPage(page){
     $("#menu_lateral").panel('close');
     $.mobile.loading('show',{text: "Cargando...",textVisible: true,theme: "z",html: ""});
     if(current!=page){
-        console.log("Loading page: "+page);
         $("#contenido").html("");
         current = page;
         historyStack.push(page);
@@ -205,27 +202,25 @@ function refreshWidgets(page){
                 newMonth = newMonth<10 ? String('0'+newMonth) : String(newMonth);
                 curDate.m = newMonth;
                 curDate.y = String(newYear);
-                functions('home');
-                $("#contenido").html(compileTemplate('home')(elements));
-                refreshWidgets('home');
-                $.mobile.loading('hide');
+                functions('home',function(){
+                    $("#contenido").html(compileTemplate('home')(elements));
+                    refreshWidgets('home');
+                    $.mobile.loading('hide');
+                });
             });
             $(".eventoItem").off("click");
             $(".eventoItem").on("click",function(ev){
                 ev.preventDefault();
                 var selected = $(this).attr('href');
-                var delMes = curDate.y+'-'+curDate.m;
-                for(var id in elements){
-                    var tmpDay = elements[id];
-                    for(var i in tmpDay.eventos){
-                        if(tmpDay.eventos[i].id==selected){
-                            var det = tmpDay.eventos[i].descripcion ? tmpDay.eventos[i].descripcion : 'Sin detalles.';
-                            var message = "Titulo: " + tmpDay.eventos[i].nombre + "\n" + "Fecha Inicio:" + tmpDay.eventos[i].fechaini + " a las " + tmpDay.eventos[i].horaini + "\n" + "Fecha Fin: " + tmpDay.eventos[i].fechafin + " a las " + tmpDay.eventos[i].horafin + "\n" + "Descripción: " + det + "\n";
-                            if(navigator.notification){
-                                navigator.notification.alert(message,null,'Detalle de Evento','Aceptar');
-                            } else {
-                                console.log(message);
-                            }
+                for(var id in elements.eventos){
+                    var tmpDay = elements.eventos[id];
+                    if(tmpDay.id==selected){
+                        var det = tmpDay.descripcion == null ? 'Sin Descripción' : tmpDay.descripcion;
+                        var message = "Titulo: " + tmpDay.nombre + "\n" + "Fecha Inicio:" + tmpDay.fechaini + " a las " + tmpDay.horaini + "\n" + "Fecha Fin: " + tmpDay.fechafin + " a las " + tmpDay.horafin + "\n" + "Descripción: " + det + "\n";
+                        if(navigator.notification){
+                            navigator.notification.alert(message,null,'Detalle de Evento','Aceptar');
+                        } else {
+                            console.log(message);
                         }
                     }
                 }
@@ -300,9 +295,6 @@ function login()
             }
         },
         error: function(response,error,exception){
-            console.log("response: "+JSON.stringify(response));
-            console.log("error: "+JSON.stringify(error));
-            console.log("exception: "+JSON.stringify(exception));
             $.mobile.loading('hide');
             navigator.notification.alert('No se pudo realizar el login',function(){$("input[name='pass']").val('');$('input[name=user]').focus();},'Error de Login','Aceptar');
         }
@@ -330,32 +322,41 @@ function compileTemplate(template){
     return ret;
 }
 function include(script){
-    console.log('Including Class: ' + script);
     var js = document.createElement("script");
     js.type = "text/javascript";
     js.src = script;
     document.body.appendChild(js);
 }
-function downloadData(){
-    var services = {
-        eventos:function(){
-            $.ajax({
-                url: 'http://didactica.pablogarin.cl/getJSON.php?service=eventos&user='+user+"&sequence="+sequence,
-                type: 'POST',
-                async: false,
-                dataType: 'JSON',
-                success: function(resp){
-                    elements = [];
-                    if(typeof resp.rows != 'undefined'){
-                        var res = resp.rows;
-                        for(var id in res){
-                            var ev = new Evento(new SQLHelper());
-                            var ins = res[id];
-                            ev.insert(ins);
-                        }
+function downloadData(callback){
+    if(!downloaded){
+        downloaded = true;
+        getEventos(callback);
+        var mainInterval = window.setInterval(getEventos(callback),(1000*60*10));
+    } else {
+        callback();
+    }
+}
+function getEventos(callback){
+    if(navigator.connection.type==Connection.NONE){
+        console.log("Saltando descarga: Sin conexion a internet.");
+        callback();
+    } else {
+        $.ajax({
+            url: 'http://didactica.pablogarin.cl/getJSON.php?service=eventos&user='+user+"&sequence="+sequence,
+            type: 'POST',
+            dataType: 'json',
+            success: function(resp){
+                elements = [];
+                if(typeof resp.rows != 'undefined'){
+                    var res = resp.rows;
+                    for(var id in res){
+                        var ev = new Evento(new SQLHelper());
+                        var ins = res[id];
+                        ev.insert(ins);
                     }
                 }
-            });
-        }
-    };
+                callback();
+            }
+        });
+    }
 }

@@ -1,6 +1,5 @@
 var SQLHelper = function(){
 	this.db = window.openDatabase("WebClassMobile", "1.0", "WebClass Educational Suite Mobile", 1024*1024*10);
-	console.log('DB initialized: '+this.db);
 }
 SQLHelper.prototype.queryDB = function(query,values,successCallback,errorCallback){
 	this.db.transaction(
@@ -44,11 +43,15 @@ SQLHelper.prototype.readDB = function(table,where,order,columns,limit,successCal
 	);
 	return ret;
 }
-SQLHelper.prototype.errorCB = function(tx){
-	console.log(tx.message);
+SQLHelper.prototype.errorCB = function(tx,error){
+	try{
+		console.log(JSON.stringify(tx));
+	} catch(ex){
+		console.log(ex);
+	}
 }
 SQLHelper.prototype.successCB = function(tx,list){
-	console.log('exito');
+	//console.log('exito');
 }
 /* codigo antiguo
 function populateDB(tx)
