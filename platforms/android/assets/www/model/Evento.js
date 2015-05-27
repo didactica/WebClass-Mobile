@@ -1,10 +1,6 @@
-var Evento = function(con,id){
-    this.con = con;
+var Evento = function(tx){
+    this.tx = tx;
     this.createTable();
-    if(typeof id != 'undefined'){
-        this.id = id;
-        this.selectId(this.id);
-    }
 }
 Evento.prototype.createTable = function() {
     var query = 'CREATE TABLE IF NOT EXISTS evento('+
@@ -23,10 +19,10 @@ Evento.prototype.createTable = function() {
         'visible integer,'+
         'colegio integer'+
     ');';
-    this.con.queryDB(query,[]);
+    this.tx.executeSql(query,[]);
 }
 Evento.prototype.selectId = function(id,callback){
-    var data = this.con.queryDB("SELECT * FROM evento WHERE id='"+this.id+"'",[],function(tx,res){
+    this.tx.executeSql("SELECT * FROM evento WHERE id='"+this.id+"'",[],function(tx,res){
         if( res!=null && res.rows!=null ){
             var data = res.rows.item(0);
             this.id = parseInt(data.id);
@@ -81,7 +77,7 @@ Evento.prototype.insert = function(vals){
         this.visible,
         this.colegio
     ];
-    this.con.queryDB(query,insertObject,null,function(tx,error){
+    this.tx.executeSql(query,insertObject,null,function(tx,error){
         console.log(error.message);
     });
 }

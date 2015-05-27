@@ -1,10 +1,6 @@
-var Planificacion = function(con,id){
-    this.con = con;
+var Planificacion = function(tx){
+    this.tx = tx;
     this.createTable();
-    if(typeof id != 'undefined'){
-        this.id = id;
-        this.selectId(this.id);
-    }
 }
 Planificacion.prototype.createTable = function() {
     var query = 'CREATE TABLE IF NOT EXISTS unidad('+
@@ -34,11 +30,10 @@ Planificacion.prototype.createTable = function() {
         "edicion integer," + 
         "pae integer" +  
     ');';
-    console.log(query);
-    this.con.queryDB(query,[]);
+    this.tx.executeSql(query,[]);
 }
 Planificacion.prototype.selectId = function(id,callback){
-    var data = this.con.queryDB("SELECT * FROM unidad WHERE id='"+this.id+"'",[],function(tx,res){
+    this.tx.executeSql("SELECT * FROM unidad WHERE id='"+this.id+"'",[],function(tx,res){
         if( res!=null && res.rows!=null ){
             var data = res.rows.item(0);
             this.id = parseInt(data.id);
@@ -60,7 +55,7 @@ Planificacion.prototype.selectId = function(id,callback){
     });
 }
 Planificacion.prototype.insert = function(vals){
-    var query = "INSERT OR REPLACE INTO unidad VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    var query = "INSERT OR REPLACE INTO unidad VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     if( typeof vals != 'undefined' ){
         this.id = vals.id;
         this.nombre = vals.nombre;
@@ -115,7 +110,7 @@ Planificacion.prototype.insert = function(vals){
         this.edicion,
         this.pae
     ];
-    this.con.queryDB(query,insertObject,null,function(tx,error){
+    this.tx.executeSql(query,insertObject,null,function(tx,error){
         console.log(error.message);
     });
 }

@@ -5,8 +5,14 @@
 }
 body,html{
 	height:100%;
-	widht:100%;
+	width:100%;
 	background-color:#ddd;
+}
+.clearfix{
+	clear:both;
+	display: block;
+	width:100%;
+	height:2em;
 }
 .ui-li-static.ui-collapsible > .ui-collapsible-heading {
     margin: 0;
@@ -203,4 +209,18 @@ ul#eventos li .detalles-evento .fecha{
 }
 ul#unidades li{
 	padding:0 1em;
+}
+.unidad .estado-utp-1,.unidad .estado-utp-1:visited{
+	background-color:#66FF66 !important;
+}
+.unidad .estado-utp-0,.unidad .estado-utp-0:visited{
+	background-color:#FF6666 !important;
+}
+.col-80{
+	float:left;
+	width:80%;
+}
+.col-20{
+	float:left;
+	width:20%;
 }

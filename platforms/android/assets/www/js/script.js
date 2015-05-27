@@ -1,10 +1,10 @@
 include('js/SQLHelper.js');
 include('model/Evento.js');
 include('model/Planificacion.js');
+include('model/Sector.js');
 
 document.addEventListener("deviceready",onDeviceReady,false);
 document.addEventListener("backbutton",backButton, false);
-document.ready = onDeviceReady;
 
 var sql;
 var user;
@@ -20,8 +20,7 @@ var downloaded = false;
 
 function onDeviceReady()
 {
-    sql = new SQLHelper();
-    createTables();
+    sql = window.openDatabase("WebClassMobile", "1.0", "WebClass Educational Suite Mobile", 1024*1024*10);
     var date = new Date();
     var year = date.getFullYear()
     var month = date.getMonth()+1;
@@ -42,10 +41,11 @@ function onDeviceReady()
     if( sequence==null ){
         sequence = 0;
     }
-    $.mobile.defaultPageTransition = "slide";
+    //$.mobile.defaultPageTransition = "slide";
     $(".menuItem").off("click");
     $(".menuItem").on("click",function(ev){
         ev.preventDefault();
+        $.mobile.loading('show',{text: "Cargando...",textVisible: true,theme: "z",html: ""});
         loadPage($(this).attr('template'));
     });
     $("#backButton").off("click");
@@ -57,81 +57,75 @@ function onDeviceReady()
         $("#nav-header").hide();
         loadPage('login');
     } else {
-        token = window.localStorage.getItem("token");
-        loadPage('home');
+        downloadData(function(){
+            token = window.localStorage.getItem("token");
+            loadPage('home');
+        });
     }
-}
-function createTables(){
-    var obj = new Planificacion(new SQLHelper());
-    obj = new Evento(new SQLHelper());
 }
 function functions(title,callback){
     switch(title){
         case 'planificacion':
-            downloadData(function(){
-                (new SQLHelper()).queryDB(
-                    "SELECT * FROM unidad ORDER BY fechaini",
-                    [],
-                    function(tx,res){
-                        elements = [];
-                        if( res!=null && res.rows!=null ){
-                            for(var i = 0; i<res.rows.length;i++){
-                                var obj = res.rows.item(i);
-                                elements.push(obj);
-                            }
+            $.mobile.loading('show',{text: "Leyendo Base de Datos...",textVisible: true,theme: "z",html: ""});
+            (new SQLHelper()).queryDB(
+                "SELECT u.*, s.nombre as sectorNombre FROM unidad u, sector s WHERE u.sector = s.id ORDER BY fechaini",
+                [],
+                function(tx,res){
+                    elements = [];
+                    if( res!=null && res.rows!=null ){
+                        for(var i = 0; i<res.rows.length;i++){
+                            var obj = res.rows.item(i);
+                            elements.push(obj);
                         }
-                        console.log(JSON.stringify(elements));
-                        callback();
-                    },
-                    function(tx,error){
-                        console.log("Error:"+error.message);
-                        callback();
                     }
-                );
-            });
+                    callback();
+                },
+                function(tx,error){
+                    console.log("Error:"+error.message);
+                    callback();
+                }
+            );
             break;
         case 'home':
-            downloadData(function(){
-                (new SQLHelper()).queryDB(
-                    "SELECT * FROM evento ORDER BY fechaini",
-                    [],
-                    function(tx,res){
-                        var tmp = {};
-                        if( res!=null && res.rows!=null ){
-                            for(var i = 0; i<res.rows.length;i++){
-                                var obj = res.rows.item(i);
-                                var month = obj.fechaini.split('/');
-                                if( String(month[1])==String(curDate.m) && String(month[2])==String(curDate.y) ){
-                                    /*
-                                    Formato = {[{titulo:'01/05/2015',eventos:[...]}],[{titulo:'02/05/2015',eventos:[...]}]}
-                                    */
-                                    if(tmp[month[1]+'/'+month[2]]==null){
-                                        tmp[month[1]+'/'+month[2]] = [];
-                                    }
-                                    if(tmp[month[1]+'/'+month[2]][month[0]+'/'+month[1]+'/'+month[2]]==null){
-                                        tmp[month[1]+'/'+month[2]][month[0]+'/'+month[1]+'/'+month[2]] = {
-                                            'titulo':month[0]+'/'+month[1]+'/'+month[2],
-                                            'eventos':[]
-                                        };
-                                    }
-                                    tmp[month[1]+'/'+month[2]][month[0]+'/'+month[1]+'/'+month[2]].eventos.push(obj);
+            $.mobile.loading('show',{text: "Leyendo Base de Datos...",textVisible: true,theme: "z",html: ""});
+            (new SQLHelper()).queryDB(
+                "SELECT * FROM evento ORDER BY fechaini",
+                [],
+                function(tx,res){
+                    var tmp = {};
+                    if( res!=null && res.rows!=null ){
+                        for(var i = 0; i<res.rows.length;i++){
+                            var obj = res.rows.item(i);
+                            var month = obj.fechaini.split('/');
+                            if( String(month[1])==String(curDate.m) && String(month[2])==String(curDate.y) ){
+                                /*
+                                Formato = {[{titulo:'01/05/2015',eventos:[...]}],[{titulo:'02/05/2015',eventos:[...]}]}
+                                */
+                                if(tmp[month[1]+'/'+month[2]]==null){
+                                    tmp[month[1]+'/'+month[2]] = [];
                                 }
+                                if(tmp[month[1]+'/'+month[2]][month[0]+'/'+month[1]+'/'+month[2]]==null){
+                                    tmp[month[1]+'/'+month[2]][month[0]+'/'+month[1]+'/'+month[2]] = {
+                                        'titulo':month[0]+'/'+month[1]+'/'+month[2],
+                                        'eventos':[]
+                                    };
+                                }
+                                tmp[month[1]+'/'+month[2]][month[0]+'/'+month[1]+'/'+month[2]].eventos.push(obj);
                             }
                         }
-                        console.log(JSON.stringify(tmp));
-                        var today = curDate.m+'/'+curDate.y;
-                        elements = [];
-                        for(var id in tmp[today]){
-                            elements.push(tmp[today][id]);
-                        }
-                        callback();
-                    },
-                    function(tx,error){
-                        console.log("Error:"+error.message);
-                        callback();
                     }
-                );
-            });
+                    var today = curDate.m+'/'+curDate.y;
+                    elements = [];
+                    for(var id in tmp[today]){
+                        elements.push(tmp[today][id]);
+                    }
+                    callback();
+                },
+                function(tx,error){
+                    console.log("Error:"+error.message);
+                    callback();
+                }
+            );
             break;
         default:
             elements = [];
@@ -140,19 +134,20 @@ function functions(title,callback){
     }
 }
 function loadPage(page){
+    var title = page.charAt(0).toUpperCase()+page.slice(1);
+    $("#header-title").html(title);
     $("#menu_lateral").panel('close');
-    $.mobile.loading('show',{text: "Cargando...",textVisible: true,theme: "z",html: ""});
     if(current!=page){
         $("#contenido").html("");
         current = page;
         historyStack.push(page);
         functions(page,function(){
-            $("#contenido").html(compileTemplate(page)(elements));
+            $("#contenido").html(compileTemplate(page));
+            $.mobile.loading('hide');
             refreshWidgets(page);
             setListeners();
         });
     }
-    $.mobile.loading('hide');
 }
 function backButton(){
     if(historyStack.length>1){
@@ -169,13 +164,13 @@ function backButton(){
                 function(index){
                     alertUp = false;
                     switch(index){
-                        case 1:
+                        case 2:
                             navigator.app.exitApp();
                             break;
                     }
                 },
                 'Salir',
-                ['Aceptar','Cancelar']
+                ['Cancelar','Aceptar']
             );
         }
     }
@@ -186,6 +181,9 @@ function refreshWidgets(page){
     switch(page){
         case 'planificacion':
             $("#unidades").listview();
+            $('canvas').each(function(k,v){
+                setRadialPercentage( $(v).attr('id'), $(v).attr('data-progress')/100 );
+            });
             break;
         case 'home':
             $("#month").html(months[parseInt(curDate.m)]+' '+curDate.y);
@@ -206,7 +204,7 @@ function refreshWidgets(page){
                 curDate.m = newMonth;
                 curDate.y = String(newYear);
                 functions('home',function(){
-                    $("#contenido").html(compileTemplate('home')(elements));
+                    $("#contenido").html(compileTemplate('home'));
                     refreshWidgets('home');
                     $.mobile.loading('hide');
                 });
@@ -225,7 +223,7 @@ function refreshWidgets(page){
                 curDate.m = newMonth;
                 curDate.y = String(newYear);
                 functions('home',function(){
-                    $("#contenido").html(compileTemplate('home')(elements));
+                    $("#contenido").html(compileTemplate('home'));
                     refreshWidgets('home');
                     $.mobile.loading('hide');
                 });
@@ -286,7 +284,6 @@ function setListeners(){
 }
 function login()
 {
-    //e.preventDefault();
     var _user = $("[name='user']").val();
     var _pass = $("[name='pass']").val();
     var params = { 'user':_user,'pass':_pass };
@@ -296,7 +293,7 @@ function login()
             function(){
                 $.mobile.loading('hide');
             },
-            "Problema de conección.",
+            "Problema de conexión.",
             "Aceptar"
         );
     } else {
@@ -313,7 +310,9 @@ function login()
                         'Ingreso Exitoso!',
                         function(){
                             user = resp.user;
-                            loadPage('home');
+                            downloadData(function(){
+                                loadPage('home');
+                            });
                         },
                         'Login',
                         'Aceptar'
@@ -350,7 +349,7 @@ function compileTemplate(template){
         url: template+'.html',
         dataType: 'text',
         success:function(html){
-            ret = Handlebars.compile(html)
+            ret = Handlebars.compile(html)(elements);
         },
         async: false
     });
@@ -363,80 +362,100 @@ function include(script){
     document.body.appendChild(js);
 }
 function downloadData(callback){
-    if(!downloaded){
+    $("#nav-header").hide();
+    if(!callback){
+        loadPage('home');
+    }
+    if( (!downloaded) && (navigator.connection.type!=Connection.NONE) ){
         downloaded = true;
-        $.ajax({
-            url: 'http://didactica.pablogarin.cl/getJSON.php?service=syncData&user='+user+"&sequence="+sequence,
-            type: 'POST',
-            dataType: 'json',
-            success: function(resp){
-                elements = [];
-                if(typeof resp.rows != 'undefined'){
-                    var res = resp.rows;
-                    for(var className in res){
-                        var curRow = res[className];
-                        for(var id in curRow){
-                            var ins = curRow[id];
-                            var obj = eval("new "+className+"(new SQLHelper())");
-                            obj.insert(ins);
-                        }
-                    }
-                }
-                callback();
-            }
+        $.mobile.loading('hide');
+        $("#contenido").html(compileTemplate('descargando')).promise().done(function(){
+            setTimeout(function(){
+                $.ajax({
+                    url: 'http://didactica.pablogarin.cl/getJSON.php?service=syncData&user='+user+"&sequence="+sequence,
+                    type: 'POST',
+                    dataType: 'json',
+                    success: function(resp){
+                        sql.transaction(
+                            function(tx){
+                                elements = [];
+                                if(typeof resp.rows != 'undefined'){
+                                    var res = resp.rows;
+                                    for(var className in res){
+                                        var curRow = res[className];
+                                        for(var id in curRow){
+                                            var ins = curRow[id];
+                                            var obj = eval("new "+className+"(tx)");
+                                            obj.insert(ins);
+                                        }
+                                    }
+                                }
+                            },
+                            null,
+                            callback
+                        );
+                    },
+                    error: callback
+                });
+            },1000);
         });
-        /*
-        getEventos(callback);
-        getPlanificaciones(callback);
-        */
-        var mainInterval = window.setInterval(getEventos(callback),(1000*60*10));
+        //var mainInterval = window.setInterval(downloadData(callback),(1000*60*10));
     } else {
         callback();
     }
 }
-function getEventos(callback){
-    if(navigator.connection.type==Connection.NONE){
-        console.log("Saltando descarga: Sin conexion a internet.");
-        callback();
-    } else {
-        $.ajax({
-            url: 'http://didactica.pablogarin.cl/getJSON.php?service=eventos&user='+user+"&sequence="+sequence,
-            type: 'POST',
-            dataType: 'json',
-            success: function(resp){
-                elements = [];
-                if(typeof resp.rows != 'undefined'){
-                    var res = resp.rows;
-                    for(var id in res){
-                        var ev = new Evento(new SQLHelper());
-                        var ins = res[id];
-                        ev.insert(ins);
-                    }
-                }
-                callback();
-            }
-        });
-    }
+function setRadialPercentage(id,percentage){
+  var canvas  = document.getElementById(id);
+  var context = canvas.getContext('2d');
+
+  var x = canvas.width/2;
+  var y = canvas.height/2;
+  var radius = 30;
+  
+  var startAngle = Math.PI/2;
+  var endAngle = Math.PI*2*percentage-startAngle;
+
+  context.lineWidth = 5;
+
+  context.beginPath();
+  context.arc(x, y, radius, -startAngle,endAngle , false);
+
+  // line color
+  context.strokeStyle = 'green';
+  context.stroke();
 }
-function getPlanificaciones(callback){
-    if(navigator.connection.type==Connection.NONE){
-        console.log("Saltando descarga: Sin conexion a internet.");
-        callback();
-    } else {
-        $.ajax({
-            url:'http://didactica.pablogarin.cl/getJSON.php?service=planificacion&user='+user,
-            dataType: 'JSON',
-            success: function(resp){
-                elements = [];
-                var res = resp.rows;
-                for(var id in res){
-                  var ins = res[id];
-                  var pl = new Planificacion(new SQLHelper());
-                  pl.insert(ins);
-                  console.log(JSON.stringify(pl));
-                }
-                callback();
-            }
-        });
-    }
-}
+/*
+(function(){
+  var cache = {};
+ 
+  this.tmpl = function tmpl(str, data){
+    // Figure out if we're getting a template, or if we need to
+    // load the template - and be sure to cache the result.
+    var fn = !/\W/.test(str) ?
+      cache[str] = cache[str] ||
+        tmpl(document.getElementById(str).innerHTML) :
+     
+      // Generate a reusable function that will serve as a template
+      // generator (and which will be cached).
+      new Function("obj",
+        "var p=[],print=function(){p.push.apply(p,arguments);};" +
+       
+        // Introduce the data as local variables using with(){}
+        "with(obj){p.push('" +
+       
+        // Convert the template into pure JavaScript
+        str
+          .replace(/[\r\t\n]/g, " ")
+          .split("<%").join("\t")
+          .replace(/((^|%>)[^\t]*)'/g, "$1\r")
+          .replace(/\t=(.*?)%>/g, "',$1,'")
+          .split("\t").join("');")
+          .split("%>").join("p.push('")
+          .split("\r").join("\\'")
+      + "');}return p.join('');");
+   
+    // Provide some basic currying to the user
+    return data ? fn( data ) : fn;
+  };
+})();
+//*/
