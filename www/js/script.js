@@ -428,7 +428,7 @@ function logout(){
 function compileTemplate(template){
     var ret;
     $.ajax({
-        url: template+'.html',
+        url: 'view/'+template+'.html',
         dataType: 'text',
         success:function(html){
             ret = Handlebars.compile(html)(elements);
