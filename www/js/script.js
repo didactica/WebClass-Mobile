@@ -136,7 +136,6 @@ function functions(title,callback){
                             elements.push(obj);
                         }
                     }
-                    console.log(JSON.stringify(elements));
                     callback();
                 },
                 function(tx,error){
@@ -196,26 +195,55 @@ function functions(title,callback){
     }
 }
 function loadPage(page){
-    var title = page.charAt(0).toUpperCase()+page.slice(1);
-    $("#header-title").html(title);
     $("#menu_lateral").panel('close');
     if(current!=page){
-        $("#contenido").html("");
         current = page;
-        historyStack.push(page);
+        console.log('Antes: '+JSON.stringify(historyStack));
+        for(var id in historyStack){
+            if( historyStack[id]==current ){ 
+                historyStack = historyStack.slice(0,id);
+                break;
+            }
+        }
+        console.log('Después: '+JSON.stringify(historyStack));
+        $("#contenido").html("");
         functions(page,function(){
+            historyStack.push(page);
+            setTitle(page);
             $("#contenido").html(compileTemplate(page));
             $.mobile.loading('hide');
             refreshWidgets(page);
             setListeners();
         });
+    } else {
+        $.mobile.loading('hide');
     }
-    $.mobile.loading('hide');
+}
+function setTitle(page){
+    var title = page;
+    switch(page){
+        case 'unidad':
+            title = elements.nombre;
+            break;
+        default:
+            title = page.charAt(0).toUpperCase()+page.slice(1);
+            break;
+    }
+    $("#header-title").html(title);
 }
 function backButton(){
+    /*
+    for(var id in historyStack){
+        if( historyStack[id]==current ){ 
+            historyStack = historyStack.slice(0,id+1);
+        }
+    }
+    //*/
     if(historyStack.length>1){
+        
         historyStack.pop();
         var last = historyStack.pop();
+        console.log('Volviendo a '+last);
         if(typeof last != 'undefined'){
             loadPage(last);
         }
@@ -259,11 +287,15 @@ function refreshWidgets(page){
                     function(tx){
                         var plan = new Planificacion(tx,id,function(){
                             elements = plan;
-                            console.log(JSON.stringify(elements));
                             loadPage('unidad');
                         });
                     },
-                    null
+                    function(tx,error){
+                        console.log("Transaction error");
+                        console.log(JSON.stringify(tx));
+                        console.log(JSON.stringify(error));
+                        navigator.notification.alert('No se pudo abrir la planificacion seleccionada.',null,'Error','Aceptar');
+                    }
                 );
             });
             break;
@@ -388,17 +420,19 @@ function login()
                     window.localStorage.setItem('user', resp.user);
                     window.localStorage.setItem('token', resp.hash);
                     $("#nav-header").show();
+                    user = resp.user;
+                    downloadData(function(){
+                        loadPage('home');
+                    });
+                    /*
                     navigator.notification.alert(
                         'Ingreso Exitoso!',
                         function(){
-                            user = resp.user;
-                            downloadData(function(){
-                                loadPage('home');
-                            });
                         },
                         'Login',
                         'Aceptar'
                     );
+                    */
                 } else {
                     if(resp.state==1){
                         navigator.notification.alert(resp.message,function(){$("input[name='pass']").val('');$('input[name=user]').focus();},'Error de Login','Aceptar');
