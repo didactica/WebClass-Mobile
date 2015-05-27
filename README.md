@@ -2,8 +2,11 @@ cl.webclass.webclassmobile
 Autor: Pablo Garín.
 Versión: 1.0.20150527
 
------ DETALLES TECNICOS -----
+-----------------------------
+DETALLES TECNICOS.
+
 Framework PhoneGap
+
 - Node.js       : 0.12.2
 - Cordova       : 5.0.0
 - jQuery        : 1.10.2
