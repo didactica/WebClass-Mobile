@@ -226,19 +226,20 @@ function setTitle(page){
             title = elements.nombre;
             break;
         default:
-            title = page.charAt(0).toUpperCase()+page.slice(1);
+            title = page;
             break;
+    }
+    // Es un titulo, por lo tanto debe ir cada palabra capitalizada.
+    var words = title.split(' ');
+    title = '';
+    for(var i in words){
+        var t = tmpTitleArray[i];
+        t = capitalize(t);
+        title += t+' ';
     }
     $("#header-title").html(title);
 }
 function backButton(){
-    /*
-    for(var id in historyStack){
-        if( historyStack[id]==current ){ 
-            historyStack = historyStack.slice(0,id+1);
-        }
-    }
-    //*/
     if(historyStack.length>1){
         
         historyStack.pop();
@@ -548,6 +549,9 @@ function setRadialPercentage(id,percentage){
   // line color
   context.strokeStyle = 'green';
   context.stroke();
+}
+function capitalize(str){
+    return str.charAt(0).toUpperCase()+str.slice(1);
 }
 /*
 (function(){

@@ -195,8 +195,6 @@ function functions(title,callback){
     }
 }
 function loadPage(page){
-    var title = page.charAt(0).toUpperCase()+page.slice(1);
-    $("#header-title").html(title);
     $("#menu_lateral").panel('close');
     if(current!=page){
         current = page;
@@ -211,13 +209,43 @@ function loadPage(page){
         $("#contenido").html("");
         functions(page,function(){
             historyStack.push(page);
+            setTitle(page);
             $("#contenido").html(compileTemplate(page));
             $.mobile.loading('hide');
             refreshWidgets(page);
             setListeners();
         });
+    } else {
+        $.mobile.loading('hide');
     }
-    $.mobile.loading('hide');
+}
+function setTitle(page){
+    var title = page;
+    switch(page){
+        case 'unidad':
+            console.log(JSON.stringify(elements));
+            title = elements.nombre;
+            var tmpTitleArray = title.split(' ');
+            title = '';
+            for(var i in tmpTitleArray){
+                var t = tmpTitleArray[i];
+                t = t.charAt(0).toUpperCase()+t.slice(1);
+                title += t+' ';
+            }
+            title.slice(0,title.length-1);
+            break;
+        default:
+            var tmpTitleArray = page.split(' ');
+            title = '';
+            for(var i in tmpTitleArray){
+                var t = tmpTitleArray[i];
+                t = t.charAt(0).toUpperCase()+t.slice(1);
+                title += t+' ';
+            }
+            //title = page.charAt(0).toUpperCase()+page.slice(1);
+            break;
+    }
+    $("#header-title").html(title);
 }
 function backButton(){
     /*
