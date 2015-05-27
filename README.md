@@ -12,6 +12,7 @@ Framework PhoneGap
 - jQuery        : 1.10.2
 - jQuery Mobile : 1.4.5
 - HanldeBars.js : 1.0.rc.1
+
 -----------------------------
 
 Para compilar la app se debe instalar "node.js" (https://nodejs.org/download/),
