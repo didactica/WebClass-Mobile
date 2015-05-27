@@ -1,6 +1,10 @@
-var Planificacion = function(tx){
+var Planificacion = function(tx,id,callback){
     this.tx = tx;
     this.createTable();
+    if(id!=null){
+        this.id = id;
+        this.selectById(callback);
+    }
 }
 Planificacion.prototype.createTable = function() {
     var query = 'CREATE TABLE IF NOT EXISTS unidad('+
@@ -32,27 +36,21 @@ Planificacion.prototype.createTable = function() {
     ');';
     this.tx.executeSql(query,[]);
 }
-Planificacion.prototype.selectId = function(id,callback){
+Planificacion.prototype.selectById = function(callback){
+    // this es una variable contextual, por lo que reservamos la global para trabajar con un subcontexto
+    var self = this;
     this.tx.executeSql("SELECT * FROM unidad WHERE id='"+this.id+"'",[],function(tx,res){
-        if( res!=null && res.rows!=null ){
+        if( res!=null && res.rows!=null && res.rows.length>0 ){
             var data = res.rows.item(0);
-            this.id = parseInt(data.id);
-            this.nombre = data.nombre;
-            this.descripcion = data.descripcion;
-            this.curso = parseInt(data.curso);
-            this.tipo = parseInt(data.tipo);
-            this.fechaini = data.fechaini;
-            this.fechafin = data.fechafin;
-            this.horaini = data.horaini;
-            this.horafin = data.horafin;
-            this.estado = data.estado;
-            this.creacion = data.creacion;
-            this.modificacion = data.modificacion;
-            this.visible =  parseInt(data.visible);
-            this.colegio = parseInt(data.colegio);
-            callback();
+            for(var field in data){
+                self.setField(field,data[field]);
+            }
+            self.getClases(callback);
         }
     });
+}
+Planificacion.prototype.setField = function(field,value){
+    this[field] = value;
 }
 Planificacion.prototype.insert = function(vals){
     var query = "INSERT OR REPLACE INTO unidad VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -114,6 +112,20 @@ Planificacion.prototype.insert = function(vals){
         console.log(error.message);
     });
 }
+Planificacion.prototype.getClases = function(callback){
+    var self = this;
+    this.clases = [];
+    var query = "SELECT * FROM clase where unidad='"+this.id+"'";
+    this.tx.executeSql(query,[],function(tx,res){
+        for(var i = 0; i<res.rows.length;i++){
+            var obj = res.rows.item(i);
+            var c = new Clase(tx,null,null,obj);
+            self.clases.push(c);
+        }
+        callback();
+    })
+}
+//Planificacion.prototype.addClass = function(class){ [ . . . ] }
 /*
 id int(11)
 nombre text

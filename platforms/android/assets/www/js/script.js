@@ -2,6 +2,7 @@ include('js/SQLHelper.js');
 include('model/Evento.js');
 include('model/Planificacion.js');
 include('model/Sector.js');
+include('model/Clase.js');
 
 document.addEventListener("deviceready",onDeviceReady,false);
 document.addEventListener("backbutton",backButton, false);
@@ -20,7 +21,7 @@ var downloaded = false;
 
 function onDeviceReady()
 {
-    sql = window.openDatabase("WebClassMobile", "1.0", "WebClass Educational Suite Mobile", 1024*1024*10);
+    setUpDatabase();
     var date = new Date();
     var year = date.getFullYear()
     var month = date.getMonth()+1;
@@ -63,6 +64,9 @@ function onDeviceReady()
         });
     }
 }
+function setUpDatabase(){
+    sql = window.openDatabase("WebClassMobile", "1.0", "WebClass Educational Suite Mobile", 1024*1024*10);
+}
 function functions(title,callback){
     switch(title){
         case 'planificacion':
@@ -78,6 +82,7 @@ function functions(title,callback){
                             elements.push(obj);
                         }
                     }
+                    console.log(JSON.stringify(elements));
                     callback();
                 },
                 function(tx,error){
@@ -127,6 +132,9 @@ function functions(title,callback){
                 }
             );
             break;
+        case 'unidad':
+            callback();
+            break;
         default:
             elements = [];
             callback();
@@ -148,6 +156,7 @@ function loadPage(page){
             setListeners();
         });
     }
+    $.mobile.loading('hide');
 }
 function backButton(){
     if(historyStack.length>1){
@@ -179,10 +188,29 @@ function refreshWidgets(page){
     $("#nav-header").show();
     $("#backButton").show();
     switch(page){
+        case 'unidad':
+            $("#clases").listview();
+            break;
         case 'planificacion':
             $("#unidades").listview();
             $('canvas').each(function(k,v){
                 setRadialPercentage( $(v).attr('id'), $(v).attr('data-progress')/100 );
+            });
+            $(".unidad a").off("click");
+            $(".unidad a").on("click",function(ev){
+                elements = [];
+                var id = ev.target.id;
+                setUpDatabase();
+                sql.transaction(
+                    function(tx){
+                        var plan = new Planificacion(tx,id,function(){
+                            elements = plan;
+                            console.log(JSON.stringify(elements));
+                            loadPage('unidad');
+                        });
+                    },
+                    null
+                );
             });
             break;
         case 'home':
@@ -351,6 +379,11 @@ function compileTemplate(template){
         success:function(html){
             ret = Handlebars.compile(html)(elements);
         },
+        error:function(res,error){
+            console.log(JSON.stringify(res));
+            console.log(JSON.stringify(error));
+            ret = "<h3>Template no encontrado.</h3>";
+        },
         async: false
     });
     return ret;
@@ -391,7 +424,11 @@ function downloadData(callback){
                                     }
                                 }
                             },
-                            null,
+                            function(error){
+                                console.log("Error de SQL");
+                                console.dir(JSON.stringify(error));
+                                callback();
+                            },
                             callback
                         );
                     },
