@@ -1,0 +1,14 @@
+<ul id="unidades" data-role="listview">
+{{#.}}
+    {{#if this.nombre}}
+    <li class="unidad">
+    	<a href="{{this.id}}" class="estado-utp-{{this.aprobacion_utp}}">
+    		<h3>{{this.nombre}}</h3>
+    		<p>
+    			{{this.sectorNombre}}
+    		</p>
+    	</a>
+    </li>
+    {{/if}}
+{{/.}}
+</ul>
