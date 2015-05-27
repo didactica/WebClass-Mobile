@@ -1,4 +1,5 @@
-/* 
+/* https://github.com/pablogarin/WebClass-Mobile.git
+* 
 * cl.webclass.webclassmobile
 * Autor: Pablo Garín.
 * Versión: 1.0.20150527
