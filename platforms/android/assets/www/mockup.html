@@ -30,73 +30,27 @@
                 <a href="#menu_lateral" class="ui-btn ui-btn-icon-notext ui-corner-all ui-btn-right" data-role="button" data-mini="true"><i class="fa fa-bars"></i></a>
             </div>
             <div  id="contenido" data-role="content">
-                <div class="ui-grid-b">
-                    <div class="ui-block-a">
-                        <select>
-                            <option>Nivel</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                        </select>
-                    </div>
-                    <div class="ui-block-b">
-                        <select>
-                            <option>Asignatura</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                        </select>
-                    </div>
-                    <div class="ui-block-c">
-                        <select>
-                            <option>Profesor</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                        </select>
-                    </div>
+                <div class="headerPlanificacion">
+                    <input id="searchField" type="text" placeholder="Buscar" />
                 </div>
                 <div class="clearfix"></div>
                 <ul id="unidades" data-role="listview">
                     <li class="unidad" data-icon="false">
                         <a href="#" class="estado-utp-1">
                             <div class="col-80">
-                                <h3>dato 1</h3>
+                                <h2>dato 1</h2>
+                                <p class="details">
+                                    Matemática<br/>
+                                    4° Medio<br/>
+                                    01/01/2015 - 31/12/2015
+                                </p>
                             </div>
                             <div class="col-20">
-                                <canvas id="radial-percentage-1" data-progress="90" width="80" height="80"
+                                <canvas class="radialLoader" id="radial-percentage-1" data-progress="90" width="70" height="70"
                                 ></canvas>
                             </div>
                         </a>
                     </li>
-                    <li class="unidad">
-                        <a href="#" class="estado-utp-0">
-                            <h3>dato 2</h3>
-                        </a>
-                    </li>
-                    <li class="unidad">
-                        <a href="#" class="estado-utp-1">
-                            <h3>dato 3</h3>
-                        </a>
-                    </li>
-                    <li class="unidad">
-                        <a href="#" class="estado-utp-1">
-                            <h3>dato 4</h3>
-                        </a>
-                    </li>
-                    <li class="unidad">
-                        <a href="#" class="estado-utp-0">
-                            <h3>dato 5</h3>
-                        </a>
-                    </li>
-                    <li class="unidad">
-                        <a href="#" class="estado-utp-1">
-                            <h3>dato 6</h3>
-                        </a>
-                    </li>        
                 </ul>
             </div>
         </div>

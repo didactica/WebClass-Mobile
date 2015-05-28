@@ -73,6 +73,7 @@ var months = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agost
 var alertUp = false;
 var sequence = 0;
 var downloaded = false;
+var where;
 
 function onDeviceReady()
 {
@@ -125,10 +126,14 @@ function setUpDatabase(){
 function functions(title,callback){
     switch(title){
         case 'planificacion':
+            if( (typeof where == 'undefined') || (where==null) || (where.length==0) ){
+                where = "1=1";
+            }
             $.mobile.loading('show',{text: "Leyendo Base de Datos...",textVisible: true,theme: "z",html: ""});
             var selectQuery = "SELECT "+
                     "ulj.*,"+
-                    "n.nombre AS nivelNombre "+
+                    "n.nombre AS nivelNombre, "+
+                    "(SELECT COUNT(1) AS totalClases FROM clase WHERE clase.unidad=ulj.id and clase.ejecucion=1) as clasesTerminadas " +
                 "FROM (SELECT " + 
                         "u.*, " +
                         "s.nombre as sectorNombre " + 
@@ -138,9 +143,9 @@ function functions(title,callback){
                         "sector s " + 
                     "ON " + 
                         "u.sector = s.id " + 
-                    //"WHERE " + // debug only
-                    //    "u.usuario=2213 " + // debug only
-                    "ORDER BY " + 
+                    "WHERE " + 
+                        where + // debug only
+                    " ORDER BY " + 
                         "u.fechaini desc) ulj " + 
                 "LEFT OUTER JOIN " + 
                     "nivel n " + 
@@ -149,22 +154,6 @@ function functions(title,callback){
             setUpDatabase();
             sql.transaction(
                 function(tx){
-                    tx.executeSql(
-                        "SELECT * FROM nivel",
-                        [],
-                        function(tx,res){
-                            var niveles = [];
-                            if( res && res.rows){
-                                for(var i = 0; i<res.rows.length; i++){
-                                    niveles.push(res.rows.item(i));
-                                }
-                            }
-                            console.log(JSON.stringify(niveles));
-                        },
-                        function(tx,err){
-                            console.log("Error: " + JSON.stringify(err));
-                        }
-                    );
                     tx.executeSql(
                         selectQuery,
                         [],
@@ -336,6 +325,13 @@ function refreshWidgets(page){
                         navigator.notification.alert('No se pudo abrir la planificacion seleccionada.',null,'Error','Aceptar');
                     }
                 );
+            });
+            // $("#searchField").val(where||'');
+            // $("#searchField").init();
+            $("#searchField").off('keyup');
+            $("#searchField").on('keyup',function(ev){
+                where = $(this).val();
+                filtrarPlanificaciones(where);
             });
             break;
         case 'home':
@@ -572,24 +568,84 @@ function setRadialPercentage(id,percentage){
   var canvas  = document.getElementById(id);
   var context = canvas.getContext('2d');
 
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
   var x = canvas.width/2;
   var y = canvas.height/2;
-  var radius = 30;
+  
+  var radius = 33;
   
   var startAngle = Math.PI/2;
   var endAngle = Math.PI*2*percentage-startAngle;
 
   context.lineWidth = 5;
 
-  context.beginPath();
-  context.arc(x, y, radius, -startAngle,endAngle , false);
+  var gradiente = context.createLinearGradient(0,0,x*2,0);
+  gradiente.addColorStop(0,"#007070");
+  gradiente.addColorStop(1,"#00AF00");
 
-  // line color
-  context.strokeStyle = 'green';
+  context.beginPath();
+  context.arc(x, y, radius, 0,2*Math.PI , false);
+
+  context.strokeStyle = "#cccccc";
   context.stroke();
+
+  var curPerc = 0;
+
+  function animate(current){
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.beginPath();
+    if(isNaN(current)){
+        current = 0;
+    }
+    context.arc(x, y, radius, -startAngle,(2*Math.PI*(current/100))-startAngle , false);
+
+    context.font = "1.3em Helvetica";
+    context.textAlign = "center";
+    context.fillText(String(Math.ceil(current))+'%',x,y*1.15);
+
+    // line color
+    context.strokeStyle = gradiente;
+    context.stroke();
+    curPerc += 5;
+    if(curPerc>percentage*100){
+        curPerc = percentage*100;
+    }
+    if(curPerc<=percentage*100){
+        requestAnimationFrame(function () {
+            animate(curPerc);
+        });
+    }
+  }
+  animate();
 }
 function capitalize(str){
     return str.charAt(0).toUpperCase()+str.slice(1);
+}
+function filtrarPlanificaciones(str){
+    str = regexpVowels(str);
+    where = "lower(u.nombre) REGEXP '.*"+str+".*'";
+    loadPage('planificacion');
+}
+function regexpVowels(str){
+    var searches = [
+        /(a|á|ä|à|â)/g,
+        /(e|é|ë|è|ê)/g,
+        /(i|í|ï|ì|î)/g,
+        /(o|ó|ö|ò|ô)/g,
+        /(u|ú|ü|ù|û)/g
+    ];
+    var replacements = [
+        '(a|á|ä|à|â)',
+        '(e|é|ë|è|ê)',
+        '(i|í|ï|ì|î)',
+        '(o|ó|ö|ò|ô)',
+        '(u|ú|ü|ù|û)'
+    ]
+    for(var i in searches){
+        str = str.replace(searches[i],replacements[i]);
+    }
+    return str;
 }
 /*
 (function(){

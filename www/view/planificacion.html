@@ -1,3 +1,7 @@
+<div class="headerPlanificacion">
+    <input id="searchField" type="text" placeholder="Buscar" />
+</div>
+<div class="clearfix"></div>
 <ul id="unidades" data-role="listview">
 {{#.}}
     {{#if this.nombre}}
@@ -12,7 +16,7 @@
     		  </p>
             </div>
             <div class="col-20">
-                <canvas id="radial-percentage-{{this.id}}" data-progress="{{this.progress}}" width="80" height="80"></canvas>
+                <canvas class="radialLoader" id="radial-percentage-{{this.id}}" data-progress="{{this.progress}}" width="70" height="70"></canvas>
             </div>
     	</a>
     </li>

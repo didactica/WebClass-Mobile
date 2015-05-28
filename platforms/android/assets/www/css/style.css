@@ -38,9 +38,6 @@ body,html{
 	padding:1em 0;
 }
 /* Change html headers color */
-h1,h2,h3,h4,h5 {
-    color:#0071bc;
-}
 h2.mc-text-danger,
 h3.mc-text-danger  {
     color:red;
@@ -218,9 +215,22 @@ ul#unidades li{
 }
 .col-80{
 	float:left;
-	width:80%;
+	width:78%;
 }
 .col-20{
 	float:left;
-	width:20%;
+	width:18%;
+}
+canvas.radialLoader{
+	background-color: #eeeeee;
+	-webkit-border-radius:50%;
+	-moz-border-radius:50%;
+	border-radius:50%;
+	padding:2px;
+}
+.headerPlanificacion{
+	padding:0 1em;
+}
+#searchField{
+	
 }

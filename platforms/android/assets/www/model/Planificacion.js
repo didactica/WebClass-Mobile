@@ -1,7 +1,7 @@
 var Planificacion = function(tx,id,callback,json){
     this.tx = tx;
     if(typeof json != 'undefined'){
-        this.initWithJson(json);
+        this.initWithJson(json,callback);
     } else {
         this.createTable();
         if(id!=null){
@@ -40,12 +40,13 @@ Planificacion.prototype.createTable = function() {
     ');';
     this.tx.executeSql(query,[]);
 }
-Planificacion.prototype.initWithJson = function(json){
+Planificacion.prototype.initWithJson = function(json,callback){
     for(var field in json){
         this[field] = json[field];
     }
     this.fechaBonitaIni = this.getFechaini();
     this.fechaBonitaFin = this.getFechafin();
+    this.progress = ((this.clasesTerminadas*100)/this.clases);
 }
 Planificacion.prototype.selectById = function(callback){
     // this es una variable contextual, por lo que reservamos la global para trabajar con un subcontexto
@@ -141,7 +142,7 @@ Planificacion.prototype.getClases = function(callback){
             self.clases.push(c);
         }
         var avg = clasesTerminadas/totalClases;
-        this.progress = avg*100;
+        self.progress = avg*100;
         callback();
     });
 }
