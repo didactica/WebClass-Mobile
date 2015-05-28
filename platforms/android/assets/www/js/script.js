@@ -57,6 +57,7 @@ include('model/Evento.js');
 include('model/Planificacion.js');
 include('model/Sector.js');
 include('model/Clase.js');
+include('model/Nivel.js');
 
 document.addEventListener("deviceready",onDeviceReady,false);
 document.addEventListener("backbutton",backButton, false);
@@ -125,21 +126,62 @@ function functions(title,callback){
     switch(title){
         case 'planificacion':
             $.mobile.loading('show',{text: "Leyendo Base de Datos...",textVisible: true,theme: "z",html: ""});
-            (new SQLHelper()).queryDB(
-                "SELECT u.*, s.nombre as sectorNombre FROM unidad u, sector s WHERE u.sector = s.id ORDER BY fechaini",
-                [],
-                function(tx,res){
-                    elements = [];
-                    if( res!=null && res.rows!=null ){
-                        for(var i = 0; i<res.rows.length;i++){
-                            var obj = res.rows.item(i);
-                            elements.push(obj);
+            var selectQuery = "SELECT "+
+                    "ulj.*,"+
+                    "n.nombre AS nivelNombre "+
+                "FROM (SELECT " + 
+                        "u.*, " +
+                        "s.nombre as sectorNombre " + 
+                    "FROM " + 
+                        "unidad u " + 
+                    "LEFT OUTER JOIN " + 
+                        "sector s " + 
+                    "ON " + 
+                        "u.sector = s.id " + 
+                    //"WHERE " + // debug only
+                    //    "u.usuario=2213 " + // debug only
+                    "ORDER BY " + 
+                        "u.fechaini desc) ulj " + 
+                "LEFT OUTER JOIN " + 
+                    "nivel n " + 
+                "ON " + 
+                    " n.id = ulj.nivel";
+            setUpDatabase();
+            sql.transaction(
+                function(tx){
+                    tx.executeSql(
+                        "SELECT * FROM nivel",
+                        [],
+                        function(tx,res){
+                            var niveles = [];
+                            if( res && res.rows){
+                                for(var i = 0; i<res.rows.length; i++){
+                                    niveles.push(res.rows.item(i));
+                                }
+                            }
+                            console.log(JSON.stringify(niveles));
+                        },
+                        function(tx,err){
+                            console.log("Error: " + JSON.stringify(err));
                         }
-                    }
-                    callback();
+                    );
+                    tx.executeSql(
+                        selectQuery,
+                        [],
+                        function(tx,res){
+                            elements = [];
+                            if( res!=null && res.rows!=null ){
+                                for(var i = 0; i<res.rows.length;i++){
+                                    var obj = new Planificacion(tx,null,null,res.rows.item(i));
+                                    elements.push(obj);
+                                }
+                            }
+                            callback();
+                        }
+                    );
                 },
                 function(tx,error){
-                    console.log("Error:"+error.message);
+                    console.log("Error:"+tx.message);
                     callback();
                 }
             );
@@ -198,14 +240,12 @@ function loadPage(page){
     $("#menu_lateral").panel('close');
     if(current!=page){
         current = page;
-        console.log('Antes: '+JSON.stringify(historyStack));
         for(var id in historyStack){
             if( historyStack[id]==current ){ 
                 historyStack = historyStack.slice(0,id);
                 break;
             }
         }
-        console.log('Después: '+JSON.stringify(historyStack));
         $("#contenido").html("");
         functions(page,function(){
             historyStack.push(page);
@@ -223,43 +263,26 @@ function setTitle(page){
     var title = page;
     switch(page){
         case 'unidad':
-            console.log(JSON.stringify(elements));
             title = elements.nombre;
-            var tmpTitleArray = title.split(' ');
-            title = '';
-            for(var i in tmpTitleArray){
-                var t = tmpTitleArray[i];
-                t = t.charAt(0).toUpperCase()+t.slice(1);
-                title += t+' ';
-            }
-            title.slice(0,title.length-1);
             break;
         default:
-            var tmpTitleArray = page.split(' ');
-            title = '';
-            for(var i in tmpTitleArray){
-                var t = tmpTitleArray[i];
-                t = t.charAt(0).toUpperCase()+t.slice(1);
-                title += t+' ';
-            }
-            //title = page.charAt(0).toUpperCase()+page.slice(1);
+            title = page;
             break;
+    }
+    // Es un titulo, por lo tanto debe ir cada palabra capitalizada.
+    var words = title.split(' ');
+    title = '';
+    for(var i in words){
+        var t = words[i];
+        t = capitalize(t);
+        title += t+' ';
     }
     $("#header-title").html(title);
 }
 function backButton(){
-    /*
-    for(var id in historyStack){
-        if( historyStack[id]==current ){ 
-            historyStack = historyStack.slice(0,id+1);
-        }
-    }
-    //*/
     if(historyStack.length>1){
-        
         historyStack.pop();
         var last = historyStack.pop();
-        console.log('Volviendo a '+last);
         if(typeof last != 'undefined'){
             loadPage(last);
         }
@@ -564,6 +587,9 @@ function setRadialPercentage(id,percentage){
   // line color
   context.strokeStyle = 'green';
   context.stroke();
+}
+function capitalize(str){
+    return str.charAt(0).toUpperCase()+str.slice(1);
 }
 /*
 (function(){

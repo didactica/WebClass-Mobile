@@ -1,9 +1,13 @@
-var Planificacion = function(tx,id,callback){
+var Planificacion = function(tx,id,callback,json){
     this.tx = tx;
-    this.createTable();
-    if(id!=null){
-        this.id = id;
-        this.selectById(callback);
+    if(typeof json != 'undefined'){
+        this.initWithJson(json);
+    } else {
+        this.createTable();
+        if(id!=null){
+            this.id = id;
+            this.selectById(callback);
+        }
     }
 }
 Planificacion.prototype.createTable = function() {
@@ -36,6 +40,13 @@ Planificacion.prototype.createTable = function() {
     ');';
     this.tx.executeSql(query,[]);
 }
+Planificacion.prototype.initWithJson = function(json){
+    for(var field in json){
+        this[field] = json[field];
+    }
+    this.fechaBonitaIni = this.getFechaini();
+    this.fechaBonitaFin = this.getFechafin();
+}
 Planificacion.prototype.selectById = function(callback){
     // this es una variable contextual, por lo que reservamos la global para trabajar con un subcontexto
     var self = this;
@@ -45,6 +56,8 @@ Planificacion.prototype.selectById = function(callback){
             for(var field in data){
                 self.setField(field,data[field]);
             }
+            self.setField('fechaBonitaIni',self.getFechaini());
+            self.setField('fechaBonitaFin',self.getFechafin());
             self.getClases(callback);
         }
     });
@@ -116,14 +129,31 @@ Planificacion.prototype.getClases = function(callback){
     var self = this;
     this.clases = [];
     var query = "SELECT * FROM clase where unidad='"+this.id+"'";
+    var totalClases = this.clases;
+    var clasesTerminadas = 0;
     this.tx.executeSql(query,[],function(tx,res){
         for(var i = 0; i<res.rows.length;i++){
             var obj = res.rows.item(i);
+            if( obj.ejecucion==1 ){
+                clasesTerminadas++;
+            }
             var c = new Clase(tx,null,null,obj);
             self.clases.push(c);
         }
+        var avg = clasesTerminadas/totalClases;
+        this.progress = avg*100;
         callback();
-    })
+    });
+}
+Planificacion.prototype.getFechaini = function(){
+    var d = new Date(0);
+    d.setUTCSeconds(this.fechaini);
+    return d.toLocaleDateString();
+}
+Planificacion.prototype.getFechafin = function(){
+    var d = new Date(0);
+    d.setUTCSeconds(this.fechafin);
+    return d.toLocaleDateString();
 }
 //Planificacion.prototype.addClass = function(class){ [ . . . ] }
 /*

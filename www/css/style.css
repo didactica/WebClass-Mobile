@@ -211,10 +211,10 @@ ul#unidades li{
 	padding:0 1em;
 }
 .unidad .estado-utp-1,.unidad .estado-utp-1:visited{
-	background-color:#66FF66 !important;
+	background-color:#8AE68A !important;
 }
 .unidad .estado-utp-0,.unidad .estado-utp-0:visited{
-	background-color:#FF6666 !important;
+	background-color:#E68A8A !important;
 }
 .col-80{
 	float:left;

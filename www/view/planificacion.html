@@ -6,11 +6,13 @@
     		<div class="col-80">
               <h3>{{this.nombre}}</h3>
     		  <p>
-    		      	{{this.sectorNombre}}
+    		      	{{this.sectorNombre}}<br/>
+                    {{this.nivelNombre}}<br/>
+                    {{this.fechaBonitaIni}} - {{this.fechaBonitaFin}}
     		  </p>
             </div>
             <div class="col-20">
-                <canvas id="radial-percentage-{{this.id}}" data-progress="90" width="80" height="80"></canvas>
+                <canvas id="radial-percentage-{{this.id}}" data-progress="{{this.progress}}" width="80" height="80"></canvas>
             </div>
     	</a>
     </li>
