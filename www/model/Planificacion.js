@@ -51,17 +51,31 @@ Planificacion.prototype.initWithJson = function(json,callback){
 Planificacion.prototype.selectById = function(callback){
     // this es una variable contextual, por lo que reservamos la global para trabajar con un subcontexto
     var self = this;
-    this.tx.executeSql("SELECT * FROM unidad WHERE id='"+this.id+"'",[],function(tx,res){
-        if( res!=null && res.rows!=null && res.rows.length>0 ){
-            var data = res.rows.item(0);
-            for(var field in data){
-                self.setField(field,data[field]);
+    var query = "SELECT * FROM unidad WHERE id='"+this.id+"'";
+    console.log(query);
+    this.tx.executeSql(
+        query,
+        [],
+        function(tx,res){
+            if( res!=null && res.rows!=null && res.rows.length>0 ){
+                var data = res.rows.item(0);
+                for(var field in data){
+                    self.setField(field,data[field]);
+                }
+                self.setField('fechaBonitaIni',self.getFechaini());
+                self.setField('fechaBonitaFin',self.getFechafin());
+                self.getClases(callback);
+            } else {
+                callback();
             }
-            self.setField('fechaBonitaIni',self.getFechaini());
-            self.setField('fechaBonitaFin',self.getFechafin());
-            self.getClases(callback);
+        },function(tx,err){
+            console.log("1.- "+tx.message);
+            console.log("2.- "+err.message);
+            //loadPage('planificacion');
+            $.mobile.loading('hide');
+            return false;
         }
-    });
+    );
 }
 Planificacion.prototype.setField = function(field,value){
     this[field] = value;

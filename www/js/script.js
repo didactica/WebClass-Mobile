@@ -58,6 +58,7 @@ include('model/Planificacion.js');
 include('model/Sector.js');
 include('model/Clase.js');
 include('model/Nivel.js');
+include('model/Sector_Grupo.js');
 
 document.addEventListener("deviceready",onDeviceReady,false);
 document.addEventListener("backbutton",backButton, false);
@@ -74,6 +75,8 @@ var alertUp = false;
 var sequence = 0;
 var downloaded = false;
 var where;
+
+$.mobile.filterable.prototype.options.filterCallback = filtrarPlanificaciones;
 
 function onDeviceReady()
 {
@@ -160,12 +163,45 @@ function functions(title,callback){
                         function(tx,res){
                             elements = [];
                             if( res!=null && res.rows!=null ){
+                                elements.unidades = [];
                                 for(var i = 0; i<res.rows.length;i++){
                                     var obj = new Planificacion(tx,null,null,res.rows.item(i));
-                                    elements.push(obj);
+                                    elements.unidades.push(obj);
+                                }
+                            }
+                        }
+                    );
+                    tx.executeSql(
+                        "SELECT DISTINCT(nombre) FROM nivel ORDER BY orden",
+                        [],
+                        function(tx,res){
+                            elements.niveles = [];
+                            if( res && res.rows && res.rows.length>0 ){
+                                for(var i = 0; i<res.rows.length; i++){
+                                    var curObj = res.rows.item(i);
+                                    elements.niveles.push({'label':curObj.nombre,'value':normalize(curObj.nombre)})
+                                }
+                            }
+                        },
+                        function(tx,err){
+                            console.log(JSON.stringify(err.message));
+                        }
+                    );
+                    tx.executeSql(
+                        "SELECT DISTINCT(nombre) FROM sector_grupo",
+                        [],
+                        function(tx,res){
+                            elements.sectores = [];
+                            if( res && res.rows && res.rows.length>0 ){
+                                for(var i = 0; i<res.rows.length; i++){
+                                    var curObj = res.rows.item(i);
+                                    elements.sectores.push({'label':curObj.nombre,'value':normalize(curObj.nombre)})
                                 }
                             }
                             callback();
+                        },
+                        function(tx,err){
+                            console.log(JSON.stringify(err.message));
                         }
                     );
                 },
@@ -297,19 +333,39 @@ function backButton(){
 function refreshWidgets(page){
     $("#nav-header").show();
     $("#backButton").show();
+    $(".ui-page").trigger('create');
     switch(page){
         case 'unidad':
             $("#clases").listview();
             break;
         case 'planificacion':
-            $("#unidades").listview();
+            //console.log(JSON.stringify(elements));
+            //$("#unidades").listview('option','filterCallback',filtrarPlanificaciones);
+            //$("#searchField").filterable({filterCallback:filtrarPlanificaciones});
+            //$("#searchField").filterable('option','filterCallback',filtrarPlanificaciones);
+            $("input.filterPlanificacion").on("keyup",function(){
+                var query = '';
+                $(".filterPlanificacion").each(function(k,v){
+                    query += ' '+$(v).val();
+                });
+                $("#filterPlanificacion").val(query).trigger('keyup');
+            });
+            $("select.filterPlanificacion").change(function(){
+                var query = '';
+                $(".filterPlanificacion").each(function(k,v){
+                    query += ' '+$(v).val();
+                });
+                $("#filterPlanificacion").val(query).trigger('keyup');
+            });
             $('canvas').each(function(k,v){
                 setRadialPercentage( $(v).attr('id'), $(v).attr('data-progress')/100 );
             });
             $(".unidad a").off("click");
             $(".unidad a").on("click",function(ev){
+                $.mobile.loading('show');
+                ev.preventDefault();
                 elements = [];
-                var id = ev.target.id;
+                var id = $(this).attr('id');
                 setUpDatabase();
                 sql.transaction(
                     function(tx){
@@ -318,21 +374,19 @@ function refreshWidgets(page){
                             loadPage('unidad');
                         });
                     },
-                    function(tx,error){
-                        console.log("Transaction error");
-                        console.log(JSON.stringify(tx));
-                        console.log(JSON.stringify(error));
+                    function(error){
+                        console.log("Transaction error: " + error.message );
                         navigator.notification.alert('No se pudo abrir la planificacion seleccionada.',null,'Error','Aceptar');
                     }
                 );
             });
             // $("#searchField").val(where||'');
             // $("#searchField").init();
-            $("#searchField").off('keyup');
-            $("#searchField").on('keyup',function(ev){
-                where = $(this).val();
-                filtrarPlanificaciones(where);
-            });
+            //$("#searchField").off('keyup');
+            //$("#searchField").on('keyup',function(ev){
+            //    where = $(this).val();
+            //    filtrarPlanificaciones(where);
+            //});
             break;
         case 'home':
             $("#month").html(months[parseInt(curDate.m)]+' '+curDate.y);
@@ -607,7 +661,7 @@ function setRadialPercentage(id,percentage){
     // line color
     context.strokeStyle = gradiente;
     context.stroke();
-    curPerc += 5;
+    curPerc += 3;
     if(curPerc>percentage*100){
         curPerc = percentage*100;
     }
@@ -622,12 +676,20 @@ function setRadialPercentage(id,percentage){
 function capitalize(str){
     return str.charAt(0).toUpperCase()+str.slice(1);
 }
-function filtrarPlanificaciones(str){
-    str = regexpVowels(str);
-    where = "lower(u.nombre) REGEXP '.*"+str+".*'";
-    loadPage('planificacion');
+function filtrarPlanificaciones(index, str){
+    var cur = ($("#unidades li"))[index];
+    var text = $(cur).find('*').text();
+    text = (text.replace(/\s+/g,' ')).toLowerCase();
+    var words = text.split(' ');
+    if(str){
+        str = regexpVowels(str);
+        var regExp = new RegExp(str);
+        return !regExp.test(text);
+    }
+    return !!str;
 }
 function regexpVowels(str){
+    str = (str.replace(/\s+/g,' ')).toLowerCase();
     var searches = [
         /(a|á|ä|à|â)/g,
         /(e|é|ë|è|ê)/g,
@@ -645,6 +707,31 @@ function regexpVowels(str){
     for(var i in searches){
         str = str.replace(searches[i],replacements[i]);
     }
+    str = str.trim();
+    str = str.replace(/\s+/g,')(?=.*');
+    return '(?=.*'+str+')';
+}
+function normalize(str){
+    str = (str.replace(/\s+/g,' ')).toLowerCase();
+    var searches = [
+        /(a|á|ä|à|â)/g,
+        /(e|é|ë|è|ê)/g,
+        /(i|í|ï|ì|î)/g,
+        /(o|ó|ö|ò|ô)/g,
+        /(u|ú|ü|ù|û)/g
+    ];
+    var replacements = [
+        'a',
+        'e',
+        'i',
+        'o',
+        'u'
+    ];
+    for(var i in searches){
+        str = str.replace(searches[i],replacements[i]);
+    }
+    str  = str.trim();
+    str = str.toLowerCase();
     return str;
 }
 /*

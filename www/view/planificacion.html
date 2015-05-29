@@ -1,10 +1,28 @@
-<div class="headerPlanificacion">
-    <input id="searchField" type="text" placeholder="Buscar" />
-</div>
+<form class="ui-filterable" data-position="fixed">
+    <input id="filterPlanificacion" type="text" style="display:none;">
+    <input class="filterPlanificacion" type="text" data-role="search" placeholder="Buscar">
+    <select class="filterPlanificacion" name="sector">
+        <option value=" ">Seleccione Asignatura</option>
+    {{#each this.sectores}}
+        {{#.}}
+        <option value="{{this.value}}">{{this.label}}</option>
+        {{/.}}
+    {{/each}}
+    </select>
+    <select class="filterPlanificacion" name="nivel">
+        <option value=" ">Seleccione Curso</option>
+    {{#each this.niveles}}
+        {{#.}}
+        <option value="{{this.value}}">{{this.label}}</option>
+        {{/.}}
+    {{/each}}
+    </select>
+</form>
 <div class="clearfix"></div>
-<ul id="unidades" data-role="listview">
-{{#.}}
-    {{#if this.nombre}}
+<ul id="unidades" data-role="listview" data-filter="true" data-filter-reveal="false" data-input="#filterPlanificacion">
+{{#each this.unidades}}
+    {{#.}}
+        {{#if this.nombre}}
     <li class="unidad" data-icon="false">
     	<a href="#" id="{{this.id}}" class="estado-utp-{{this.aprobacion_utp}}">
     		<div class="col-80">
@@ -18,8 +36,9 @@
             <div class="col-20">
                 <canvas class="radialLoader" id="radial-percentage-{{this.id}}" data-progress="{{this.progress}}" width="70" height="70"></canvas>
             </div>
-    	</a>
+        </a>
     </li>
-    {{/if}}
-{{/.}}
+        {{/if}}
+    {{/.}}
+{{/each}}
 </ul>
