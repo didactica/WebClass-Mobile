@@ -1,5 +1,32 @@
 <div class="viewContainer">
-	<h2>{{nombre}}</h2>
+	<fieldset>
+        <div class="padding1em">
+            <table data-role="table" class="ui-responsive ui-shadow" id="gk-5299A7V" is="jqm-table">
+                <thead>
+                    <tr>
+                        <th data-priority="1">Código</th>
+                        <th data-priority="1">Nivel</th>
+                        <th data-priority="1">Asignatura</th>
+                        <th data-priority="1">Validado Por</th>
+                        <th data-priority="1">Autor</th>
+                        <th data-priority="1">Clases</th>
+                        <th data-priority="1">Horas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{this.id}}</td>
+                        <td>{{this.nivelNombre}}</td>
+                        <td>{{this.sectorNombre}}</td>
+                        <td></td>
+                        <td>{{this.autor}}</td>
+                        <td>{{this.clases}}</td>
+                        <td>{{this.horas}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </fieldset>
 	<div class="clearfix"></div>
 	<ul id="clases" data-role="listview" data-inset="false">
 	{{#each this.clases}}

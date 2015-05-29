@@ -1,22 +1,28 @@
 <form class="ui-filterable" data-position="fixed">
     <input id="filterPlanificacion" type="text" style="display:none;">
-    <input class="filterPlanificacion" type="text" data-role="search" placeholder="Buscar">
-    <select class="filterPlanificacion" name="sector">
-        <option value=" ">Seleccione Asignatura</option>
-    {{#each this.sectores}}
-        {{#.}}
-        <option value="{{this.value}}">{{this.label}}</option>
-        {{/.}}
-    {{/each}}
-    </select>
-    <select class="filterPlanificacion" name="nivel">
-        <option value=" ">Seleccione Curso</option>
-    {{#each this.niveles}}
-        {{#.}}
-        <option value="{{this.value}}">{{this.label}}</option>
-        {{/.}}
-    {{/each}}
-    </select>
+    <fieldset class="ui-grid-a">
+        <div class="ui-block-a">
+            <select class="filterPlanificacion" name="sector">
+                <option value=" ">Asignatura</option>
+            {{#each this.sectores}}
+                {{#.}}
+                <option value="{{this.value}}">{{this.label}}</option>
+                {{/.}}
+            {{/each}}
+            </select>
+        </div>
+        <div class="ui-block-b">
+            <select class="filterPlanificacion" name="nivel">
+                <option value=" ">Nivel</option>
+            {{#each this.niveles}}
+                {{#.}}
+                <option value="{{this.value}}">{{this.label}}</option>
+                {{/.}}
+            {{/each}}
+            </select>
+        </div>
+    </fieldset>
+    <input class="filterPlanificacion" type="text" data-type="search" placeholder="Buscar">
 </form>
 <div class="clearfix"></div>
 <ul id="unidades" data-role="listview" data-filter="true" data-filter-reveal="false" data-input="#filterPlanificacion">

@@ -231,3 +231,6 @@ canvas.radialLoader{
 .hidden{
 	display:none;
 }
+.padding1em{
+	padding:1em;
+}

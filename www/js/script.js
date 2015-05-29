@@ -508,10 +508,19 @@ function login()
                 if(resp.state==0){
                     window.localStorage.setItem('user', resp.user);
                     window.localStorage.setItem('token', resp.hash);
-                    $("#nav-header").show();
-                    user = resp.user;
-                    downloadData(function(){
-                        loadPage('home');
+                    sql.transaction(function(tx){
+                        new Usuario(
+                            tx,
+                            null,
+                            function(){
+                                $("#nav-header").show();
+                                user = resp.user;
+                                downloadData(function(){
+                                    loadPage('home');
+                                });
+                            },
+                            resp.userData
+                        );
                     });
                     /*
                     navigator.notification.alert(
