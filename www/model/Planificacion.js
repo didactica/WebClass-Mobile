@@ -60,10 +60,10 @@ Planificacion.prototype.selectById = function(callback){
         "       LEFT JOIN nivel n " + 
         "       ON n.id=un.nivel " + 
         "       WHERE un.id='"+this.id+"'" + 
-        "   ) as un2 " + 
+        "   ) un2 " + 
         "   LEFT JOIN sector s" + 
         "   ON s.id=un2.sector" + 
-        ") as un3" + 
+        ") un3 " + 
         "LEFT JOIN usuario us " + 
         "ON un3.usuario=us.id;";
     this.tx.executeSql(
@@ -74,6 +74,9 @@ Planificacion.prototype.selectById = function(callback){
                 var data = res.rows.item(0);
                 for(var field in data){
                     self.setField(field,data[field]);
+                }
+                if( this.autor == null ){
+                    (new Usuario(tx)).fetchUser(this.usuario);
                 }
                 self.setField('fechaBonitaIni',self.getFechaini());
                 self.setField('fechaBonitaFin',self.getFechafin());
@@ -155,6 +158,7 @@ Planificacion.prototype.insert = function(vals){
 }
 Planificacion.prototype.getClases = function(callback){
     var self = this;
+    this.numeroClases = this.clases;
     this.clases = [];
     var query = "SELECT * FROM clase where unidad='"+this.id+"'";
     var totalClases = this.clases;

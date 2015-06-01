@@ -104,16 +104,23 @@ Clase.prototype.initWithJson = function(json){
     }
 }
 Clase.prototype.selectById = function(callback){
+    var self = this;
     var query = "SELECT * FROM clase WHERE id='"+this.id+"'";
     this.tx.executeSql(
         query,
         [],
         function(tx,result){
-            for(var i=0; i<result.rows.length; i++){
-                var row = result.rows.item(i);
+            if( result!=null && result.rows!=null && result.rows.length>0 ){
+                var row = result.rows.item(0);
                 for(var field in row){
-                    this[field] = row[field];
+                    self[field] = row[field];
                 }
+                var d = new Date(0);
+                d.setUTCSeconds(self.fechaini);
+                self.fechaini = d.toLocaleDateString();
+                d = new Date(0);
+                d.setUTCSeconds(self.fechafin);
+                self.fechafin = d.toLocaleDateString();
             }
             callback();
         },

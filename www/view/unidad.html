@@ -7,7 +7,6 @@
                         <th data-priority="1">Código</th>
                         <th data-priority="1">Nivel</th>
                         <th data-priority="1">Asignatura</th>
-                        <th data-priority="1">Validado Por</th>
                         <th data-priority="1">Autor</th>
                         <th data-priority="1">Clases</th>
                         <th data-priority="1">Horas</th>
@@ -18,9 +17,8 @@
                         <td>{{this.id}}</td>
                         <td>{{this.nivelNombre}}</td>
                         <td>{{this.sectorNombre}}</td>
-                        <td></td>
                         <td>{{this.autor}}</td>
-                        <td>{{this.clases}}</td>
+                        <td>{{this.numeroClases}}</td>
                         <td>{{this.horas}}</td>
                     </tr>
                 </tbody>
@@ -31,11 +29,27 @@
 	<ul id="clases" data-role="listview" data-inset="false">
 	{{#each this.clases}}
 		{{#.}}
-    	<li>
-	    	<a href="#">
-	    		<h3>{{this.nombre}}</h3>
-	    	</a>
-    	</li>
+    	<li class="ejecucion-clase-0" data-icon="false">
+            <div class="col-80">
+                <h3>{{this.nombre}}</h3>
+                <p>
+                    {{this.fechaini}}<br/>
+                    {{this.horas}} horas
+                </p>
+            </div>
+            <div class="col-20 menu-container">
+                <a href="#popupMenu{{this.id}}" class="menu" data-rel="popup" data-transition="appear">
+                    <i class="fa fa-ellipsis-v fa-2x pull-right"></i>
+                </a>
+                <div data-role="popup" id="popupMenu{{this.id}}" data-theme="b">
+                    <ul data-role="listview" data-inset="true" style="min-width:210px;">
+                        <li><a href="{{this.id}}" class="ver-clase">Ver</a></li>
+                        <li><a href="{{this.id}}" class="eliminar-clase">Eliminar</a></li>
+                        <li><a href="{{this.id}}" class="tarea-clase">Tarea{{#if this.tareaAmount}}({{this.tareaAmount}}){{/if}}</a></li>
+                    </ul>
+                </div>
+            </div>
+        </li>
     	{{/.}}
     {{/each}}
 	</ul>

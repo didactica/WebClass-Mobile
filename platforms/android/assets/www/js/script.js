@@ -59,6 +59,7 @@ include('model/Sector.js');
 include('model/Clase.js');
 include('model/Nivel.js');
 include('model/Sector_Grupo.js');
+include('model/Usuario.js');
 
 document.addEventListener("deviceready",onDeviceReady,false);
 document.addEventListener("backbutton",backButton, false);
@@ -75,6 +76,7 @@ var alertUp = false;
 var sequence = 0;
 var downloaded = false;
 var where;
+var lastObject = [];
 
 $.mobile.filterable.prototype.options.filterCallback = filtrarPlanificaciones;
 
@@ -256,7 +258,9 @@ function functions(title,callback){
             callback();
             break;
         default:
-            elements = [];
+            if( typeof elements == 'undefined' || elements == null ){
+                elements = [];   
+            }
             callback();
             break;
     }
@@ -291,7 +295,11 @@ function setTitle(page){
             title = elements.nombre;
             break;
         default:
-            title = page;
+            if( typeof elements.title != 'undefined' ){
+                title = elements.title;
+            } else {
+                title = page;
+            }
             break;
     }
     // Es un titulo, por lo tanto debe ir cada palabra capitalizada.
@@ -309,6 +317,9 @@ function backButton(){
         historyStack.pop();
         var last = historyStack.pop();
         if(typeof last != 'undefined'){
+            if(lastObject.length>0){
+                elements = lastObject.pop();
+            }
             loadPage(last);
         }
     } else {
@@ -337,12 +348,22 @@ function refreshWidgets(page){
     switch(page){
         case 'unidad':
             $("#clases").listview();
+            $(".ver-clase").off("click");
+            $(".ver-clase").on("click",function(ev){
+                ev.preventDefault();
+                var id = $(this).attr('href');
+                $("#popupMenu"+id).popup('close');
+                sql.transaction(function(tx){
+                    var clase = new Clase(tx,id,function(){
+                        lastObject.push(elements);
+                        elements = clase;
+                        console.log(JSON.stringify(elements));
+                        loadPage('clase');
+                    });
+                });
+            });
             break;
         case 'planificacion':
-            //console.log(JSON.stringify(elements));
-            //$("#unidades").listview('option','filterCallback',filtrarPlanificaciones);
-            //$("#searchField").filterable({filterCallback:filtrarPlanificaciones});
-            //$("#searchField").filterable('option','filterCallback',filtrarPlanificaciones);
             $("input.filterPlanificacion").on("keyup",function(){
                 var query = '';
                 $(".filterPlanificacion").each(function(k,v){
@@ -622,12 +643,80 @@ function downloadData(callback){
                 });
             },1000);
         });
-        //var mainInterval = window.setInterval(downloadData(callback),(1000*60*10));
     } else {
         callback();
     }
 }
 function setRadialPercentage(id,percentage){
+    var canvas  = document.getElementById(id);
+    var context = canvas.getContext('2d');
+    // limpiamos primero.
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    // dividimos el alto y el ancho del canvas para obtener las coordenadas del punto medio.
+    var x = canvas.width/2;
+    var y = canvas.height/2;
+    // Establecemos el radio a 33 px
+    var radius = 33;
+    // definimos el angulo de inicio y fin.
+    var startAngle = Math.PI/2;
+    var endAngle = Math.PI*2*percentage-startAngle;
+    // definimos el ancho de la linea
+    context.lineWidth = 5;
+
+    // RESERVADO PARA EL REY DE LA TIERRA --- ALL HAIL SATAN!!
+    /*
+                                  ...
+           s,                .                    .s
+            ss,              . ..               .ss
+            'SsSs,           ..  .           .sSsS'
+             sSs'sSs,        .   .        .sSs'sSs
+              sSs  'sSs,      ...      .sSs'  sSs
+               sS,    'sSs,         .sSs'    .Ss
+               'Ss       'sSs,   .sSs'       sS'
+      ...       sSs         ' .sSs'         sSs       ...
+     .           sSs       .sSs' ..,       sSs       .
+     . ..         sS,   .sSs'  .  'sSs,   .Ss        . ..
+     ..  .        'Ss .Ss'     .     'sSs. ''        ..  .
+     .   .         sSs '       .        'sSs,        .   .
+      ...      .sS.'sSs        .        .. 'sSs,      ...
+            .sSs'    sS,     .....     .Ss    'sSs,
+         .sSs'       'Ss       .       sS'       'sSs,
+      .sSs'           sSs      .      sSs           'sSs,
+   .sSs'____________________________ sSs ______________'sSs,
+.sSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS'.Ss SSSSSSSSSSSSSSSSSSSSSs,
+                        ...         sS'
+                         sSs       sSs
+                          sSs     sSs 
+                           sS,   .Ss
+                           'Ss   sS'
+                            sSs sSs
+                             sSsSs
+                              sSs
+                               s
+    //*/
+    // creamos una gradiente para el color del circulo.
+    var gradiente = context.createLinearGradient(0,0,x*2,0);
+    //color verde/azulado
+    gradiente.addColorStop(0,"#007070");
+    // color verde medio-claro
+    gradiente.addColorStop(1,"#00AF00");
+    // iniciamos el proceso de dibujo
+    context.beginPath();
+    // establecemos el recorrido de la circunferencia con sus puntos de coordenada (x,y), 
+    // angulo de inicio y de fin, e indicamos que se dibuje en sentido de las agujas del reloj.
+    context.arc(x, y, radius, -startAngle,endAngle , false);
+    // establecemos la fuente, tamaño y posición de la letra.
+    context.font = "1.3em Helvetica";
+    context.textAlign = "center";
+    // establecemos el porcentaje en el centro del circulo
+    context.fillText(String(Math.ceil(percentage*100))+'%',x,y*1.15);
+    // definimos el color de la linea de la circunferencia
+    context.strokeStyle = gradiente;
+    // dibujamos todo.
+    context.stroke();
+}
+//*
+function setRadialPercentageAnimated(id,percentage){
   var canvas  = document.getElementById(id);
   var context = canvas.getContext('2d');
 
@@ -682,6 +771,7 @@ function setRadialPercentage(id,percentage){
   }
   animate();
 }
+//*/
 function capitalize(str){
     return str.charAt(0).toUpperCase()+str.slice(1);
 }

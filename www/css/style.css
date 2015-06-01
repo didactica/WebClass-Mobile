@@ -60,11 +60,15 @@ input.full-input{
 	border:none;
 	background-color:#31366d;
 	color:#fff;
+	border-radius:0px;
+	moz-border-radius:0px;
+	webkit-border-radius:0px;
 }
 input.full-input:focus{
+	border:none;
 	outline: none;
 }
-input.full-input:last-child{
+input.full-input.last{
 	border-top:1px solid #888;
 	margin-bottom: 0;
 	padding-top: 1.3em;
@@ -84,6 +88,9 @@ input.full-input:last-child{
 }
 .login-container{
 	padding:0.5em;
+}
+.login-container div{
+	border:none;
 }
 ul#eventos, ul#eventos li{
 	width:100%;
@@ -233,4 +240,37 @@ canvas.radialLoader{
 }
 .padding1em{
 	padding:1em;
+}
+#logoSplash{
+	height:70vh;
+	display:block;
+	text-align: center;
+}
+.reset{
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+	line-height: 1em;
+}
+#clases li{
+	padding:0 1em 0 2em;
+}
+#clases li .menu{
+	height: 3em;
+	width: 3em;
+	display:block;
+	position:relative;
+}
+#clases li .menu i{
+	line-height: 2.2em;
+	color:#000;
+}
+.ejecucion-clase-1, .ejecucion-clase-1:visited, .ejecucion-clase-1 a{
+	background-color:#E68A8A !important;
+}
+.ejecucion-clase-0, .ejecucion-clase-0:visited, .ejecucion-clase-0 a{
+	background-color:#8AE68A !important;
 }
