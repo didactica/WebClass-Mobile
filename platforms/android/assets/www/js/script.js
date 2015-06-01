@@ -269,12 +269,14 @@ function loadPage(page){
     $("#menu_lateral").panel('close');
     if(current!=page){
         current = page;
+        /* no borrar, se puede reutilizar más adelante dependiendo de las necesidades futuras.
         for(var id in historyStack){
             if( historyStack[id]==current ){ 
                 historyStack = historyStack.slice(0,id);
                 break;
             }
         }
+        //*/
         $("#contenido").html("");
         functions(page,function(){
             historyStack.push(page);
@@ -353,14 +355,16 @@ function refreshWidgets(page){
                 ev.preventDefault();
                 var id = $(this).attr('href');
                 $("#popupMenu"+id).popup('close');
-                sql.transaction(function(tx){
-                    var clase = new Clase(tx,id,function(){
-                        lastObject.push(elements);
-                        elements = clase;
-                        console.log(JSON.stringify(elements));
-                        loadPage('clase');
+                setTimeout(function(){
+                    sql.transaction(function(tx){
+                        var clase = new Clase(tx,id,function(){
+                            lastObject.push(elements);
+                            elements = clase;
+                            console.log(JSON.stringify(elements));
+                            loadPage('clase');
+                        });
                     });
-                });
+                },500);
             });
             break;
         case 'planificacion':

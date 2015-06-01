@@ -355,14 +355,16 @@ function refreshWidgets(page){
                 ev.preventDefault();
                 var id = $(this).attr('href');
                 $("#popupMenu"+id).popup('close');
-                sql.transaction(function(tx){
-                    var clase = new Clase(tx,id,function(){
-                        lastObject.push(elements);
-                        elements = clase;
-                        console.log(JSON.stringify(elements));
-                        loadPage('clase');
+                setTimeout(function(){
+                    sql.transaction(function(tx){
+                        var clase = new Clase(tx,id,function(){
+                            lastObject.push(elements);
+                            elements = clase;
+                            console.log(JSON.stringify(elements));
+                            loadPage('clase');
+                        });
                     });
-                });
+                },500);
             });
             break;
         case 'planificacion':
