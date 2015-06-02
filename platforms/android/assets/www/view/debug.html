@@ -1,0 +1,21 @@
+<ul id="unidades" data-role="listview">
+{{#.}}
+    {{#if this.nombre}}
+    <li class="unidad" data-icon="false">
+    	<a href="#" id="{{this.id}}" class="estado-utp-{{this.aprobacion_utp}}">
+    		<div class="col-80">
+              <h3>{{this.nombre}}</h3>
+    		  <p>
+    		      	{{this.sectorNombre}}<br/>
+                    {{this.nivelNombre}}<br/>
+                    {{this.fechaBonitaIni}} - {{this.fechaBonitaFin}}
+    		  </p>
+            </div>
+            <div class="col-20">
+                <canvas id="radial-percentage-{{this.id}}" data-progress="{{this.progress}}" width="80" height="80"></canvas>
+            </div>
+    	</a>
+    </li>
+    {{/if}}
+{{/.}}
+</ul>

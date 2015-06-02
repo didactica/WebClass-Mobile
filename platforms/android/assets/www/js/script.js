@@ -354,17 +354,18 @@ function refreshWidgets(page){
             $(".ver-clase").on("click",function(ev){
                 ev.preventDefault();
                 var id = $(this).attr('href');
-                $("#popupMenu"+id).popup('close');
-                setTimeout(function(){
-                    sql.transaction(function(tx){
-                        var clase = new Clase(tx,id,function(){
-                            lastObject.push(elements);
-                            elements = clase;
-                            console.log(JSON.stringify(elements));
-                            loadPage('clase');
+                $.mobile.loading('show');
+                $("#popupMenu"+id).popup('close').promise().done(function(){
+                    setTimeout(function(){
+                        sql.transaction(function(tx){
+                            var clase = new Clase(tx,id,function(){
+                                lastObject.push(elements);
+                                elements = clase;
+                                loadPage('clase');
+                            });
                         });
-                    });
-                },500);
+                    },500);
+                });
             });
             break;
         case 'planificacion':
