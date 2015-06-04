@@ -208,18 +208,25 @@ Clase.prototype.syncToServer = function(){
             });
         } else {
             var pendientes = window.localStorage.getItem("pendientes");
-            console.log(pendientes);
             if( pendientes == 'null' || pendientes == null ){
                 pendientes = {};
             } else {
                 pendientes = JSON.parse(pendientes);
             }
-            console.log(pendientes);
             if( typeof pendientes.clase == 'undefined' ){
                 pendientes.clase = ['id'];
             }
-            pendientes.clase.push(this.id);
+            var notIncluded = true;
+            for(var i in pendientes.clase){
+                if(pendientes.clase[i]==this.id){
+                    notIncluded = false;
+                }
+            }
+            if(notIncluded){
+                pendientes.clase.push(this.id);
+            }
             pendientes = JSON.stringify(pendientes);
+            console.log(pendientes);
             window.localStorage.setItem("pendientes",pendientes);
         }
     }

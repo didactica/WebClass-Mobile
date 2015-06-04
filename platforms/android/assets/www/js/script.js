@@ -628,14 +628,12 @@ function downloadData(callback){
                 pendientes = JSON.parse(pendientes);
                 sql.transaction(function(tx){
                     var tmpObj = pendientes;
-                    console.log('check');
                     for( var table in tmpObj ){
                         var arr = tmpObj[table];
                         var key = arr[0];
                         if(typeof key=='string'){
                             arr.splice(0,1);
                             var query = 'SELECT * FROM '+table+' WHERE '+key+' IN ('+arr.join(',')+')';
-                            console.log(query);
                             tx.executeSql(
                                 query,
                                 [],
@@ -652,19 +650,15 @@ function downloadData(callback){
                                             'user':user,
                                             'data':data
                                         }
-                                        console.log(JSON.stringify(params));
                                         $.ajax({
                                             url:'http://didactica.pablogarin.cl/getJSON.php',
                                             data:params,
                                             dataType:'json',
                                             async:false,
                                             success:function(res){
-                                                console.log(JSON.stringify(res.status));
                                                 if(res.status==0){
-                                                    console.log("YESSSSSSS!!!!!!!")
                                                     delete tmpObj[table];
                                                     tmpObj = JSON.stringify(tmpObj);
-                                                    console.log(tmpObj);
                                                     window.localStorage.setItem('pendientes',tmpObj);
                                                 }
                                             }
