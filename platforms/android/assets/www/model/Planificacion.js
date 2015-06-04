@@ -99,31 +99,39 @@ Planificacion.prototype.setField = function(field,value){
 Planificacion.prototype.insert = function(vals){
     var query = "INSERT OR REPLACE INTO unidad VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     if( typeof vals != 'undefined' ){
-        this.id = vals.id;
-        this.nombre = vals.nombre;
-        this.tipo = vals.tipo;
-        this.sector = vals.sector;
-        this.colegio = vals.colegio;
-        this.usuario = vals.usuario;
-        this.orden = vals.orden;
-        this.observacion = vals.observacion;
-        this.clases = vals.clases;
-        this.horas = vals.horas;
-        this.estado = vals.estado;
-        this.creacion = vals.creacion;
-        this.modificacion = vals.modificacion;
-        this.fechaini = vals.fechaini;
-        this.fechafin = vals.fechafin;
-        this.metodo = vals.metodo;
-        this.visible = vals.visible;
-        this.id_ant = vals.id_ant;
-        this.ambitos = vals.ambitos;
-        this.nivel = vals.nivel;
-        this.aprobacion_utp = vals.aprobacion_utp;
-        this.origen = vals.origen;
-        this.validado = vals.validado;
-        this.edicion = vals.edicion;
-        this.pae = vals.pae;
+        if( 
+            (
+                (typeof this.modificacion != 'undefined') && 
+                (vals.modificacion>this.modificacion)
+            ) || 
+            (typeof this.modificacion == 'undefined') 
+        ){
+            this.id = vals.id;
+            this.nombre = vals.nombre;
+            this.tipo = vals.tipo;
+            this.sector = vals.sector;
+            this.colegio = vals.colegio;
+            this.usuario = vals.usuario;
+            this.orden = vals.orden;
+            this.observacion = vals.observacion;
+            this.clases = vals.clases;
+            this.horas = vals.horas;
+            this.estado = vals.estado;
+            this.creacion = vals.creacion;
+            this.modificacion = vals.modificacion;
+            this.fechaini = vals.fechaini;
+            this.fechafin = vals.fechafin;
+            this.metodo = vals.metodo;
+            this.visible = vals.visible;
+            this.id_ant = vals.id_ant;
+            this.ambitos = vals.ambitos;
+            this.nivel = vals.nivel;
+            this.aprobacion_utp = vals.aprobacion_utp;
+            this.origen = vals.origen;
+            this.validado = vals.validado;
+            this.edicion = vals.edicion;
+            this.pae = vals.pae;
+        }
     }
     var insertObject = [
         this.id,
@@ -138,7 +146,7 @@ Planificacion.prototype.insert = function(vals){
         this.horas,
         this.estado,
         this.creacion,
-        this.modificacion,
+        Date.now(),
         this.fechaini,
         this.fechafin,
         this.metodo,

@@ -7,23 +7,27 @@
     {{#.}}
         {{#if this.eventos}}
             <li class="header" value="{{this.titulo}}">
-                {{this.titulo}}
+                <div data-role="collapsible">
+                    <h2>{{this.titulo}}</h2>
+                    <ul class="eventos" data-role="listview" data-inset="false">
+                    {{#each this.eventos}}
+                        {{#.}}
+                            {{#if this.nombre}}
+                            <li class="evento" data-icon="false">
+                                <a href="{{this.id}}" class="eventoItem evento-{{this.tipo}}">
+                                    <div class="badge-evento"></div>
+                                    <div class="detalles-evento">
+                                        <span class="titulo-evento">{{this.nombre}}</span><br/>
+                                        <span class="fecha">{{this.horaini}} - {{this.horafin}}</span>
+                                    </div>
+                                </a>
+                            </li>
+                            {{/if}}
+                        {{/.}}
+                    {{/each}}
+                    </ul>
+                </div>
             </li>
-            {{#each this.eventos}}
-                {{#.}}
-                    {{#if this.nombre}}
-                    <li class="evento">
-                        <a href="{{this.id}}" class="eventoItem evento-{{this.tipo}}">
-                            <div class="badge-evento"></div>
-                            <div class="detalles-evento">
-                                <span class="titulo-evento">{{this.nombre}}</span><br/>
-                                <span class="fecha">{{this.horaini}} - {{this.horafin}}</span>
-                            </div>
-                        </a>
-                    </li>
-                    {{/if}}
-                {{/.}}
-            {{/each}}
         {{/if}}
     {{/.}}
 </ul>

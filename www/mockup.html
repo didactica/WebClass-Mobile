@@ -9,7 +9,7 @@
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
         <link rel="stylesheet" href="css/font-awesome.min.css" />
         <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,700">
-        <link rel="stylesheet" href="css/themes/default/jquery.mobile-1.4.5.min.css">
+        <link rel="stylesheet" type="text/css" href="css/jquery.mobile.flatui.css">
         <link rel="stylesheet" type="text/css" href="css/style.css">
         <script src="js/jquery.js"></script>
         <script src="js/jquery.mobile-1.4.5.min.js"></script>
@@ -30,7 +30,91 @@
                 <a href="#menu_lateral" class="ui-btn ui-btn-icon-notext ui-corner-all ui-btn-right" data-role="button" data-mini="true"><i class="fa fa-bars"></i></a>
             </div>
             <div  id="contenido" data-role="content">
-                
+            <!-- INICIO -->
+                <div class="viewContainer">
+                    <fieldset>
+                        <div class="padding1em rounded-border">
+                            <table data-role="table" class="ui-responsive ui-shadow" id="gk-5299A7V" is="jqm-table">
+                                <thead>
+                                    <tr>
+                                        <th data-priority="1">Código</th>
+                                        <th data-priority="1">Nivel</th>
+                                        <th data-priority="1">Asignatura</th>
+                                        <th data-priority="1">Autor</th>
+                                        <th data-priority="1">Clases</th>
+                                        <th data-priority="1">Horas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>10113</td>
+                                        <td>Cuarto Medio</td>
+                                        <td>Matemática</td>
+                                        <td>profesor-demo</td>
+                                        <td>10</td>
+                                        <td>20</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </fieldset>
+                    <div class="clearfix"></div>
+                    <ul id="clases" data-role="listview" data-inset="false">
+                        <li id="clase-li-1" class="ejecucion-clase-1" data-icon="false">
+                            <div class="col-90">
+                                <div class="col-70">
+                                    <h3>Case 1: Lorem Ipsum</h3>
+                                    <p>
+                                        02/06/2015 - 02/06/2015<br/>
+                                        2 horas
+                                    </p>
+                                </div>
+                                <div class="containing-element col-30">
+                                    <div class="ui-field-contain switch-clases">
+                                    <select id="1" class="switch-clases" data-role="flipswitch" data-mini="true">
+                                        <option value="off" selected="selected"></option>
+                                        <option value="on"></option>
+                                    </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-10 menu-container">
+                                <a href="#popupMenu{{this.id}}" class="menu" data-rel="popup" data-transition="appear">
+                                    <i class="fa fa-ellipsis-v fa-2x pull-right"></i>
+                                </a>
+                                <div data-role="popup" id="popupMenu{{this.id}}" data-theme="b">
+                                    <ul data-role="listview" data-inset="true" style="min-width:210px;">
+                                        <li><a href="{{this.id}}" class="ver-clase">Ver</a></li>
+                                        <li><a href="{{this.id}}" class="eliminar-clase">Eliminar</a></li>
+                                        <li><a href="{{this.id}}" class="tarea-clase">Tarea(1)</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="ejecucion-clase-0" data-icon="false">
+                            <div class="col-80">
+                                <h3>Case 2: Lorem Ipsum</h3>
+                                <p>
+                                    06/06/2015 - 06/06/2015<br/>
+                                    2 horas
+                                </p>
+                            </div>
+                            <div class="col-20 menu-container">
+                                <a href="#popupMenu{{this.id}}" class="menu" data-rel="popup" data-transition="appear">
+                                    <i class="fa fa-ellipsis-v fa-2x pull-right"></i>
+                                </a>
+                                <div data-role="popup" id="popupMenu{{this.id}}" data-theme="b">
+                                    <ul data-role="listview" data-inset="true" style="min-width:210px;">
+                                        <li><a href="{{this.id}}" class="ver-clase">Ver</a></li>
+                                        <li><a href="{{this.id}}" class="eliminar-clase">Eliminar</a></li>
+                                        <li><a href="{{this.id}}" class="tarea-clase">Tarea(1)</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            <!-- FIN -->
             </div>    
         </div>
         <script type="text/javascript" src="js/script.js"></script>

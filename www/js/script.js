@@ -225,9 +225,6 @@ function functions(title,callback){
                             var obj = res.rows.item(i);
                             var month = obj.fechaini.split('/');
                             if( String(month[1])==String(curDate.m) && String(month[2])==String(curDate.y) ){
-                                /*
-                                Formato = {[{titulo:'01/05/2015',eventos:[...]}],[{titulo:'02/05/2015',eventos:[...]}]}
-                                */
                                 if(tmp[month[1]+'/'+month[2]]==null){
                                     tmp[month[1]+'/'+month[2]] = [];
                                 }
@@ -316,14 +313,16 @@ function setTitle(page){
 }
 function backButton(){
     if(historyStack.length>1){
-        historyStack.pop();
-        var last = historyStack.pop();
-        if(typeof last != 'undefined'){
-            if(lastObject.length>0){
-                elements = lastObject.pop();
+        $.mobile.loading('show').promise().done(function(){
+            historyStack.pop();
+            var last = historyStack.pop();
+            if(typeof last != 'undefined'){
+                if(lastObject.length>0){
+                    elements = lastObject.pop();
+                }
+                loadPage(last);
             }
-            loadPage(last);
-        }
+        });
     } else {
         if(!alertUp){
             alertUp = true;
@@ -347,6 +346,27 @@ function refreshWidgets(page){
     $("#nav-header").show();
     $("#backButton").show();
     $(".ui-page").trigger('create');
+    $("select.switch-clases").on("change",function(ev){
+        var id = $(this).attr('id');
+        var cont = $("#clase-li-"+id);
+        if(cont.hasClass('ejecucion-clase-0')){
+            cont.removeClass('ejecucion-clase-0');
+            cont.addClass('ejecucion-clase-1');
+        } else {
+            cont.removeClass('ejecucion-clase-1');
+            cont.addClass('ejecucion-clase-0');
+        }
+        sql.transaction(function(tx){
+            var c = new Clase(tx,id,function(){
+                if( c.ejecucion===1 ){
+                    c.ejecucion = 0;
+                } else {
+                    c.ejecucion = 1;
+                }
+                c.insert();
+            });
+        });
+    });
     switch(page){
         case 'unidad':
             $("#clases").listview();
@@ -406,13 +426,6 @@ function refreshWidgets(page){
                     }
                 );
             });
-            // $("#searchField").val(where||'');
-            // $("#searchField").init();
-            //$("#searchField").off('keyup');
-            //$("#searchField").on('keyup',function(ev){
-            //    where = $(this).val();
-            //    filtrarPlanificaciones(where);
-            //});
             break;
         case 'home':
             $("#month").html(months[parseInt(curDate.m)]+' '+curDate.y);
@@ -548,15 +561,6 @@ function login()
                             resp.userData
                         );
                     });
-                    /*
-                    navigator.notification.alert(
-                        'Ingreso Exitoso!',
-                        function(){
-                        },
-                        'Login',
-                        'Aceptar'
-                    );
-                    */
                 } else {
                     if(resp.state==1){
                         navigator.notification.alert(resp.message,function(){$("input[name='pass']").val('');$('input[name=user]').focus();},'Error de Login','Aceptar');
@@ -615,9 +619,66 @@ function downloadData(callback){
         downloaded = true;
         $.mobile.loading('hide');
         $("#contenido").html(compileTemplate('descargando')).promise().done(function(){
+            var modificacion = window.localStorage.getItem('modificacion');
+            if( typeof modificacion == 'undefined' ){
+                modificacion = 0;
+            }
+            var pendientes = window.localStorage.getItem("pendientes");
+            if(pendientes!=null && pendientes!='null'){
+                pendientes = JSON.parse(pendientes);
+                sql.transaction(function(tx){
+                    var tmpObj = pendientes;
+                    for( var table in tmpObj ){
+                        var arr = tmpObj[table];
+                        var key = arr[0];
+                        if(typeof key=='string'){
+                            arr.splice(0,1);
+                            var query = 'SELECT * FROM '+table+' WHERE '+key+' IN ('+arr.join(',')+')';
+                            tx.executeSql(
+                                query,
+                                [],
+                                function(tx,res){
+                                    if( res && res.rows ){
+                                        var data = [];
+                                        for(var i=0;i<res.rows.length;i++){
+                                            data.push(res.rows.item(i));
+                                        }
+                                        var params = {
+                                            'service':'syncToServer',
+                                            'key':key,
+                                            'table':table,
+                                            'user':user,
+                                            'data':data
+                                        }
+                                        $.ajax({
+                                            url:'http://didactica.pablogarin.cl/getJSON.php',
+                                            data:params,
+                                            dataType:'json',
+                                            async:false,
+                                            success:function(res){
+                                                if(res.status==0){
+                                                    delete tmpObj[table];
+                                                    tmpObj = JSON.stringify(tmpObj);
+                                                    window.localStorage.setItem('pendientes',tmpObj);
+                                                }
+                                            }
+                                        });
+                                    }
+                                },
+                                function(tx,err){
+                                    console.log(JSON.stringify(tx));
+                                    console.log(JSON.stringify(err));
+                                }
+                            );
+                        } else {
+                            tmpObj[table] = [];
+                        }
+                    }
+                });
+            }
             setTimeout(function(){
                 $.ajax({
-                    url: 'http://didactica.pablogarin.cl/getJSON.php?service=syncData&user='+user+"&sequence="+sequence,
+                    url: 'http://didactica.pablogarin.cl/getJSON.php?service=syncData&user='+user+"&modificacion="+modificacion,
                     type: 'POST',
                     dataType: 'json',
                     success: function(resp){
@@ -667,38 +728,6 @@ function setRadialPercentage(id,percentage){
     var endAngle = Math.PI*2*percentage-startAngle;
     // definimos el ancho de la linea
     context.lineWidth = 5;
-
-    // RESERVADO PARA EL REY DE LA TIERRA --- ALL HAIL SATAN!!
-    /*
-                                  ...
-           s,                .                    .s
-            ss,              . ..               .ss
-            'SsSs,           ..  .           .sSsS'
-             sSs'sSs,        .   .        .sSs'sSs
-              sSs  'sSs,      ...      .sSs'  sSs
-               sS,    'sSs,         .sSs'    .Ss
-               'Ss       'sSs,   .sSs'       sS'
-      ...       sSs         ' .sSs'         sSs       ...
-     .           sSs       .sSs' ..,       sSs       .
-     . ..         sS,   .sSs'  .  'sSs,   .Ss        . ..
-     ..  .        'Ss .Ss'     .     'sSs. ''        ..  .
-     .   .         sSs '       .        'sSs,        .   .
-      ...      .sS.'sSs        .        .. 'sSs,      ...
-            .sSs'    sS,     .....     .Ss    'sSs,
-         .sSs'       'Ss       .       sS'       'sSs,
-      .sSs'           sSs      .      sSs           'sSs,
-   .sSs'____________________________ sSs ______________'sSs,
-.sSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS'.Ss SSSSSSSSSSSSSSSSSSSSSs,
-                        ...         sS'
-                         sSs       sSs
-                          sSs     sSs 
-                           sS,   .Ss
-                           'Ss   sS'
-                            sSs sSs
-                             sSsSs
-                              sSs
-                               s
-    //*/
     // creamos una gradiente para el color del circulo.
     var gradiente = context.createLinearGradient(0,0,x*2,0);
     //color verde/azulado
@@ -873,3 +902,9 @@ function normalize(str){
   };
 })();
 //*/
+Handlebars.registerHelper('ifCond', function(v1, v2, options) {
+  if(v1 === v2) {
+    return options.fn(this);
+  }
+  return options.inverse(this);
+});

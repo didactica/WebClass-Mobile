@@ -73,6 +73,9 @@ input.full-input.last{
 	margin-bottom: 0;
 	padding-top: 1.3em;
 }
+input[type="text"],input[type="password"]{
+    font-family: FontAwesome, Helvetica;
+}
 .logo{
 	background:url(../img/logoWC.png) no-repeat 1px;
 	border-radius: 50%;
@@ -86,19 +89,25 @@ input.full-input.last{
 	background-color:#d43f3a !important;
 	background-color: #d9534f !important;
 }
+.login-icon{
+	position:absolute;
+	color:#fff;
+	right:0px;
+}
 .login-container{
 	padding:0.5em;
+	margin-top:-1em;
 }
-.login-container div{
-	border:none;
+.login-container div, .login-container .ui-input-text{
+	border:none !important;
 }
-ul#eventos, ul#eventos li{
+ul#eventos, ul#eventos li, ul.eventos, ul.eventos li{
 	width:100%;
 }
 ul#eventos li a, ul#eventos li a:visited{
 	line-height: 1.5em;
 	text-decoration: none;
-	color:#000;
+	color:#c9c9c9;
 	font-weight: bolder;
 	font-size: 1em;
 	border:none;
@@ -158,13 +167,29 @@ ul#eventos li.headerMes .control.next{
 	right:0;
 	padding-right:1.5em;
 }
-ul#eventos li.evento{
+ul.eventos li.evento{
+	color:#fff;
 	border:none;
 	background:rgba(0,0,0,0);
 	list-style: none;
 	line-height: 1.5em;
-	padding:10px;
+	padding:4px;
 	clear:both;
+	position: relative;
+	font-color:#6a6a6a;
+}
+ul.eventos li.evento::after{
+	background: black;
+    content: "";
+    height: 4em;
+    left: 2em;
+    position: absolute;
+    top: 2em;
+    width: 0.15em;
+    z-index: 0;
+}
+ul.eventos li.evento:last-child::after{
+	display: none;
 }
 ul#eventos li .badge-evento{
 	border-radius:50%;
@@ -176,14 +201,28 @@ ul#eventos li .badge-evento{
 	float:left;
 	text-align: center;
 	color:#666;
+	position:relative;
+	z-index:2;
 }
-ul#eventos li .detalles-evento{
+ul.eventos li .titulo-evento{
+	color:#6A6A6A;
 	width:75%;
 	line-height: 1.5em;
-	margin-left:1.5em;
+	margin-left:0.5em;
 	float:left;
 }
-ul#eventos li .detalles-evento .fecha{
+ul.eventos li .detalles-evento{
+	color:#6A6A6A;
+	width:75%;
+	line-height: 1.5em;
+	margin-left:0.5em;
+	float:left;
+}
+ul.eventos li .detalles-evento .fecha{
+	color:#6A6A6A;
+	width:75%;
+	line-height: 1.5em;
+	margin-left:0.5em;
 	font-size:1em;
 	font-weight: normal;
 }
@@ -220,13 +259,29 @@ ul#unidades li{
 .unidad .estado-utp-0,.unidad .estado-utp-0:visited{
 	background-color:#E68A8A !important;
 }
-.col-80{
+.col-10{
 	float:left;
-	width:78%;
+	width:8%;
 }
 .col-20{
 	float:left;
 	width:18%;
+}
+.col-30{
+	float:left;
+	width:28%;
+}
+.col-70{
+	float: left;
+	width:68%;
+}
+.col-80{
+	float:left;
+	width:78%;
+}
+.col-90{
+	float:left;
+	width:88%;
 }
 canvas.radialLoader{
 	background-color: #eeeeee;
@@ -256,11 +311,11 @@ canvas.radialLoader{
 	line-height: 1em;
 }
 #clases li{
-	padding:0 1em 0 2em;
+	padding:0 1em 0 1.5em;
 }
 #clases li .menu{
 	height: 3em;
-	width: 3em;
+	width: 100%;
 	display:block;
 	position:relative;
 }
@@ -268,9 +323,25 @@ canvas.radialLoader{
 	line-height: 2.2em;
 	color:#000;
 }
-.ejecucion-clase-1, .ejecucion-clase-1:visited, .ejecucion-clase-1 a{
+.ejecucion-clase-0, .ejecucion-clase-0:visited, .ejecucion-clase-0 a{
 	background-color:#E68A8A !important;
 }
-.ejecucion-clase-0, .ejecucion-clase-0:visited, .ejecucion-clase-0 a{
+.ejecucion-clase-1, .ejecucion-clase-1:visited, .ejecucion-clase-1 a{
 	background-color:#8AE68A !important;
+}
+.rounded-border{
+	margin:2%;
+	border:1px solid #ccc;
+	border-radius:2%;
+	-moz-border-radius:2%;
+	-webkit-border-radius:2%;
+	background-color:rgba(127,127,127,.1);
+}
+.switch-clases .ui-flipswitch.ui-flipswitch-active{
+	background-color:#2ca850 !important;
+	border-color:#2ca850 !important;
+}
+.switch-clases .ui-flipswitch{
+	background-color:#a86d8d !important;
+	border-color:#a86d8d !important;
 }
