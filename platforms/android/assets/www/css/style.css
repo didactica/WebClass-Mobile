@@ -27,6 +27,9 @@ body,html{
 .ui-li-static.ui-collapsible > .ui-collapsible-content {
     border-bottom-width: 0;
 }
+html .ui-body-a, html .ui-page-theme-a .ui-body-inherit, html .ui-bar-a .ui-body-inherit, html .ui-body-a .ui-body-inherit, html body .ui-group-theme-a .ui-body-inherit, html .ui-panel-page-container-a{
+	border-color:#afafaf;
+}
 .hidden{
 	display:none;
 }
@@ -102,7 +105,7 @@ input[type="text"],input[type="password"]{
 	border:none !important;
 }
 ul#eventos, ul#eventos li, ul.eventos, ul.eventos li{
-	width:100%;
+	/*width:100%;*/
 }
 ul#eventos li a, ul#eventos li a:visited{
 	line-height: 1.5em;
@@ -344,4 +347,14 @@ canvas.radialLoader{
 .switch-clases .ui-flipswitch{
 	background-color:#a86d8d !important;
 	border-color:#a86d8d !important;
+}
+.text-center{
+	text-align: center;
+}
+.ui-flipswitch.ui-flipswitch-active{
+	width:5.875em !important;
+}
+html .ui-page-theme-a .ui-btn.ui-btn-active, html .ui-bar-a .ui-btn.ui-btn-active, html .ui-body-a .ui-btn.ui-btn-active, html body .ui-group-theme-a .ui-btn.ui-btn-active, html body .ui-btn.ui-btn-a.ui-btn-active, html .ui-page-theme-a .ui-flipswitch-active, html .ui-bar-a .ui-flipswitch-active, html .ui-body-a .ui-flipswitch-active, html body .ui-group-theme-a .ui-flipswitch-active, html body .ui-flipswitch.ui-bar-a.ui-flipswitch-active, html .ui-page-theme-a .ui-slider-track .ui-btn-active, html .ui-bar-a .ui-slider-track .ui-btn-active, html .ui-body-a .ui-slider-track .ui-btn-active, html body .ui-group-theme-a .ui-slider-track .ui-btn-active, html body div.ui-slider-track.ui-body-a .ui-btn-active{
+	background-color: inherit;
+	border: none;
 }

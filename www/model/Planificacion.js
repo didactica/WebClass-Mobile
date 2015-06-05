@@ -85,7 +85,7 @@ Planificacion.prototype.selectById = function(callback){
                 callback();
             }
         },function(tx,err){
-            console.log("1.- "+tx.message);
+            console.log("1.- "+JSON.stringify(tx));
             console.log("2.- "+err.message);
             //loadPage('planificacion');
             $.mobile.loading('hide');

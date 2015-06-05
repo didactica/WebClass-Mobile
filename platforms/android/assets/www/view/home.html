@@ -4,6 +4,7 @@
         <span id="month">Mes año</span>
         <a href="#next_month" class="control next"><i class="fa fa-chevron-circle-right"></i></a> 
     </li>
+    {{#each eventos}}
     {{#.}}
         {{#if this.eventos}}
             <li class="header" value="{{this.titulo}}">
@@ -30,4 +31,7 @@
             </li>
         {{/if}}
     {{/.}}
+    {{else}}
+    <li><center><h2>No hay Eventos para mostrar</h2></center></li>
+    {{/each}}
 </ul>

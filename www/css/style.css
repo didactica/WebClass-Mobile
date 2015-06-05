@@ -27,6 +27,9 @@ body,html{
 .ui-li-static.ui-collapsible > .ui-collapsible-content {
     border-bottom-width: 0;
 }
+html .ui-body-a, html .ui-page-theme-a .ui-body-inherit, html .ui-bar-a .ui-body-inherit, html .ui-body-a .ui-body-inherit, html body .ui-group-theme-a .ui-body-inherit, html .ui-panel-page-container-a{
+	border-color:#afafaf;
+}
 .hidden{
 	display:none;
 }
@@ -102,7 +105,7 @@ input[type="text"],input[type="password"]{
 	border:none !important;
 }
 ul#eventos, ul#eventos li, ul.eventos, ul.eventos li{
-	width:100%;
+	/*width:100%;*/
 }
 ul#eventos li a, ul#eventos li a:visited{
 	line-height: 1.5em;
@@ -326,8 +329,41 @@ canvas.radialLoader{
 .ejecucion-clase-0, .ejecucion-clase-0:visited, .ejecucion-clase-0 a{
 	background-color:#E68A8A !important;
 }
+.swipeIndicator{
+	position:absolute;
+	top:35%;
+	right:20%;
+	height:1.5em;
+	line-height: 1.5em;
+	width:1.5em;
+	border-radius: 50%;
+	background-color:rgba(127,127,127,0.6);
+	text-align: center;
+}
+.ejecucion-clase-1 .swipeIndicator span{
+	width: 0;
+    height: 0;
+    display:inline-block;
+    border-top:0.5em solid transparent;
+    border-bottom:0.5em solid transparent;
+    border-right:0.5em solid #8AE68A;
+    position: relative;
+    -webkit-animation: rightArrow 2s linear 0s infinite alternate; /* Chrome, Safari, Opera */
+    animation: rightArrow 2s linear 0s infinite alternate;
+}
 .ejecucion-clase-1, .ejecucion-clase-1:visited, .ejecucion-clase-1 a{
 	background-color:#8AE68A !important;
+}
+.ejecucion-clase-0 .swipeIndicator span{
+	width: 0;
+    height: 0;
+    display:inline-block;
+    border-top:0.5em solid transparent;
+    border-bottom:0.5em solid transparent;
+    border-left:0.5em solid #E68A8A;
+    position: relative;
+    -webkit-animation: leftArrow 2s linear 0s infinite alternate; /* Chrome, Safari, Opera */
+    animation: leftArrow 2s linear 0s infinite alternate;
 }
 .rounded-border{
 	margin:2%;
@@ -344,4 +380,44 @@ canvas.radialLoader{
 .switch-clases .ui-flipswitch{
 	background-color:#a86d8d !important;
 	border-color:#a86d8d !important;
+}
+.text-center{
+	text-align: center;
+}
+.ui-flipswitch.ui-flipswitch-active{
+	width:5.875em !important;
+}
+html .ui-page-theme-a .ui-btn.ui-btn-active, html .ui-bar-a .ui-btn.ui-btn-active, html .ui-body-a .ui-btn.ui-btn-active, html body .ui-group-theme-a .ui-btn.ui-btn-active, html body .ui-btn.ui-btn-a.ui-btn-active, html .ui-page-theme-a .ui-flipswitch-active, html .ui-bar-a .ui-flipswitch-active, html .ui-body-a .ui-flipswitch-active, html body .ui-group-theme-a .ui-flipswitch-active, html body .ui-flipswitch.ui-bar-a.ui-flipswitch-active, html .ui-page-theme-a .ui-slider-track .ui-btn-active, html .ui-bar-a .ui-slider-track .ui-btn-active, html .ui-body-a .ui-slider-track .ui-btn-active, html body .ui-group-theme-a .ui-slider-track .ui-btn-active, html body div.ui-slider-track.ui-body-a .ui-btn-active{
+	background-color: inherit;
+	border: none;
+}
+/* Chrome, Safari, Opera */
+@-webkit-keyframes leftArrow {
+    0%   {left:0px;}
+    25%  {left:3px;}
+    50%  {left:0px;}
+    100% {left:0px;}
+}
+
+/* Standard syntax */
+@keyframes leftArrow {
+    0%   {left:0px;}
+    25%  {left:3px;}
+    50%  {left:0px;}
+    100% {left:0px;}
+}
+/* Chrome, Safari, Opera */
+@-webkit-keyframes rightArrow {
+    0%   {right:0px;}
+    25%  {right:3px;}
+    50%  {right:0px;}
+    100% {right:0px;}
+}
+
+/* Standard syntax */
+@keyframes rightArrow {
+    0%   {right:0px;}
+    25%  {right:3px;}
+    50%  {right:0px;}
+    100% {right:0px;}
 }

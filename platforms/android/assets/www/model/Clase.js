@@ -38,7 +38,6 @@ Clase.prototype.createTable = function() {
 }
 Clase.prototype.insert = function(vals){
     var query = "INSERT OR REPLACE INTO clase VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    // console.log(JSON.stringify(this));
     if( typeof vals != 'undefined' ){
         if( 
             (
@@ -98,10 +97,11 @@ Clase.prototype.insert = function(vals){
         query,
         insertObject,
         function(tx){
-            window.localStorage.setItem("modificacion",Date.now());
+            //window.localStorage.setItem("modificacion",SDate.now());
             self.syncToServer();
         },
         function(tx,error){
+            console.log(JSON.stringify(error));
             console.log(error.message);
         }
     );
@@ -161,7 +161,7 @@ Clase.prototype.syncToServer = function(){
     if( typeof this.id == 'undefined' ){
         
     } else {
-        if( navigator.connection.type!=Connection.NONE ){
+        if( (typeof navigator.connection != 'undefined') && (navigator.connection.type!=Connection.NONE) ){
             var user = window.localStorage.getItem('user');
             var token = window.localStorage.getItem('token');
             var data = {
@@ -226,7 +226,6 @@ Clase.prototype.syncToServer = function(){
                 pendientes.clase.push(this.id);
             }
             pendientes = JSON.stringify(pendientes);
-            console.log(pendientes);
             window.localStorage.setItem("pendientes",pendientes);
         }
     }

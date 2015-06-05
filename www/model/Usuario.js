@@ -59,7 +59,7 @@ Usuario.prototype.insert = function(vals){
 }
 Usuario.prototype.fetchUser = function(id){
     var user_name;
-    if( navigator.connection.type!=Connection.NONE ){
+    if( (typeof navigator.connection !='undefined') && (navigator.connection.type!=Connection.NONE) ){
         $.ajax({
             url:'http://didactica.pablogarin.cl/getJSON.php?service=usuario&id='+id,
             dataType:'json',

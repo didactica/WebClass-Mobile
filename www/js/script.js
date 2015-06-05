@@ -78,6 +78,11 @@ var downloaded = false;
 var where;
 var lastObject = [];
 
+$.event.special.swipe.scrollSupressionThreshold = 10; // More than this horizontal displacement, and we will suppress scrolling.
+$.event.special.swipe.horizontalDistanceThreshold = 30; // Swipe horizontal displacement must be more than this.
+$.event.special.swipe.durationThreshold = 500;  // More time than this, and it isn't a swipe.
+$.event.special.swipe.verticalDistanceThreshold = 75;
+
 $.mobile.filterable.prototype.options.filterCallback = filtrarPlanificaciones;
 
 function onDeviceReady()
@@ -239,10 +244,11 @@ function functions(title,callback){
                         }
                     }
                     var today = curDate.m+'/'+curDate.y;
-                    elements = [];
+                    elements = {eventos:[]};
                     for(var id in tmp[today]){
-                        elements.push(tmp[today][id]);
+                        elements.eventos.push(tmp[today][id]);
                     }
+                    console.log(JSON.stringify(elements));
                     callback();
                 },
                 function(tx,error){
@@ -302,6 +308,9 @@ function setTitle(page){
             break;
     }
     // Es un titulo, por lo tanto debe ir cada palabra capitalizada.
+    if( typeof title == 'undefined' ){
+        title = "WebClass";
+    }
     var words = title.split(' ');
     title = '';
     for(var i in words){
@@ -346,26 +355,12 @@ function refreshWidgets(page){
     $("#nav-header").show();
     $("#backButton").show();
     $(".ui-page").trigger('create');
-    $("select.switch-clases").on("change",function(ev){
-        var id = $(this).attr('id');
-        var cont = $("#clase-li-"+id);
-        if(cont.hasClass('ejecucion-clase-0')){
-            cont.removeClass('ejecucion-clase-0');
-            cont.addClass('ejecucion-clase-1');
-        } else {
-            cont.removeClass('ejecucion-clase-1');
-            cont.addClass('ejecucion-clase-0');
+    $( document ).on("swipeleft",function(ev){
+        console.log("swipe detected!");
+        if( $( ".ui-page" ).jqmData( "panel" ) !== "open" ){
+            console.log('menu cerrado')
+            $("#menu_lateral").panel('open');
         }
-        sql.transaction(function(tx){
-            var c = new Clase(tx,id,function(){
-                if( c.ejecucion===1 ){
-                    c.ejecucion = 0;
-                } else {
-                    c.ejecucion = 1;
-                }
-                c.insert();
-            });
-        });
     });
     switch(page){
         case 'unidad':
@@ -386,6 +381,37 @@ function refreshWidgets(page){
                         });
                     },500);
                 });
+            });
+            $(document).off("swipeleft");
+            /*$("select.switch-clases").on("change",function(ev){
+                var id = $(this).attr('id');
+                var cont = $("#clase-li-"+id);
+                if(cont.hasClass('ejecucion-clase-0')){
+                    cont.removeClass('ejecucion-clase-0');
+                    cont.addClass('ejecucion-clase-1');
+                } else {
+                    cont.removeClass('ejecucion-clase-1');
+                    cont.addClass('ejecucion-clase-0');
+                }
+                sql.transaction(function(tx){
+                    var c = new Clase(tx,id,function(){
+                        if( c.ejecucion===1 ){
+                            c.ejecucion = 0;
+                        } else {
+                            c.ejecucion = 1;
+                        }
+                        c.insert();
+                    });
+                });
+            });
+            //*/
+            $("#clases li").on("swiperight",function(){
+                var id = $(this).attr('data-idref');
+                changeEjecucionClase(id,"right");
+            });
+            $("#clases li").on("swipeleft",function(){ 
+                var id = $(this).attr('data-idref');
+                changeEjecucionClase(id,"left"); 
             });
             break;
         case 'planificacion':
@@ -474,9 +500,9 @@ function refreshWidgets(page){
             $(".eventoItem").on("click",function(ev){
                 ev.preventDefault();
                 var selected = $(this).attr('href');
-                for(var id in elements){
-                    for(var i in elements[id].eventos){
-                        var tmpDay = elements[id].eventos[i];
+                for(var id in elements.eventos){
+                    for(var i in elements.eventos[id].eventos){
+                        var tmpDay = elements.eventos[id].eventos[i];
                         if(tmpDay.id==selected){
                             var det = tmpDay.descripcion == null ? 'Sin Descripción' : tmpDay.descripcion;
                             var message = "Titulo: " + tmpDay.nombre + "\n" + "Fecha Inicio:" + tmpDay.fechaini + " a las " + tmpDay.horaini + "\n" + "Fecha Fin: " + tmpDay.fechafin + " a las " + tmpDay.horafin + "\n" + "Descripción: " + det + "\n";
@@ -522,7 +548,6 @@ function setListeners(){
         ev.preventDefault();
         logout();
     });
-
 }
 function login()
 {
@@ -615,7 +640,7 @@ function downloadData(callback){
     if(!callback){
         loadPage('home');
     }
-    if( (!downloaded) && (navigator.connection.type!=Connection.NONE) ){
+    if( (!downloaded) && (typeof navigator.connection!='undefined' && navigator.connection.type!=Connection.NONE) ){
         downloaded = true;
         $.mobile.loading('hide');
         $("#contenido").html(compileTemplate('descargando')).promise().done(function(){
@@ -866,6 +891,25 @@ function normalize(str){
     str  = str.trim();
     str = str.toLowerCase();
     return str;
+}
+function changeEjecucionClase(id,direction){
+    var cont = $("#clase-li-"+id);
+    var updateValue = 0;
+    if(direction==="right"){
+        cont.removeClass('ejecucion-clase-0');
+        cont.addClass('ejecucion-clase-1');
+        updateValue = 1;
+    }
+    if(direction==="left"){
+        cont.removeClass('ejecucion-clase-1');
+        cont.addClass('ejecucion-clase-0');
+    }
+    sql.transaction(function(tx){
+        var c = new Clase(tx,id,function(){
+            c.ejecucion = updateValue;
+            c.insert();
+        });
+    });
 }
 /*
 (function(){

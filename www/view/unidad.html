@@ -29,23 +29,16 @@
 	<ul id="clases" data-role="listview" data-inset="false">
 	{{#each this.clases}}
 		{{#.}}
-    	<li id="clase-li-{{this.id}}" class="ejecucion-clase-{{this.ejecucion}}" data-icon="false">
+    	<li id="clase-li-{{this.id}}" class="ejecucion-clase-{{this.ejecucion}}" data-icon="false" data-idref="{{this.id}}">
+            <div class="swipeIndicator">
+                <span></span>
+            </div>
             <div class="col-90">
-                <div class="col-70">
-                    <h3>{{this.nombre}}</h3>
-                    <p>
-                        {{this.fechainibonita}} - {{this.fechafinbonita}}<br/>
-                        {{this.horas}} horas
-                    </p>
-                </div>
-                <div class="containing-element col-30">
-                    <div class="ui-field-contain switch-clases">
-                        <select id="{{this.id}}" class="switch-clases" data-role="flipswitch" data-mini="true">
-                            <option value="off"{{#ifCond this.ejecucion 0}} selected="selected"{{/ifCond}}></option>
-                            <option value="on"{{#ifCond this.ejecucion 1}} selected="selected"{{/ifCond}}></option>
-                        </select>
-                    </div>
-                </div>
+                <h3>{{this.nombre}}</h3>
+                <p>
+                    {{this.fechainibonita}} - {{this.fechafinbonita}}<br/>
+                    {{this.horas}} horas
+                </p>
             </div>
             <div class="col-10 menu-container">
                 <a href="#popupMenu{{this.id}}" class="menu" data-rel="popup" data-transition="appear">
