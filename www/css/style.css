@@ -329,6 +329,16 @@ canvas.radialLoader{
 .ejecucion-clase-0, .ejecucion-clase-0:visited, .ejecucion-clase-0 a{
 	background-color:#E68A8A !important;
 }
+.changeState, .changeState:visited, .changeState a{
+	background-color:#8AE68A;
+	-webkit-animation: changeState 0.5s linear 0s 1 alternate; /* Chrome, Safari, Opera */
+    animation: changeState 0.5s linear 0s 1 alternate;
+}
+.removeState, .removeState:visited, .removeState a{
+	background-color:#8AE68A;
+	-webkit-animation: removeState 0.5s linear 0s 1 alternate; /* Chrome, Safari, Opera */
+    animation: removeState 0.5s linear 0s 1 alternate;
+}
 .swipeIndicator{
 	position:absolute;
 	top:35%;
@@ -420,4 +430,34 @@ html .ui-page-theme-a .ui-btn.ui-btn-active, html .ui-bar-a .ui-btn.ui-btn-activ
     25%  {right:3px;}
     50%  {right:0px;}
     100% {right:0px;}
+}
+/* Chrome, Safari, Opera */
+@-webkit-keyframes changeState {
+    0%   {background-color:#E68A8A;}
+    25%  {background-color:#C3AC8A;}
+    50%  {background-color:#ACC38A;}
+    100% {background-color:#8AE68A;}
+}
+
+/* Standard syntax */
+@keyframes rightArrow changeState{
+    0%   {background-color:#E68A8A;}
+    25%  {background-color:#C3AC8A;}
+    50%  {background-color:#ACC38A;}
+    100% {background-color:#8AE68A;}
+}
+/* Chrome, Safari, Opera */
+@-webkit-keyframes removeState {
+    0%   {background-color:#8AE68A;}
+    25%  {background-color:#ACC38A;}
+    50%  {background-color:#C3AC8A;}
+    100% {background-color:#E68A8A;}
+}
+
+/* Standard syntax */
+@keyframes rightArrow removeState{
+    0%   {background-color:#8AE68A;}
+    25%  {background-color:#ACC38A;}
+    50%  {background-color:#C3AC8A;}
+    100% {background-color:#E68A8A;}
 }

@@ -30,6 +30,9 @@
 	{{#each this.clases}}
 		{{#.}}
     	<li id="clase-li-{{this.id}}" class="ejecucion-clase-{{this.ejecucion}}" data-icon="false" data-idref="{{this.id}}">
+            <div class="swipeIndicator">
+                <span></span>
+            </div>
             <div class="col-90">
                 <h3>{{this.nombre}}</h3>
                 <p>

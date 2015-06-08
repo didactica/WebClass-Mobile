@@ -132,7 +132,51 @@ Clase.prototype.initWithJson = function(json,callback){
 }
 Clase.prototype.selectById = function(callback){
     var self = this;
-    var query = "SELECT * FROM clase WHERE id='"+this.id+"'";
+    var query = 
+        "SELECT " + 
+        "   c.*, u.nombre_usuario " + 
+        " FROM " + 
+        " (" + 
+        "   SELECT " + 
+        "       c2.*, " + 
+        "       s.nombre as sectorNombre " + 
+        "   FROM " + 
+        "   (" + 
+        "       SELECT" + 
+        "           c3.*," + 
+        "           n.nombre as nivelNombre" + 
+        "       FROM" + 
+        "       (" + 
+        "           SELECT " + 
+        "               c1.*," + 
+        "               u.nombre as unidadNombre, " + 
+        "               u.usuario as unidadUsuario, " + 
+        "               u.sector as unidadSector," + 
+        "               u.nivel as unidadNivel" + 
+        "           FROM " + 
+        "               clase c1 " + 
+        "           LEFT JOIN " + 
+        "               unidad u " + 
+        "           ON " + 
+        "               c1.unidad = u.id  " + 
+        "           WHERE " + 
+        "               c1.id='"+self.id+"'" + 
+        "       ) c3" + 
+        "       LEFT JOIN" + 
+        "           nivel n" + 
+        "       ON" + 
+        "           c3.unidadNivel=n.id" + 
+        "   ) c2 " + 
+        "   LEFT JOIN " + 
+        "       sector s " + 
+        "   ON " + 
+        "       c2.unidadSector=s.id" + 
+        " ) c " + 
+        " LEFT JOIN " + 
+        "   usuario u " + 
+        " ON " + 
+        "   c.profesor=u.id;";
+    console.log(query);
     this.tx.executeSql(
         query,
         [],
@@ -153,7 +197,7 @@ Clase.prototype.selectById = function(callback){
         },
         function(tx,error){
             console.log("Error en select de Clase");
-            console.dir(error);
+            console.dir(error.message);
         }
     );
 }

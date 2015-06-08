@@ -51,6 +51,12 @@
 *   arreglo vacio cuando no existe una regla para la vista cargada.
 * - compileTemplate(page): buscar el template y compila la vista, pasando el
 *   objeto global para tener los datos a mostrar.
+* TENER CUIDADO CON:
+* - La aplicación está pensada para funcionar con o sin internet, por lo que 
+*   cualquier join que se haga al seleccionar valores de la base de datos debe
+*   ser del tipo left join para que llene con null en el caso de no encontrar
+*   la referencia, y luego dentro del codigo delegar al modelo la busqueda de
+*   ese usuario y grabarlo en la base de datos para uso futuro.
 */
 include('js/SQLHelper.js');
 include('model/Evento.js');
@@ -354,6 +360,7 @@ function backButton(){
 function refreshWidgets(page){
     $("#nav-header").show();
     $("#backButton").show();
+    $("#nav-more").hide();
     $(".ui-page").trigger('create');
     $( document ).on("swipeleft",function(ev){
         console.log("swipe detected!");
@@ -365,6 +372,34 @@ function refreshWidgets(page){
     switch(page){
         case 'unidad':
             $("#clases").listview();
+            $("#nav-more").show();
+            $(".more-item").off("click");
+            $(".more-item").on("click",function(ev){
+                var rel = $(this).attr('href');
+                console.log(rel);
+                rel = rel.substring(1);
+                var id = elements.id;
+                switch(rel){
+                    case 'ver':
+                        setUpDatabase();
+                        sql.transaction(
+                            function(tx){
+                                var plan = new Planificacion(tx,id,function(){
+                                    lastObject.push(elements);
+                                    elements = plan;
+                                    loadPage('verunidad');
+                                });
+                            },
+                            function(error){
+                                console.log("Transaction error: " + error.message );
+                                navigator.notification.alert('No se pudo abrir la planificacion seleccionada.',null,'Error','Aceptar');
+                            }
+                        );
+                        break;
+                    case 'eliminar':
+                        break;
+                }
+            });
             $(".ver-clase").off("click");
             $(".ver-clase").on("click",function(ev){
                 ev.preventDefault();
@@ -442,6 +477,7 @@ function refreshWidgets(page){
                 sql.transaction(
                     function(tx){
                         var plan = new Planificacion(tx,id,function(){
+                            lastObject.push(elements);
                             elements = plan;
                             loadPage('unidad');
                         });
@@ -892,24 +928,38 @@ function normalize(str){
     str = str.toLowerCase();
     return str;
 }
+var changing = false;
 function changeEjecucionClase(id,direction){
     var cont = $("#clase-li-"+id);
     var updateValue = 0;
-    if(direction==="right"){
-        cont.removeClass('ejecucion-clase-0');
-        cont.addClass('ejecucion-clase-1');
-        updateValue = 1;
-    }
-    if(direction==="left"){
-        cont.removeClass('ejecucion-clase-1');
-        cont.addClass('ejecucion-clase-0');
-    }
-    sql.transaction(function(tx){
-        var c = new Clase(tx,id,function(){
-            c.ejecucion = updateValue;
-            c.insert();
+    if(!changing){
+        changing=true;
+        if( (direction==="right") && (cont.hasClass("ejecucion-clase-0")) ){
+            cont.addClass('changeState');
+            cont.removeClass('ejecucion-clase-0');
+            cont.addClass('ejecucion-clase-1');
+            window.setTimeout(function(){
+                cont.removeClass('changeState');
+                changing = false;
+            },900);
+            updateValue = 1;
+        }
+        if( (direction==="left") && (cont.hasClass("ejecucion-clase-1")) ){
+            cont.addClass('removeState');
+            cont.removeClass('ejecucion-clase-1');
+            cont.addClass('ejecucion-clase-0');
+            window.setTimeout(function(){
+                cont.removeClass("removeState");
+                changing = false;
+            },900);
+        }
+        sql.transaction(function(tx){
+            var c = new Clase(tx,id,function(){
+                c.ejecucion = updateValue;
+                c.insert();
+            });
         });
-    });
+    }
 }
 /*
 (function(){

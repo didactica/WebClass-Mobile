@@ -24,10 +24,21 @@
                     <li><a href="#" id="btn-logout"><i class="fa fa-sign-out"></i> Cerrar Sesi&oacute;n</a></li>
                 </ul>
             </div>
-            <div id="nav-header" data-role="header" data-position="fixed" class="">
+            <div id="nav-header" data-role="header" data-position="fixed" class="ui-bar">
                 <a href="#" id="backButton"><i class="fa fa-angle-left"></i></a>
                 <h1 id="header-title">Web Class</h1>
-                <a href="#menu_lateral" class="ui-btn ui-btn-icon-notext ui-corner-all ui-btn-right" data-role="button" data-mini="true"><i class="fa fa-bars"></i></a>
+                <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">
+                    <a id="nav-more" href="#more" data-rel="popup" data-transition="appear">
+                        <i class="fa fa-ellipsis-v"></i>
+                    </a>
+                    <div data-role="popup" id="more" data-theme="b">
+                        <ul data-role="listview" data-inset="true" style="min-width:180px;">
+                            <li data-icon="false"><a href="#ver" class="more-item">Ver</a></li>
+                            <li data-icon="false"><a href="#eliminar" class="more-item">Eliminar</a></li>
+                        </ul>
+                    </div>
+                    <a href="#menu_lateral"><i class="fa fa-bars"></i></a>
+                </div>
             </div>
             <div  id="contenido" data-role="content">
                 <div id="logoSplash" class="logo">
