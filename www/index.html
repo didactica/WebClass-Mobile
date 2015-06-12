@@ -17,7 +17,7 @@
     </head>
     <body>
         <div id="document-page" data-role="page" data-theme="a">
-            <div data-role="panel" id="menu_lateral" data-position="right" data-display="push" data-position-fixed="true">
+            <div data-role="panel" id="menu_lateral" data-position="right" data-display="reveal" data-position-fixed="true">
                 <ul data-role="listview">
                     <li><a href="#" data-transition="slide" class="menuItem" template="home"><i class="fa fa-home"></i> Home</a></li>
                     <li><a href="#" data-transition="slide" class="menuItem" template="planificacion"><i class="fa fa-calendar"></i> Planificación</a></li>
@@ -25,19 +25,14 @@
                 </ul>
             </div>
             <div id="nav-header" data-role="header" data-position="fixed" class="ui-bar">
-                <a href="#" id="backButton"><i class="fa fa-angle-left"></i></a>
+                <span id="backButton" class="fa-stack">
+                    <i class="fa fa-circle-o fa-stack-2x"></i>
+                    <i class="fa fa-arrow-left fa-stack-1x"></i>
+                </span>
                 <h1 id="header-title">Web Class</h1>
-                <div data-role="controlgroup" data-type="horizontal" class="ui-mini ui-btn-right">
-                    <a id="nav-more" href="#more" data-rel="popup" data-transition="appear">
-                        <i class="fa fa-ellipsis-v"></i>
-                    </a>
-                    <div data-role="popup" id="more" data-theme="b">
-                        <ul data-role="listview" data-inset="true" style="min-width:180px;">
-                            <li data-icon="false"><a href="#ver" class="more-item">Ver</a></li>
-                            <li data-icon="false"><a href="#eliminar" class="more-item">Eliminar</a></li>
-                        </ul>
-                    </div>
-                    <a href="#menu_lateral"><i class="fa fa-bars"></i></a>
+                <div data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
+                    <span class="header-btn" href="#more" id="nav-more"><center><i class="fa fa-ellipsis-v fa-2x"></i></center></span>
+                    <span class="header-btn" id="btn-menu_lateral"><center><i class="fa fa-bars fa-2x"></i></center></span>
                 </div>
             </div>
             <div  id="contenido" data-role="content">

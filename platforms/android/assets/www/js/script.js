@@ -254,7 +254,6 @@ function functions(title,callback){
                     for(var id in tmp[today]){
                         elements.eventos.push(tmp[today][id]);
                     }
-                    console.log(JSON.stringify(elements));
                     callback();
                 },
                 function(tx,error){
@@ -305,6 +304,9 @@ function setTitle(page){
         case 'unidad':
             title = elements.nombre;
             break;
+        case 'verunidad':
+            title = elements.nombre;
+            break;
         default:
             if( typeof elements.title != 'undefined' ){
                 title = elements.title;
@@ -327,126 +329,181 @@ function setTitle(page){
     $("#header-title").html(title);
 }
 function backButton(){
-    if(historyStack.length>1){
-        $.mobile.loading('show').promise().done(function(){
-            historyStack.pop();
-            var last = historyStack.pop();
-            if(typeof last != 'undefined'){
-                if(lastObject.length>0){
-                    elements = lastObject.pop();
-                }
-                loadPage(last);
-            }
-        });
+    if( $( ".ui-page" ).jqmData( "panel" ) === "open" ){
+        $("#menu_lateral").panel('close');
+    } else if( $("#menu-moreover").length>0 ) {
+        $("#menu-moreover").remove();
     } else {
-        if(!alertUp){
-            alertUp = true;
-            navigator.notification.confirm(
-                '¿Seguro desea salir de la aplicación?',
-                function(index){
-                    alertUp = false;
-                    switch(index){
-                        case 2:
-                            navigator.app.exitApp();
-                            break;
+        if(historyStack.length>1){
+            $.mobile.loading('show').promise().done(function(){
+                historyStack.pop();
+                var last = historyStack.pop();
+                if(typeof last != 'undefined'){
+                    if(lastObject.length>0){
+                        elements = lastObject.pop();
                     }
-                },
-                'Salir',
-                ['Cancelar','Aceptar']
-            );
+                    loadPage(last);
+                }
+            });
+        } else {
+            if(!alertUp){
+                alertUp = true;
+                navigator.notification.confirm(
+                    '¿Seguro desea salir de la aplicación?',
+                    function(index){
+                        alertUp = false;
+                        switch(index){
+                            case 2:
+                                navigator.app.exitApp();
+                                break;
+                        }
+                    },
+                    'Salir',
+                    ['Cancelar','Aceptar']
+                );
+            }
         }
     }
 }
+var menuOpen = false;
+var changing = false;
 function refreshWidgets(page){
     $("#nav-header").show();
     $("#backButton").show();
     $("#nav-more").hide();
     $(".ui-page").trigger('create');
     $( document ).on("swipeleft",function(ev){
-        console.log("swipe detected!");
         if( $( ".ui-page" ).jqmData( "panel" ) !== "open" ){
-            console.log('menu cerrado')
             $("#menu_lateral").panel('open');
         }
     });
     switch(page){
         case 'unidad':
+            $('html').off("click");
+            $("html").on("click",function(e){
+                var x;
+                var y;
+                if (e.pageX || e.pageY) { 
+                  x = e.pageX;
+                  y = e.pageY;
+                }
+                else { 
+                  x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft; 
+                  y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop; 
+                } 
+                var menu = document.getElementById('menu-moreover');
+                if(menu != null){
+                    x -= menu.offsetLeft;
+                    y -= menu.offsetTop;
+                    xf = $(menu).width()-(x-15);
+                    yf = $(menu).height()-(y-15);
+                    if(x<0||y<0||xf<0||yf<0){
+                        $(menu).remove();
+                    }
+                }
+            });
             $("#clases").listview();
-            $("#nav-more").show();
-            $(".more-item").off("click");
-            $(".more-item").on("click",function(ev){
-                var rel = $(this).attr('href');
-                console.log(rel);
-                rel = rel.substring(1);
-                var id = elements.id;
-                switch(rel){
-                    case 'ver':
-                        setUpDatabase();
-                        sql.transaction(
-                            function(tx){
-                                var plan = new Planificacion(tx,id,function(){
-                                    lastObject.push(elements);
-                                    elements = plan;
-                                    loadPage('verunidad');
+            $("#clases .menu").each(function(k,v){
+                $(v).on("click",function(evt){
+                    var dom = v;
+                    var id = $(v).attr("href");
+                    id = id.substring(1);
+                    var menu = [
+                        {
+                            text:'Ver',
+                            rel:'',
+                            anchor:'#',
+                            action:function(){
+                                sql.transaction(function(tx){
+                                    var clase = new Clase(tx,id,function(){
+                                        lastObject.push(elements);
+                                        elements = clase;
+                                        loadPage('clase');
+                                    });
                                 });
-                            },
-                            function(error){
-                                console.log("Transaction error: " + error.message );
-                                navigator.notification.alert('No se pudo abrir la planificacion seleccionada.',null,'Error','Aceptar');
                             }
-                        );
-                        break;
-                    case 'eliminar':
-                        break;
-                }
-            });
-            $(".ver-clase").off("click");
-            $(".ver-clase").on("click",function(ev){
-                ev.preventDefault();
-                var id = $(this).attr('href');
-                $.mobile.loading('show');
-                $("#popupMenu"+id).popup('close').promise().done(function(){
-                    setTimeout(function(){
-                        sql.transaction(function(tx){
-                            var clase = new Clase(tx,id,function(){
-                                lastObject.push(elements);
-                                elements = clase;
-                                loadPage('clase');
-                            });
-                        });
-                    },500);
-                });
-            });
-            $(document).off("swipeleft");
-            /*$("select.switch-clases").on("change",function(ev){
-                var id = $(this).attr('id');
-                var cont = $("#clase-li-"+id);
-                if(cont.hasClass('ejecucion-clase-0')){
-                    cont.removeClass('ejecucion-clase-0');
-                    cont.addClass('ejecucion-clase-1');
-                } else {
-                    cont.removeClass('ejecucion-clase-1');
-                    cont.addClass('ejecucion-clase-0');
-                }
-                sql.transaction(function(tx){
-                    var c = new Clase(tx,id,function(){
-                        if( c.ejecucion===1 ){
-                            c.ejecucion = 0;
-                        } else {
-                            c.ejecucion = 1;
+                        },
+                        {
+                            text:'Eliminar',
+                            rel:'',
+                            anchor:'#',
+                            action:function(){
+                                var c = confirm('Seguro desea eliminar el elemento seleccionado?');
+                                if(c){
+                                    alert('Borrado! (No realmente xDD)');
+                                }
+                            }
+                        },
+                        {
+                            text:'Tarea',
+                            rel:'',
+                            anchor:'#',
+                            action:function(){
+                                alert('tarea!');
+                            }
                         }
-                        c.insert();
-                    });
+                    ]
+                    createMenu(menu,1,dom);
                 });
             });
-            //*/
-            $("#clases li").on("swiperight",function(){
-                var id = $(this).attr('data-idref');
-                changeEjecucionClase(id,"right");
+            $("#nav-more").show();
+            $("#nav-more").off("click");
+            $("#nav-more").on("click",function(evt){
+                var id = elements.id;
+                var data = [
+                    {
+                        text:'Ver',
+                        rel:'',
+                        anchor:'#',
+                        action : function(){
+                            setUpDatabase();
+                            sql.transaction(
+                                function(tx){
+                                    var plan = new Planificacion(tx,id,function(){
+                                        lastObject.push(elements);
+                                        elements = plan;
+                                        loadPage('verunidad');
+                                    });
+                                },
+                                function(error){
+                                    console.log("Transaction error: " + error.message );
+                                    navigator.notification.alert('No se pudo abrir la planificacion seleccionada.',null,'Error','Aceptar');
+                                }
+                            );
+                        }
+                    },
+                    {
+                        text:'Eliminar',
+                        rel:'',
+                        anchor:'#',
+                        action:function(){
+                            var c = confirm('Seguro desea eliminar el elemento seleccionado?');
+                            if(c){
+                                alert('Borrado! (No realmente xDD)');
+                            }
+                        }
+                    }
+                ];
+                createMenu(data);
             });
-            $("#clases li").on("swipeleft",function(){ 
-                var id = $(this).attr('data-idref');
-                changeEjecucionClase(id,"left"); 
+            //$(document).off("swipeleft");
+            $("#clases li").on("touchstart",function(ev){
+                go = false;
+                changing = true;
+                document.addEventListener("touchmove", prevent, false);
+                var touch = ev.originalEvent.touches[0];
+                touchOffsetX = touch.pageX;
+                touchOffsetY = touch.pageY;
+            });
+            $("#clases li").on("touchmove",slideUnlock);
+            $("#clases li").on("touchend",function(ev){
+                stop(ev.originalEvent);
+                changing = false;
+                $(this).find('.active').animate({left:'0'});   
+                /*
+                if(!changing){
+                    $(this).find('.active').animate({left:'0'});
+                }//*/
             });
             break;
         case 'planificacion':
@@ -584,6 +641,15 @@ function setListeners(){
         ev.preventDefault();
         logout();
     });
+    $("#btn-menu_lateral, #btn-menu_lateral i").off("click");
+    $("#btn-menu_lateral, #btn-menu_lateral i").on("click",function(ev){
+        $("#menu_lateral").panel('open');
+    });
+    /*
+    $(window).on("click",function(ev){
+        console.log(ev.target);
+    });
+    //*/
 }
 function login()
 {
@@ -854,7 +920,7 @@ function setRadialPercentageAnimated(id,percentage){
     // line color
     context.strokeStyle = gradiente;
     context.stroke();
-    curPerc += 3;
+    curPerc += 1;
     if(curPerc>percentage*100){
         curPerc = percentage*100;
     }
@@ -928,39 +994,167 @@ function normalize(str){
     str = str.toLowerCase();
     return str;
 }
-var changing = false;
-function changeEjecucionClase(id,direction){
-    var cont = $("#clase-li-"+id);
-    var updateValue = 0;
-    if(!changing){
-        changing=true;
-        if( (direction==="right") && (cont.hasClass("ejecucion-clase-0")) ){
-            cont.addClass('changeState');
-            cont.removeClass('ejecucion-clase-0');
-            cont.addClass('ejecucion-clase-1');
-            window.setTimeout(function(){
-                cont.removeClass('changeState');
-                changing = false;
-            },900);
-            updateValue = 1;
+function createMenu(items,direction,trigger){
+    // http://jsperf.com/adding-html-via-js <-- razón por la que no se usa innerHTML
+    // segun mediciones este menu anda hasta 3 veces mas rapido que el hecho con jquery mobile o con texto
+    var success = true;
+    if( typeof direction === 'undefined' ){
+        direction = 1;
+    }
+    if(direction>1){
+        direction = 1;
+    }
+    if(direction<0){
+        direction = 0;
+    }
+    if( $("#menu-moreover").length !== 0 ){
+        $("#menu-moreover").remove();
+    }
+    if(typeof trigger === 'undefined'){
+        trigger = document.getElementById("nav-more");
+    }
+    if(typeof trigger === 'string'){
+        trigger = document.getElementById(trigger);
+    }
+    try{
+        var menu = document.createElement("ul");
+        var rel = document.createAttribute("data-role");
+        menu.id = "menu-moreover";
+        menu.className = "menu-flotante";
+        rel.value = "listview";
+        menu.setAttributeNode(rel);
+        if( typeof items === "object" ){
+            for(var i in items){
+                if( typeof items[i] === "object" ){
+                    var cur = items[i];
+                    var item = document.createElement("li");
+                    var anchor = document.createElement("a");
+                    var itemRel = document.createAttribute("data-rel");
+                    anchor.setAttribute("href","#"+cur.anchor);
+                    anchor.appendChild(document.createTextNode(cur.text));
+                    item.appendChild(anchor);
+                    itemRel.value = cur.rel;
+                    item.setAttributeNode(itemRel);
+                    item.addEventListener("click",cur.action);
+                    item.addEventListener("click",function(){
+                        $("#menu-moreover").hide();
+                    })
+                    menu.appendChild(item);
+                } else {
+                    success = false;
+                    console.log("Los items del menu tienen un formato inválido.");
+                }
+            }
+        } else {
+            success = false;
+            console.log("Los items del menu tienen un formato inválido.");
         }
-        if( (direction==="left") && (cont.hasClass("ejecucion-clase-1")) ){
-            cont.addClass('removeState');
-            cont.removeClass('ejecucion-clase-1');
-            cont.addClass('ejecucion-clase-0');
-            window.setTimeout(function(){
-                cont.removeClass("removeState");
-                changing = false;
-            },900);
-        }
-        sql.transaction(function(tx){
-            var c = new Clase(tx,id,function(){
-                c.ejecucion = updateValue;
-                c.insert();
+    }catch(ex){
+        console.log(ex);
+        success = false;
+    } finally {
+        if(!success){
+            return false;
+        } else {
+            document.body.appendChild(menu);
+            var menuDom = $("#menu-moreover");
+            menuDom.listview();
+            var offset = menuDom.width()*direction;
+            var rect = trigger.getBoundingClientRect();
+            var rightVal = document.body.getBoundingClientRect().right - ( document.body.getBoundingClientRect().right - rect.right + rect.width/2 );
+            menuDom.css({
+                left    : (rightVal-offset),
+                top     : ($(trigger).offset().top+$(trigger).height()/2),
+                display : 'block !important'
             });
-        });
+            menuOpen = true;
+        }
     }
 }
+function getPosition(element) {
+    var xPosition = 0;
+    var yPosition = 0;
+      
+    while (element) {
+        xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
+        yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
+        element = element.offsetParent;
+    }
+    return { x: xPosition, y: yPosition };
+}
+
+var touchOffsetX = 0;
+var touchOffsetY = 0;
+var go = false;
+var changing = false;
+function slideUnlock(ev){   
+    var touch = ev.originalEvent.touches[0];
+    var displacement = touch.pageX;
+    var xDisp = touch.pageX - touchOffsetX;
+    var yDisp = touch.pageY - touchOffsetY;
+    if( !go ){
+        // el primer evento va a ser descartado para poder determinar si es hacia el lado o hacia arriba.
+        if( Math.abs(xDisp) > Math.abs(yDisp) ){
+            go = true;
+        } else {
+            stop(ev.originalEvent);
+        }
+    } else {
+        if( changing ){
+            if( displacement-touchOffsetX > 120 ){
+                changing = false;
+                var id = $(this).attr('data-idref');
+                var ejecucion = 0;
+                var li = $(this);
+                var current = li.find('.active');
+                if(current.hasClass('ejecucion-clase-0')){
+                    var newVal = 1;
+                } else {
+                    var newVal = 0;
+                }
+                current.animate({left:1000},{
+                    complete:function(){
+                        changeEjecucionClase(id,newVal);
+                        if(newVal){
+                            li.find('.ejecucion-clase-1').addClass('active');
+                        } else {
+                            li.find('.ejecucion-clase-0').addClass('active');
+                        }
+                        current.removeClass('active');
+                        current.css({zIndex:1,left:0})
+                    }
+                    //li.on("touchmove",slideUnlock);
+                });
+            } else if(displacement-touchOffsetX>=0) {
+                $(this).find('.active').css({left:displacement-touchOffsetX});
+            }
+        }
+    }
+}
+function changeEjecucionClase(id,newVal){
+    var cont = $("#clase-li-"+id);
+    if( typeof newVal === 'undefined' ){
+        newVal = 0;
+    }
+    sql.transaction(
+        function(tx){
+            var c = new Clase(tx,id,function(){
+                c.ejecucion = newVal;
+                c.insert();
+            });
+        },
+        function(arg0){
+            console.log(arg0);
+        }
+    );
+}
+function prevent(e){
+    e.preventDefault();
+}
+function stop(e){
+    document.removeEventListener("touchmove", prevent, false);
+}
+
 /*
 (function(){
   var cache = {};

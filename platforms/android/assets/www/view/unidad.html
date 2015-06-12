@@ -29,10 +29,9 @@
 	<ul id="clases" data-role="listview" data-inset="false">
 	{{#each this.clases}}
 		{{#.}}
-    	<li id="clase-li-{{this.id}}" class="ejecucion-clase-{{this.ejecucion}}" data-icon="false" data-idref="{{this.id}}">
-            <div class="swipeIndicator">
-                <span></span>
-            </div>
+    	<li id="clase-li-{{this.id}}" data-icon="false" data-idref="{{this.id}}">
+            <div class="background-clase ejecucion-clase-1 {{#if this.ejecucion}}active {{else}} {{/if}}"></div>
+            <div class="background-clase ejecucion-clase-0 {{#if this.ejecucion}} {{else}}active {{/if}}"></div>
             <div class="col-90">
                 <h3>{{this.nombre}}</h3>
                 <p>
@@ -41,16 +40,9 @@
                 </p>
             </div>
             <div class="col-10 menu-container">
-                <a href="#popupMenu{{this.id}}" class="menu" data-rel="popup" data-transition="appear">
+                <a href="#{{this.id}}" class="menu">
                     <i class="fa fa-ellipsis-v fa-2x pull-right"></i>
                 </a>
-                <div data-role="popup" id="popupMenu{{this.id}}" data-theme="b">
-                    <ul data-role="listview" data-inset="true" style="min-width:180px;">
-                        <li data-icon="false"><a href="{{this.id}}" class="ver-clase">Ver</a></li>
-                        <li data-icon="false"><a href="{{this.id}}" class="eliminar-clase">Eliminar</a></li>
-                        <li data-icon="false"><a href="{{this.id}}" class="tarea-clase">Tarea{{#if this.tareaAmount}}({{this.tareaAmount}}){{/if}}</a></li>
-                    </ul>
-                </div>
             </div>
         </li>
     	{{/.}}

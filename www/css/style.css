@@ -27,7 +27,12 @@ body,html{
 .ui-li-static.ui-collapsible > .ui-collapsible-content {
     border-bottom-width: 0;
 }
-html .ui-body-a, html .ui-page-theme-a .ui-body-inherit, html .ui-bar-a .ui-body-inherit, html .ui-body-a .ui-body-inherit, html body .ui-group-theme-a .ui-body-inherit, html .ui-panel-page-container-a{
+html .ui-body-a,
+html .ui-page-theme-a .ui-body-inherit,
+html .ui-bar-a .ui-body-inherit,
+html .ui-body-a .ui-body-inherit,
+html body .ui-group-theme-a .ui-body-inherit,
+html .ui-panel-page-container-a{
 	border-color:#afafaf;
 }
 .hidden{
@@ -326,6 +331,11 @@ canvas.radialLoader{
 	line-height: 2.2em;
 	color:#000;
 }
+#clases li div{
+	z-index:11;
+	position:relative;
+	background:transparent;
+}
 .ejecucion-clase-0, .ejecucion-clase-0:visited, .ejecucion-clase-0 a{
 	background-color:#E68A8A !important;
 }
@@ -397,10 +407,89 @@ canvas.radialLoader{
 .ui-flipswitch.ui-flipswitch-active{
 	width:5.875em !important;
 }
-html .ui-page-theme-a .ui-btn.ui-btn-active, html .ui-bar-a .ui-btn.ui-btn-active, html .ui-body-a .ui-btn.ui-btn-active, html body .ui-group-theme-a .ui-btn.ui-btn-active, html body .ui-btn.ui-btn-a.ui-btn-active, html .ui-page-theme-a .ui-flipswitch-active, html .ui-bar-a .ui-flipswitch-active, html .ui-body-a .ui-flipswitch-active, html body .ui-group-theme-a .ui-flipswitch-active, html body .ui-flipswitch.ui-bar-a.ui-flipswitch-active, html .ui-page-theme-a .ui-slider-track .ui-btn-active, html .ui-bar-a .ui-slider-track .ui-btn-active, html .ui-body-a .ui-slider-track .ui-btn-active, html body .ui-group-theme-a .ui-slider-track .ui-btn-active, html body div.ui-slider-track.ui-body-a .ui-btn-active{
+html .ui-page-theme-a .ui-btn.ui-btn-active,
+html .ui-bar-a .ui-btn.ui-btn-active,
+html .ui-body-a .ui-btn.ui-btn-active,
+html body .ui-group-theme-a .ui-btn.ui-btn-active,
+html body .ui-btn.ui-btn-a.ui-btn-active,
+html .ui-page-theme-a .ui-flipswitch-active,
+html .ui-bar-a .ui-flipswitch-active,
+html .ui-body-a .ui-flipswitch-active,
+html body .ui-group-theme-a .ui-flipswitch-active,
+html body .ui-flipswitch.ui-bar-a.ui-flipswitch-active,
+html .ui-page-theme-a .ui-slider-track .ui-btn-active,
+html .ui-bar-a .ui-slider-track .ui-btn-active,
+html .ui-body-a .ui-slider-track .ui-btn-active,
+html body .ui-group-theme-a .ui-slider-track .ui-btn-active,
+html body div.ui-slider-track.ui-body-a .ui-btn-active{
 	background-color: inherit;
 	border: none;
 }
+.menu-flotante{
+	position:absolute;
+	z-index:1000;
+	width:50%;
+	list-style: none;
+	background-color:rgba(0,0,0,0.8);
+	color:#FFFFFF;
+	right:-15%;
+	top:10%;
+}
+.menu-flotante a, .menu-flotante a:visited{
+	color:#D8D8D8;
+}
+#nav-header{
+	height:3em;
+	background: rgba(0, 0, 0, 0) linear-gradient(91deg, rgb(32, 138, 212) 0%, rgb(38, 174, 223) 70%) repeat scroll 0 0 !important;
+}
+html .ui-page-theme-a .ui-btn, 
+html .ui-bar-a .ui-btn, 
+html .ui-body-a .ui-btn, 
+html body .ui-group-theme-a .ui-btn, 
+html body .ui-btn.ui-btn-a, 
+html .ui-page-theme-a .ui-btn:visited, 
+html .ui-bar-a .ui-btn:visited, 
+html .ui-body-a .ui-btn:visited, 
+html body .ui-group-theme-a .ui-btn:visited, 
+html body .ui-btn.ui-btn-a:visited{
+	background-color:rgb(32, 138, 212);
+	border:none !important;
+}
+html .ui-page-theme-a .ui-btn:hover,
+html .ui-bar-a .ui-btn:hover,
+html .ui-body-a .ui-btn:hover,
+html body .ui-group-theme-a .ui-btn:hover,
+html body .ui-btn.ui-btn-a:hover{
+	background: rgb(38, 174, 223);
+	border:none;
+}
+#backButton{
+	position:absolute;
+	top:.54em;
+	left:.4em;
+	line-height:1.9em;
+	font-weight: normal;
+}
+.header-btn{
+	width: 3em;
+	height: 3em;
+	line-height: 4em;
+	display: block;
+	float: left;
+	font-weight: bolder;
+}
+.background-clase{
+	position:absolute !important;
+	z-index:1 !important;
+	width:100%;
+	height:100%;
+	left:0;
+	box-shadow: -1px 0px 14px #666;
+}
+.background-clase.active{
+	z-index:10 !important;
+}
+/* DE ACA PARA ABAJO SOLO ANIMACIONES, KEYFRAMES, ETC */
 /* Chrome, Safari, Opera */
 @-webkit-keyframes leftArrow {
     0%   {left:0px;}

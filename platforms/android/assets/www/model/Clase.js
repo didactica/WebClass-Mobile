@@ -176,7 +176,6 @@ Clase.prototype.selectById = function(callback){
         "   usuario u " + 
         " ON " + 
         "   c.profesor=u.id;";
-    console.log(query);
     this.tx.executeSql(
         query,
         [],
