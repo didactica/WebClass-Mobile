@@ -1087,7 +1087,9 @@ var touchOffsetX = 0;
 var touchOffsetY = 0;
 var go = false;
 var changing = false;
-function slideUnlock(ev){   
+function slideUnlock(ev){
+    // METODO GRAFICO
+    var li = $(this);
     var touch = ev.originalEvent.touches[0];
     var displacement = touch.pageX;
     var xDisp = touch.pageX - touchOffsetX;
@@ -1101,11 +1103,11 @@ function slideUnlock(ev){
         }
     } else {
         if( changing ){
-            if( displacement-touchOffsetX > 120 ){
+            console.log(li.width()/2);
+            if( displacement-touchOffsetX > li.width()/2 ){
                 changing = false;
                 var id = $(this).attr('data-idref');
                 var ejecucion = 0;
-                var li = $(this);
                 var current = li.find('.active');
                 if(current.hasClass('ejecucion-clase-0')){
                     var newVal = 1;
@@ -1132,6 +1134,7 @@ function slideUnlock(ev){
     }
 }
 function changeEjecucionClase(id,newVal){
+    // METODO FUNCIONAL
     var cont = $("#clase-li-"+id);
     if( typeof newVal === 'undefined' ){
         newVal = 0;

@@ -57,7 +57,7 @@ Usuario.prototype.insert = function(vals){
         console.log(error.message);
     });
 }
-Usuario.prototype.fetchUser = function(id){
+Usuario.prototype.fetchUser = function(id,errorCallback){
     var user_name;
     if( (typeof navigator.connection !='undefined') && (navigator.connection.type!=Connection.NONE) ){
         $.ajax({
@@ -74,6 +74,7 @@ Usuario.prototype.fetchUser = function(id){
             },
             error:function(res,err){
                 console.log(JSON.stringify(res),JSON.stringify(err));
+                errorCallback
             }
         });
     } else {
