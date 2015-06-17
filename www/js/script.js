@@ -440,7 +440,7 @@ function refreshWidgets(page){
                         sql.transaction(
                             function(tx){
                                 elements.alumnos = [];
-                                var query = "SELECT * FROM alumno a LEFT JOIN usuario u ON a.alumno=u.id WHERE a.curso="+curso;
+                                var query = "SELECT * FROM alumno a LEFT JOIN usuario_detalle u ON a.alumno=u.idusuario WHERE a.curso="+curso;
                                 console.log(query);
                                 tx.executeSql(
                                     query,

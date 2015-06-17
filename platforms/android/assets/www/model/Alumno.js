@@ -63,7 +63,7 @@ Alumno.prototype.getAsistencia = function(mes)
 }
 Alumno.prototype.selectById = function(callback)
 {
-    var query = "SELECT * FROM alumno a LEFT JOIN usuario u ON a.alumno=u.id WHERE a.id='"+this.id+"'";
+    var query = "SELECT * FROM alumno a LEFT JOIN usuario_detalle u ON a.alumno=u.idusuario WHERE a.id='"+this.id+"'";
     var self = this;
     this.tx.executeSql(
         query,
