@@ -66,6 +66,10 @@ include('model/Clase.js');
 include('model/Nivel.js');
 include('model/Sector_Grupo.js');
 include('model/Usuario.js');
+include('model/Alumno.js');
+include('model/Asistencia.js');
+include('model/Curso.js');
+include('model/DetalleUsuario.js');
 
 document.addEventListener("deviceready",onDeviceReady,false);
 document.addEventListener("backbutton",backButton, false);
@@ -141,6 +145,49 @@ function setUpDatabase(){
 }
 function functions(title,callback){
     switch(title){
+        case 'lista-asistencia':
+            callback();
+            break;
+        case 'asistencia':
+            var d = new Date();
+            var y = d.getFullYear();
+            var tmp = months;
+            tmp.splice(0,1);
+            elements.months = [];
+            for(var k in tmp){
+                var monthNumber = parseInt(k)+1;
+                if(monthNumber<10){
+                    monthNumber = '0'+monthNumber;
+                } else {
+                    monthNumber = String(monthNumber);
+                }
+                var curr = {'key':monthNumber+'-'+y,'month':months[k]};
+                elements.months.push(curr);
+            }
+            setUpDatabase();
+            sql.transaction(
+                function(tx){
+                    tx.executeSql(
+                        "SELECT nombre,MAX(id) as id FROM curso GROUP BY nombre",
+                        [],
+                        function(tx,res){
+                            elements.cursos = [];
+                            if( res && res.rows && res.rows.length>0 ){
+                                for(var i = 0; i<res.rows.length; i++){
+                                    var curObj = res.rows.item(i);
+                                    elements.cursos.push({'label':curObj.nombre,'value':curObj.id})
+                                }
+                            }
+                            callback();
+                        },
+                        function(tx,err){
+                            console.log(JSON.stringify(err.message));
+                            callback();
+                        }
+                    );
+                }
+            );
+            break;
         case 'planificacion':
             if( (typeof where == 'undefined') || (where==null) || (where.length==0) ){
                 where = "1=1";
@@ -291,6 +338,7 @@ function loadPage(page){
             setTitle(page);
             $("#contenido").html(compileTemplate(page));
             $.mobile.loading('hide');
+            console.log("After loading: " + JSON.stringify(elements));
             refreshWidgets(page);
             setListeners();
         });
@@ -378,6 +426,48 @@ function refreshWidgets(page){
         }
     });
     switch(page){
+        case 'asistencia':
+            $("#filtrarAsistencia").off("click");
+            $("#filtrarAsistencia").on("click",function(ev){
+                var mes = $("select[name='mes-asistencia']").val();
+                var curso = $("select[name='curso-asistencia']").val();
+                if( (mes === 'empty') || (curso === 'empty') ){
+                    navigator.notification.alert('Debe seleccionar mes y curso',null,'Error','Aceptar');
+                } else {
+                    console.log("Curso es "+curso);
+                    $.mobile.loading('show').promise().done(function(){
+                        setUpDatabase();
+                        sql.transaction(
+                            function(tx){
+                                elements.alumnos = [];
+                                var query = "SELECT * FROM alumno a LEFT JOIN usuario u ON a.alumno=u.id WHERE a.curso="+curso;
+                                console.log(query);
+                                tx.executeSql(
+                                    query,
+                                    [],
+                                    function(tx,res){
+                                        var counter = 0;
+                                        if( (res.rows!=null) && (res.rows.length>0) ){
+                                            for(var i=0;i<res.rows.length;i++){
+                                                var cur = res.rows.item(i);
+                                                var alumno = new Alumno(null,null,null,cur);
+                                                elements.alumnos.push(alumno);
+                                            }
+                                        }
+                                        console.log(JSON.stringify(elements.alumnos));
+                                        loadPage('lista-asistencia');
+                                    },
+                                    function(arg1, arg2){
+                                        console.log("arg1: "+JSON.stringify(arg1));
+                                        console.log("arg2: "+JSON.stringify(arg2));
+                                    }
+                                );
+                            }
+                        );
+                    });
+                }
+            });
+            break;
         case 'unidad':
             $('html').off("click");
             $("html").on("click",function(e){
@@ -674,6 +764,8 @@ function login()
                 if(resp.state==0){
                     window.localStorage.setItem('user', resp.user);
                     window.localStorage.setItem('token', resp.hash);
+                    window.localStorage.setItem('colegio', resp.userData.idcolegio);
+                    window.localStorage.setItem('rol', resp.userData.idrol);
                     sql.transaction(function(tx){
                         new Usuario(
                             tx,
@@ -747,7 +839,7 @@ function downloadData(callback){
         $.mobile.loading('hide');
         $("#contenido").html(compileTemplate('descargando')).promise().done(function(){
             var modificacion = window.localStorage.getItem('modificacion');
-            if( typeof modificacion == 'undefined' ){
+            if( typeof modificacion === 'undefined' ){
                 modificacion = 0;
             }
             var pendientes = window.localStorage.getItem("pendientes");
@@ -804,8 +896,17 @@ function downloadData(callback){
                 });
             }
             setTimeout(function(){
+                var urlString = 'http://didactica.pablogarin.cl/getJSON.php?service=syncData&user='+user+"&modificacion="+modificacion;
+                var curso = window.localStorage.getItem('curso');
+                if( curso!=null ){
+                    urlString += "&curso="+curso;
+                } else {
+                    urlString += "&curso=11682";
+                }
+                var colegio = window.localStorage.getItem('colegio');
+                urlString += "&colegio="+colegio;
                 $.ajax({
-                    url: 'http://didactica.pablogarin.cl/getJSON.php?service=syncData&user='+user+"&modificacion="+modificacion,
+                    url: urlString,
                     type: 'POST',
                     dataType: 'json',
                     success: function(resp){
@@ -1103,7 +1204,6 @@ function slideUnlock(ev){
         }
     } else {
         if( changing ){
-            console.log(li.width()/2);
             if( displacement-touchOffsetX > li.width()/2 ){
                 changing = false;
                 var id = $(this).attr('data-idref');

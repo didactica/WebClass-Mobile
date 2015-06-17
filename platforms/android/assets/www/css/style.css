@@ -489,6 +489,17 @@ html body .ui-btn.ui-btn-a:hover{
 .background-clase.active{
 	z-index:10 !important;
 }
+.slideIndicator{
+	position:absolute !important;
+	left:0%;
+	z-index:11 !important;
+	width:1em;
+	height:1em;
+	top:40%;
+	color:rgba(32, 138, 212, 0.5);
+	-webkit-animation: slideMotion 30s linear 5s 2; /* Chrome, Safari, Opera */
+    animation: slideMotion 30s linear 5s 2;
+}
 /* DE ACA PARA ABAJO SOLO ANIMACIONES, KEYFRAMES, ETC */
 /* Chrome, Safari, Opera */
 @-webkit-keyframes leftArrow {
@@ -549,4 +560,20 @@ html body .ui-btn.ui-btn-a:hover{
     25%  {background-color:#ACC38A;}
     50%  {background-color:#C3AC8A;}
     100% {background-color:#E68A8A;}
+}
+@keyframes slideMotion{
+	0%	 {left:0%;}
+	3%	 {left:100%;}
+	25%	 {left:100%;}
+	50%	 {left:100%;}
+	75%	 {left:100%;}
+	100% {left:100%;}
+}
+@-webkit-keyframes slideMotion{
+	0%	 {left:0%;}
+	3%	 {left:100%;}
+	25%	 {left:100%;}
+	50%	 {left:100%;}
+	75%	 {left:100%;}
+	100% {left:100%;}
 }

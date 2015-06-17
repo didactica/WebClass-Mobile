@@ -76,7 +76,7 @@ Planificacion.prototype.selectById = function(callback){
                     self.setField(field,data[field]);
                 }
                 if( this.autor == null ){
-                    (new Usuario(tx)).fetchUser(this.usuario);
+                    (new Usuario(tx)).fetchUser(this.usuario,callback);
                 }
                 self.setField('fechaBonitaIni',self.getFechaini());
                 self.setField('fechaBonitaFin',self.getFechafin());

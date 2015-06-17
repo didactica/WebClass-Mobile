@@ -30,6 +30,7 @@
 	{{#each this.clases}}
 		{{#.}}
     	<li id="clase-li-{{this.id}}" data-icon="false" data-idref="{{this.id}}">
+            <div class="slideIndicator"><i class="fa fa-arrow-right"></i></div>
             <div class="background-clase ejecucion-clase-1 {{#if this.ejecucion}}active {{else}} {{/if}}"></div>
             <div class="background-clase ejecucion-clase-0 {{#if this.ejecucion}} {{else}}active {{/if}}"></div>
             <div class="col-90">
