@@ -1,0 +1,20 @@
+<ul id="diasMes" data-role="listview" data-inset="false">
+{{#each this.diasMes}}
+	{{#.}}
+	<li class="diaAsistencia" id="{{this.dia}}" data-icon="false">
+		<div class="row">
+			<div class="col-xs-7 calendar-detail">
+				<i class="fa fa-calendar-o fa-3x pull-left"></i>
+				<div class="pull-left">
+					<p>{{this.fecha}}</p>
+					<h2>{{this.dia}}</h2>
+				</div>
+			</div>
+			<div class="col-xs-5">
+				<canvas class="radialLoader" id="radial-percentage-{{this.dia}}" data-progress="{{this.progress}}" width="70" height="70"></canvas>
+			</div>
+		</div>
+	</li>
+	{{/.}}
+{{/each}}
+</ul>

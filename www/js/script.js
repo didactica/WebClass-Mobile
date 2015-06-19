@@ -82,11 +82,14 @@ var current;
 var elements = [];
 var curDate;
 var months = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 var alertUp = false;
 var sequence = 0;
 var downloaded = false;
 var where;
 var lastObject = [];
+var d = new Date();
+var year = d.getFullYear();
 
 $.event.special.swipe.scrollSupressionThreshold = 10; // More than this horizontal displacement, and we will suppress scrolling.
 $.event.special.swipe.horizontalDistanceThreshold = 30; // Swipe horizontal displacement must be more than this.
@@ -150,8 +153,10 @@ function functions(title,callback){
             break;
         case 'asistencia':
             var d = new Date();
-            var y = d.getFullYear();
-            var tmp = months;
+            tmp = [];
+            for(var i in months){
+                tmp.push(months[i]);
+            }
             tmp.splice(0,1);
             elements.months = [];
             for(var k in tmp){
@@ -161,7 +166,7 @@ function functions(title,callback){
                 } else {
                     monthNumber = String(monthNumber);
                 }
-                var curr = {'key':monthNumber+'-'+y,'month':months[k]};
+                var curr = {'key':monthNumber,'month':tmp[k]};
                 elements.months.push(curr);
             }
             setUpDatabase();
@@ -338,7 +343,6 @@ function loadPage(page){
             setTitle(page);
             $("#contenido").html(compileTemplate(page));
             $.mobile.loading('hide');
-            console.log("After loading: " + JSON.stringify(elements));
             refreshWidgets(page);
             setListeners();
         });
@@ -349,6 +353,9 @@ function loadPage(page){
 function setTitle(page){
     var title = page;
     switch(page){
+        case 'asistencia':
+            title = "Asistencia";
+            break;
         case 'unidad':
             title = elements.nombre;
             break;
@@ -434,37 +441,84 @@ function refreshWidgets(page){
                 if( (mes === 'empty') || (curso === 'empty') ){
                     navigator.notification.alert('Debe seleccionar mes y curso',null,'Error','Aceptar');
                 } else {
-                    console.log("Curso es "+curso);
+                    elements = {'curso': curso,'mes':mes};
                     $.mobile.loading('show').promise().done(function(){
+                        var workTransaction = true;
                         setUpDatabase();
-                        sql.transaction(
-                            function(tx){
-                                elements.alumnos = [];
-                                var query = "SELECT * FROM alumno a LEFT JOIN usuario_detalle u ON a.alumno=u.idusuario WHERE a.curso="+curso;
-                                console.log(query);
+                        sql.transaction(function(tx){
+                            var thisDate = new Date(year,parseInt(mes),0);
+                            var totalDays = thisDate.getDate();
+                            elements.diasMes = [];
+                            for(var i=0;i<totalDays;i++){
+                                var thisCurDate = new Date(year,thisDate.getMonth(),i+1);
+                                var diaNumero = thisCurDate.getDate();
+                                if(diaNumero<10){
+                                    diaNumero = '0'+diaNumero;
+                                } else {
+                                    diaNumero = String(diaNumero);
+                                }
+                                var query = "SELECT (SELECT COUNT(1) FROM alumno WHERE curso=11682) AS total, (SELECT COUNT(1) FROM alumno_asistencia WHERE id_curso=11682 AND estado=1 AND fecha='"+year+"-"+mes+"-"+diaNumero+"') AS presentes, '"+diaNumero+"-"+mes+"-"+year+"' as currentdate;";
                                 tx.executeSql(
                                     query,
                                     [],
-                                    function(tx,res){
-                                        var counter = 0;
-                                        if( (res.rows!=null) && (res.rows.length>0) ){
-                                            for(var i=0;i<res.rows.length;i++){
-                                                var cur = res.rows.item(i);
-                                                var alumno = new Alumno(null,null,null,cur);
-                                                elements.alumnos.push(alumno);
+                                    function(tx,result){
+                                        if( (result!==null) && (result.rows.length>0) ){
+                                            var res = result.rows.item(0);
+                                            var total = res.total;
+                                            var presentes = res.presentes;
+                                            var progress = (parseInt(presentes)*100)/parseInt(total);
+                                            var resultDate = (res.currentdate).split('-');
+                                            // OJO con el modulo 7, sin eso solo los primeros 7 días tienen el día de la semana a la q corresponden.
+                                            // Domingo es Cero bajo éste concepto.
+                                            var diaDeLaSemana = days[parseInt(resultDate[0])%7];
+                                            elements.diasMes.push({'fecha':diaDeLaSemana,'dia':resultDate[0],'progress':progress});
+                                            if(resultDate[0]==totalDays){
+                                                postProcessAsistencia(mes,curso);
                                             }
                                         }
-                                        console.log(JSON.stringify(elements.alumnos));
-                                        loadPage('lista-asistencia');
                                     },
-                                    function(arg1, arg2){
-                                        console.log("arg1: "+JSON.stringify(arg1));
-                                        console.log("arg2: "+JSON.stringify(arg2));
+                                    function(arg1,arg2){
+                                        console.log('Error de SQL:');
+                                        console.log(JSON.stringify(arg1));
+                                        console.log(JSON.stringify(arg2));
+                                        workTransaction = false;
                                     }
                                 );
                             }
-                        );
-                    });
+                        });
+                        /*
+                        $.mobile.loading('show').promise().done(function(){
+                            setUpDatabase();
+                            sql.transaction(
+                                function(tx){
+                                    elements.alumnos = [];
+                                    var query = "SELECT * FROM alumno a LEFT JOIN usuario_detalle u ON a.alumno=u.idusuario WHERE a.curso="+curso;
+                                    tx.executeSql(
+                                        query,
+                                        [],
+                                        function(tx,res){
+                                            var counter = 0;
+                                            if( (res.rows!=null) && (res.rows.length>0) ){
+                                                for(var i=0;i<res.rows.length;i++){
+                                                    var cur = res.rows.item(i);
+                                                    var alumno = new Alumno(null,null,null,cur);
+                                                    elements.alumnos.push(alumno);
+                                                }
+                                            }
+                                            $("#contenido").html(compileTemplate('lista-asistencia'));
+                                            refreshWidgets('asistencia');
+                                            $.mobile.loading('hide');
+                                        },
+                                        function(arg1, arg2){
+                                            console.log("arg1: "+JSON.stringify(arg1));
+                                            console.log("arg2: "+JSON.stringify(arg2));
+                                        }
+                                    );
+                                }
+                            );
+                        });
+                        //*/
+                    }); 
                 }
             });
             break;
@@ -897,12 +951,6 @@ function downloadData(callback){
             }
             setTimeout(function(){
                 var urlString = 'http://didactica.pablogarin.cl/getJSON.php?service=syncData&user='+user+"&modificacion="+modificacion;
-                var curso = window.localStorage.getItem('curso');
-                if( curso!=null ){
-                    urlString += "&curso="+curso;
-                } else {
-                    urlString += "&curso=11682";
-                }
                 var colegio = window.localStorage.getItem('colegio');
                 urlString += "&colegio="+colegio;
                 $.ajax({
@@ -933,7 +981,12 @@ function downloadData(callback){
                             callback
                         );
                     },
-                    error: callback
+                    error: function(resp,err){
+                        console.log("Error en la conexión");
+                        console.log(JSON.stringify(resp));
+                        console.log(err);
+                        callback();
+                    }
                 });
             },1000);
         });
@@ -1257,7 +1310,23 @@ function prevent(e){
 function stop(e){
     document.removeEventListener("touchmove", prevent, false);
 }
-
+function postProcessAsistencia(mes,curso){
+    $("#contenido").html(compileTemplate('asistencia-fecha'));
+    $(".ui-page").trigger('create');
+    $.mobile.loading('hide');
+    $( document ).on("swipeleft",function(ev){
+        if( $( ".ui-page" ).jqmData( "panel" ) !== "open" ){
+            $("#menu_lateral").panel('open');
+        }
+    });
+    $('canvas').each(function(k,v){
+        setRadialPercentage( $(v).attr('id'), $(v).attr('data-progress')/100 );
+    });
+    $(".diaAsistencia").on("click",function(ev){
+        var dia = this.id;
+        console.log('Curso: '+elements.curso+'; dia: '+dia+'-'+mes+'-'+year);
+    });
+}
 /*
 (function(){
   var cache = {};

@@ -9,32 +9,32 @@ var DetalleUsuario = function(tx,id,callback,json){
 DetalleUsuario.prototype.createTable = function() {
     var query = "CREATE TABLE IF NOT EXISTS usuario_detalle(" +
         " id INTEGER PRIMARY KEY AUTOINCREMENT," + 
-        "idusuario int(11), " + 
+        "idusuario INTEGER, " + 
         "rut varchar(45), " + 
         "nombre_usuario varchar(25), " + 
         "apellido_paterno varchar(45), " + 
         "apellido_materno varchar(45), " + 
-        "sexo int(11), " + 
+        "sexo INTEGER, " + 
         "direccion varchar(100), " + 
-        "idcomuna int(11), " + 
-        "idprovincia int(11), " + 
-        "idregion int(11), " + 
-        "telefono int(11), " + 
+        "idcomuna INTEGER, " + 
+        "idprovincia INTEGER, " + 
+        "idregion INTEGER, " + 
+        "telefono INTEGER, " + 
         "correo varchar(100), " + 
         "cargo varchar(75), " + 
-        "celular int(11), " + 
+        "celular INTEGER, " + 
         "observaciones varchar(100), " + 
         "nivel_capacitacion float, " + 
-        "fecha_capacitacion int(11), " + 
-        "graduado int(11), " + 
-        "creador int(11), " + 
-        "iduniversidad int(11), " + 
+        "fecha_capacitacion INTEGER, " + 
+        "graduado INTEGER, " + 
+        "creador INTEGER, " + 
+        "iduniversidad INTEGER, " + 
         "titulo_universitario varchar(100), " + 
         "nacimiento varchar(45), " + 
-        "fecha_inicio_capacitacion int(11), " + 
+        "fecha_inicio_capacitacion INTEGER, " + 
         "porcentaje_enc double, " + 
-        "sms tinyint(4), " + 
-        "sms_disponible int(11), " + 
+        "sms INTEGER, " + 
+        "sms_disponible INTEGER, " + 
         "pass_mail varchar(250) " + 
     ");";
     this.tx.executeSql(query,[]);

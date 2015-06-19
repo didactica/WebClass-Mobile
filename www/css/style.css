@@ -500,6 +500,20 @@ html body .ui-btn.ui-btn-a:hover{
 	-webkit-animation: slideMotion 30s linear 5s 2; /* Chrome, Safari, Opera */
     animation: slideMotion 30s linear 5s 2;
 }
+#diasMes{
+	font-size:1em;
+}
+#diasMes li{
+	position:relative;
+	padding:0 1em 0 3em;	
+	line-height:100%;
+}
+#diasMes li .row, #diasMes li .calendar-detail{
+	margin-top:0.3em;
+}
+.calendar-content{
+	float:left;
+}
 /* DE ACA PARA ABAJO SOLO ANIMACIONES, KEYFRAMES, ETC */
 /* Chrome, Safari, Opera */
 @-webkit-keyframes leftArrow {
