@@ -514,6 +514,72 @@ html body .ui-btn.ui-btn-a:hover{
 .calendar-content{
 	float:left;
 }
+#alumno-lista{
+	font-size:1em;
+}
+#alumno-lista li{
+	padding:0 1em 0 1.5em;
+}
+#alumno-lista li .menu{
+	height: 3em;
+	width: 100%;
+	display:block;
+	position:relative;
+}
+#alumno-lista li .menu i{
+	line-height: 2.2em;
+	color:#000;
+}
+#alumno-lista li div{
+	z-index:11;
+	position:relative;
+	background:transparent;
+}
+.alumno-detail{
+	height:3em;
+	margin-top: 1.5em;
+}
+ul#alumno-lista li.header{
+	position:relative;
+	text-align: center;
+	width:100%;
+	line-height: 1.5em;
+	text-decoration: none;
+	color:#666;
+	font-weight: bolder;
+	font-size: 1.5em;
+	border:none;
+	background:#ddd;
+	border-top:1px solid #999;
+	border-bottom:1px solid #999;
+	padding:0 0.2em;
+}
+ul#alumno-lista li.header #month{
+	margin:0 auto;
+	display: inline-block;
+	width:100%;
+	position:relative;
+	left:-0.5em;
+}
+ul#alumno-lista li.header .control{
+	position:absolute;
+	display:inline-block;
+	clear:both;
+	height:1em;
+	line-height: 1em;
+	width:1em;
+	color:#666;
+	font-size:1.5em;
+	z-index:5;
+}
+ul#alumno-lista li.header .control.prev{
+	float:left;
+}
+ul#alumno-lista li.header .control.next{
+	float:right;
+	right:0;
+	padding-right:1.5em;
+}
 /* DE ACA PARA ABAJO SOLO ANIMACIONES, KEYFRAMES, ETC */
 /* Chrome, Safari, Opera */
 @-webkit-keyframes leftArrow {

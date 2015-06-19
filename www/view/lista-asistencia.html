@@ -1,7 +1,21 @@
-<ul data-role="listview" data-inset="false">
+<ul id="alumno-lista" data-role="listview" data-inset="false">
+	<li class="header" data-role="list-divider" role="heading">
+        <a href="#prev_month" class="control prev"><i class="fa fa-chevron-circle-left"></i></a>
+        <span id="month">Curso</span>
+        <a href="#next_month" class="control next"><i class="fa fa-chevron-circle-right"></i></a> 
+    </li>
 {{#each this.alumnos}}
 	{{#.}}
-	<li><a href="#">{{#if this.nombre_usuario}}} {{this.nombre_usuario}} {{/if}}</a></li>
+	<li data-icon="false">
+		<div class="col-90">
+			<h3>{{this.apellido_paterno}}, {{this.nombre_usuario}}</h3>
+		</div>
+		<div class="col-10 menu-container">
+			<a href="#{{this.id}}" class="menu">
+				<i class="fa fa-ellipsis-v fa-2x pull-right"></i>
+			</a>
+		</div>
+	</li>
 	{{/.}}
 {{/each}}
 </ul>

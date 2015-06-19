@@ -1,5 +1,15 @@
 var Asistencia = function(tx,id,callback,json)
 {
+    // setear todas las variables a usar.
+    this.id = null;
+    this.id_alumno = null;
+    this.fecha = null;
+    this.justificacion = null;
+    this.estado = null;
+    this.observaciones = null;
+    this.id_curso = null;
+    this.informado = null;
+
     if(json!=null){
         this.initWithJson(json);
     } else {

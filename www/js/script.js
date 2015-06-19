@@ -149,7 +149,42 @@ function setUpDatabase(){
 function functions(title,callback){
     switch(title){
         case 'lista-asistencia':
-            callback();
+            // REUTILIZAR CODIGO!!! LOS PROCESOS ESTAN VOLVIENDOSE COMPLEJOS, Y LA MANTENCION SERA UNA PESADILLA.
+            var curso = elements.curso;
+            var dia = elements.dia;
+            var mes = elements.mes;
+            elements = [];
+            $.mobile.loading('show').promise().done(function(){
+                setUpDatabase();
+                sql.transaction(
+                    function(tx){
+                        elements.alumnos = [];
+                        var query = "SELECT * FROM alumno a LEFT JOIN usuario_detalle u ON a.alumno=u.idusuario WHERE a.curso="+curso;
+                        tx.executeSql(
+                            query,
+                            [],
+                            function(tx,res){
+                                var counter = 0;
+                                if( (res.rows!=null) && (res.rows.length>0) ){
+                                    for(var i=0;i<res.rows.length;i++){
+                                        var cur = res.rows.item(i);
+                                        var alumno = new Alumno(null,null,null,cur);
+                                        elements.alumnos.push(alumno);
+                                    }
+
+                                }
+                                callback();
+                            },
+                            function(arg1, arg2){
+                                console.log("arg1: "+JSON.stringify(arg1));
+                                console.log("arg2: "+JSON.stringify(arg2));
+                                callback();
+                            }
+                        );
+                    }
+                );
+            });
+            //*/
             break;
         case 'asistencia':
             var d = new Date();
@@ -433,6 +468,50 @@ function refreshWidgets(page){
         }
     });
     switch(page){
+        case 'lista-asistencia':
+            $("#alumno-lista .menu").each(function(k,v){
+                $(v).on("click",function(evt){
+                    var dom = v;
+                    var id = $(v).attr("href");
+                    id = id.substring(1);
+                    var menu = [
+                        {
+                            text:'Asistente',
+                            rel:'',
+                            anchor:'#',
+                            action:function(){
+                                alert('TODO');
+                            }
+                        },
+                        {
+                            text:'Ausente...',
+                            rel:'',
+                            anchor:'#',
+                            action:function(){
+                                alert('TODO');
+                            }
+                        },
+                        {
+                            text:'Atrasado...',
+                            rel:'',
+                            anchor:'#',
+                            action:function(){
+                                alert('TODO');
+                            }
+                        },
+                        {
+                            text:'Sin Registro',
+                            rel:'',
+                            anchor:'#',
+                            action:function(){
+                                alert('TODO');
+                            }
+                        }
+                    ]
+                    createMenu(menu,1,dom);
+                });
+            });
+            break;
         case 'asistencia':
             $("#filtrarAsistencia").off("click");
             $("#filtrarAsistencia").on("click",function(ev){
@@ -486,38 +565,6 @@ function refreshWidgets(page){
                                 );
                             }
                         });
-                        /*
-                        $.mobile.loading('show').promise().done(function(){
-                            setUpDatabase();
-                            sql.transaction(
-                                function(tx){
-                                    elements.alumnos = [];
-                                    var query = "SELECT * FROM alumno a LEFT JOIN usuario_detalle u ON a.alumno=u.idusuario WHERE a.curso="+curso;
-                                    tx.executeSql(
-                                        query,
-                                        [],
-                                        function(tx,res){
-                                            var counter = 0;
-                                            if( (res.rows!=null) && (res.rows.length>0) ){
-                                                for(var i=0;i<res.rows.length;i++){
-                                                    var cur = res.rows.item(i);
-                                                    var alumno = new Alumno(null,null,null,cur);
-                                                    elements.alumnos.push(alumno);
-                                                }
-                                            }
-                                            $("#contenido").html(compileTemplate('lista-asistencia'));
-                                            refreshWidgets('asistencia');
-                                            $.mobile.loading('hide');
-                                        },
-                                        function(arg1, arg2){
-                                            console.log("arg1: "+JSON.stringify(arg1));
-                                            console.log("arg2: "+JSON.stringify(arg2));
-                                        }
-                                    );
-                                }
-                            );
-                        });
-                        //*/
                     }); 
                 }
             });
@@ -1324,7 +1371,8 @@ function postProcessAsistencia(mes,curso){
     });
     $(".diaAsistencia").on("click",function(ev){
         var dia = this.id;
-        console.log('Curso: '+elements.curso+'; dia: '+dia+'-'+mes+'-'+year);
+        elements = {'dia':dia, 'curso':curso, 'mes':mes}
+        loadPage('lista-asistencia');
     });
 }
 /*
