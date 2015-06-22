@@ -492,7 +492,6 @@ function refreshWidgets(page){
             y -= menu.offsetTop-30;
             xf = $(menu).width()-(x-15);
             yf = $(menu).height()-(y-15);
-            console.log('x: '+x+'; y: '+y+'; xf: '+xf+'; yf: '+yf+'');
             if(x<0||y<0||xf<0||yf<0){
                 $(menu).remove();
             }
