@@ -7,8 +7,8 @@
 {{#each this.alumnos}}
 	{{#.}}
 	<li data-icon="false">
-		<div class="col-90">
-			<h3>{{this.apellido_paterno}}, {{this.nombre_usuario}}</h3>
+		<div class="col-90 alumno-detail">
+			{{this.apellido_paterno}}, {{this.nombre_usuario}}
 		</div>
 		<div class="col-10 menu-container">
 			<a href="#{{this.id}}" class="menu">

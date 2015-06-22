@@ -155,34 +155,39 @@ function functions(title,callback){
             var mes = elements.mes;
             elements = [];
             $.mobile.loading('show').promise().done(function(){
-                setUpDatabase();
-                sql.transaction(
-                    function(tx){
-                        elements.alumnos = [];
-                        var query = "SELECT * FROM alumno a LEFT JOIN usuario_detalle u ON a.alumno=u.idusuario WHERE a.curso="+curso;
-                        tx.executeSql(
-                            query,
-                            [],
-                            function(tx,res){
-                                var counter = 0;
-                                if( (res.rows!=null) && (res.rows.length>0) ){
-                                    for(var i=0;i<res.rows.length;i++){
-                                        var cur = res.rows.item(i);
-                                        var alumno = new Alumno(null,null,null,cur);
-                                        elements.alumnos.push(alumno);
-                                    }
+                if(isNaN(curso)){
+                    backButton();
+                } else {
+                    setUpDatabase();
+                    sql.transaction(
+                        function(tx){
+                            elements.alumnos = [];
+                            var query = "SELECT * FROM alumno a LEFT JOIN usuario_detalle u ON a.alumno=u.idusuario WHERE a.curso="+curso;
+                            tx.executeSql(
+                                query,
+                                [],
+                                function(tx,res){
+                                    var counter = 0;
+                                    if( (res.rows!=null) && (res.rows.length>0) ){
+                                        for(var i=0;i<res.rows.length;i++){
+                                            var cur = res.rows.item(i);
+                                            var alumno = new Alumno(null,null,null,cur);
+                                            elements.alumnos.push(alumno);
+                                        }
 
+                                    }
+                                    callback();
+                                },
+                                function(arg1, arg2){
+                                    console.log("arg1: "+JSON.stringify(arg1));
+                                    console.log("arg2: "+JSON.stringify(arg2));
+                                    callback();
                                 }
-                                callback();
-                            },
-                            function(arg1, arg2){
-                                console.log("arg1: "+JSON.stringify(arg1));
-                                console.log("arg2: "+JSON.stringify(arg2));
-                                callback();
-                            }
-                        );
-                    }
-                );
+                            );
+                        }
+                    );
+                }
+                
             });
             //*/
             break;
@@ -467,6 +472,33 @@ function refreshWidgets(page){
             $("#menu_lateral").panel('open');
         }
     });
+    // OJO!! puede dejar la cagaa esta leserita.
+    //*
+    $('html').off("click");
+    $("html").on("click",function(e){
+        var x;
+        var y;
+        if (e.pageX || e.pageY) { 
+          x = e.pageX;
+          y = e.pageY;
+        }
+        else { 
+          x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft; 
+          y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop; 
+        } 
+        var menu = document.getElementById('menu-moreover');
+        if(menu != null){
+            x -= menu.offsetLeft;
+            y -= menu.offsetTop-30;
+            xf = $(menu).width()-(x-15);
+            yf = $(menu).height()-(y-15);
+            console.log('x: '+x+'; y: '+y+'; xf: '+xf+'; yf: '+yf+'');
+            if(x<0||y<0||xf<0||yf<0){
+                $(menu).remove();
+            }
+        }
+    });
+    //*/
     switch(page){
         case 'lista-asistencia':
             $("#alumno-lista .menu").each(function(k,v){
@@ -547,10 +579,13 @@ function refreshWidgets(page){
                                             var presentes = res.presentes;
                                             var progress = (parseInt(presentes)*100)/parseInt(total);
                                             var resultDate = (res.currentdate).split('-');
+                                            var dateObj = new Date(Date.UTC(resultDate[2],parseInt(resultDate[1])-1,parseInt(resultDate[0])+1,0,0,0));
                                             // OJO con el modulo 7, sin eso solo los primeros 7 días tienen el día de la semana a la q corresponden.
                                             // Domingo es Cero bajo éste concepto.
-                                            var diaDeLaSemana = days[parseInt(resultDate[0])%7];
-                                            elements.diasMes.push({'fecha':diaDeLaSemana,'dia':resultDate[0],'progress':progress});
+                                            if( dateObj.getDay() != 0 && dateObj.getDay() != 6 ){
+                                                var diaDeLaSemana = days[dateObj.getDay()];
+                                                elements.diasMes.push({'fecha':diaDeLaSemana,'dia':resultDate[0],'progress':progress});
+                                            }
                                             if(resultDate[0]==totalDays){
                                                 postProcessAsistencia(mes,curso);
                                             }
@@ -570,31 +605,9 @@ function refreshWidgets(page){
             });
             break;
         case 'unidad':
-            $('html').off("click");
-            $("html").on("click",function(e){
-                var x;
-                var y;
-                if (e.pageX || e.pageY) { 
-                  x = e.pageX;
-                  y = e.pageY;
-                }
-                else { 
-                  x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft; 
-                  y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop; 
-                } 
-                var menu = document.getElementById('menu-moreover');
-                if(menu != null){
-                    x -= menu.offsetLeft;
-                    y -= menu.offsetTop;
-                    xf = $(menu).width()-(x-15);
-                    yf = $(menu).height()-(y-15);
-                    if(x<0||y<0||xf<0||yf<0){
-                        $(menu).remove();
-                    }
-                }
-            });
             $("#clases").listview();
             $("#clases .menu").each(function(k,v){
+                $(v).off("click");
                 $(v).on("click",function(evt){
                     var dom = v;
                     var id = $(v).attr("href");
@@ -1254,7 +1267,8 @@ function createMenu(items,direction,trigger){
         console.log(ex);
         success = false;
     } finally {
-        if(!success){
+         if(!success){
+            console.log('not success!!');
             return false;
         } else {
             document.body.appendChild(menu);
@@ -1268,6 +1282,8 @@ function createMenu(items,direction,trigger){
                 top     : ($(trigger).offset().top+$(trigger).height()/2),
                 display : 'block !important'
             });
+            menuDom.show();
+            console.log(menuDom);
             menuOpen = true;
         }
     }
