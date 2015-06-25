@@ -149,11 +149,23 @@ function setUpDatabase(){
 function functions(title,callback){
     switch(title){
         case 'lista-asistencia':
-            // REUTILIZAR CODIGO!!! LOS PROCESOS ESTAN VOLVIENDOSE COMPLEJOS, Y LA MANTENCION SERA UNA PESADILLA.
+            // REUTILIZAR CODIGO!!! LOS PROCESOS SE ESTAN VOLVIENDO COMPLEJOS, Y LA MANTENCION SERA UNA PESADILLA.
             var curso = elements.curso;
             var dia = elements.dia;
             var mes = elements.mes;
-            elements = [];
+            elements = {};
+            var d = new Date(Date.UTC(year,mes,1));
+            if( parseInt(dia) >= d.getDate() ){
+                elements.next = false;
+            } else {
+                elements.next = true;
+            }
+            if( parseInt(dia) <= 1 ){
+                elements.prev = false;
+            } else {
+                elements.prev = true;
+            }
+            elements.fecha = {'formated': (dia+' de '+months[parseInt(mes)]+', '+year),dia:dia, mes:mes };
             $.mobile.loading('show').promise().done(function(){
                 if(isNaN(curso)){
                     backButton();
@@ -161,6 +173,53 @@ function functions(title,callback){
                     setUpDatabase();
                     sql.transaction(
                         function(tx){
+                            var hoy = year+'-'+(mes<10?'0'+parseInt(mes):mes)+'-'+(dia<10?'0'+parseInt(dia):dia);
+                            var qCurso = "SELECT * FROM curso WHERE id='"+curso+"'";
+                            tx.executeSql(
+                                qCurso,
+                                [],
+                                function(tx,result){
+                                    if( result.rows!=null && result.rows.length>0 ){
+                                        var res = result.rows.item(0);
+                                        elements.curso = res;
+                                    }
+                                },
+                                function(tx,err){
+                                    console.log(JSON.stringify(err));
+                                }
+                            );
+                            var asistenciaAlumnos = {};
+                            tx.executeSql(
+                                "SELECT * FROM alumno_asistencia WHERE id_curso='"+curso+"' AND fecha='"+hoy+"'",
+                                [],
+                                function(tx,result){
+                                    if( result.rows!=null && result.rows.length>0 ){
+                                        for(var i=0;i<result.rows.length;i++){
+                                            var cur = result.rows.item(i);
+                                            var estado = '';
+                                            var icon = '';
+                                            switch(cur.estado){
+                                                case 0:
+                                                    estado = 'presente';
+                                                    icon = 'fa-check';
+                                                    break;
+                                                case 1:
+                                                    estado = 'ausente';
+                                                    icon = 'fa-remove';
+                                                    break;
+                                                case 2:
+                                                    estado = 'atrasado'; 
+                                                    icon = 'fa-clock-o';
+                                                    break;
+                                            }
+                                            asistenciaAlumnos[cur.id_alumno] = {estado:estado,icon:icon};
+                                        }
+                                    }
+                                },
+                                function(tx,error){
+                                    console.log(error);
+                                }
+                            );
                             elements.alumnos = [];
                             var query = "SELECT * FROM alumno a LEFT JOIN usuario_detalle u ON a.alumno=u.idusuario WHERE a.curso="+curso;
                             tx.executeSql(
@@ -171,6 +230,12 @@ function functions(title,callback){
                                     if( (res.rows!=null) && (res.rows.length>0) ){
                                         for(var i=0;i<res.rows.length;i++){
                                             var cur = res.rows.item(i);
+                                            var resObj = asistenciaAlumnos[cur.id];
+                                            if( typeof resObj == 'undefined' ){
+                                                resObj = {estado:'presente',icon:'fa-check'}
+                                            }
+                                            cur.class = resObj.estado;
+                                            cur.icon = resObj.icon;
                                             var alumno = new Alumno(null,null,null,cur);
                                             elements.alumnos.push(alumno);
                                         }
@@ -318,6 +383,8 @@ function functions(title,callback){
             break;
         case 'home':
             $.mobile.loading('show',{text: "Leyendo Base de Datos...",textVisible: true,theme: "z",html: ""});
+            var userData = JSON.parse(window.localStorage.getItem('userData'));
+            $("#nombreUsuario").html(userData.nombre_usuario+' '+userData.apellido_paterno);
             (new SQLHelper()).queryDB(
                 "SELECT * FROM evento ORDER BY fechaini",
                 [],
@@ -492,7 +559,6 @@ function refreshWidgets(page){
             y -= menu.offsetTop-30;
             xf = $(menu).width()-(x-15);
             yf = $(menu).height()-(y-15);
-            console.log('x: '+x+'; y: '+y+'; xf: '+xf+'; yf: '+yf+'');
             if(x<0||y<0||xf<0||yf<0){
                 $(menu).remove();
             }
@@ -501,9 +567,32 @@ function refreshWidgets(page){
     //*/
     switch(page){
         case 'lista-asistencia':
+            $(".header .control.next, .header .control.prev").on("click",function(ev){
+                var mes = elements.fecha.mes;
+                var curso = elements.curso.id;
+                var d = new Date(Date.UTC(year,mes,1));
+                var dia = parseInt(elements.fecha.dia);
+                var downward = false;
+                if( $(this).hasClass('prev') && dia>1 ){
+                    downward = true;
+                    dia--;
+                }
+                if( $(this).hasClass('next') && dia<d.getDate()){
+                    downward = false;
+                    dia++;
+                }
+                dia = getWorkday(year,mes,dia,downward);
+                current = 'null';
+                elements = {'dia':dia, 'curso':curso, 'mes':mes}
+                if( historyStack[historyStack.length-1]=='lista-asistencia' ){
+                    historyStack.pop();   
+                }
+                loadPage('lista-asistencia');
+            });
             $("#alumno-lista .menu").each(function(k,v){
                 $(v).on("click",function(evt){
                     var dom = v;
+                    var parent = $(v).parents('li');
                     var id = $(v).attr("href");
                     id = id.substring(1);
                     var menu = [
@@ -512,7 +601,19 @@ function refreshWidgets(page){
                             rel:'',
                             anchor:'#',
                             action:function(){
-                                alert('TODO');
+                                $.mobile.loading('show').promise().done(function(){
+                                    setUpDatabase();
+                                    sql.transaction(function(tx){
+                                        var al = new Alumno(tx,id,function(){
+                                            al.setAsistencia(0);
+                                            // parent.addClass('presente');
+                                            parent.find('i.fa').addClass('fa-check');
+                                            parent.find('i.fa').removeClass('fa-clock-o');
+                                            parent.find('i.fa').removeClass('fa-remove');
+                                            $.mobile.loading('hide');
+                                        });
+                                    });
+                                });
                             }
                         },
                         {
@@ -520,7 +621,19 @@ function refreshWidgets(page){
                             rel:'',
                             anchor:'#',
                             action:function(){
-                                alert('TODO');
+                                $.mobile.loading('show').promise().done(function(){
+                                    setUpDatabase();
+                                    sql.transaction(function(tx){
+                                        var al = new Alumno(tx,id,function(){
+                                            al.setAsistencia(1);
+                                            // parent.addClass('presente');
+                                            parent.find('i.fa').removeClass('fa-check');
+                                            parent.find('i.fa').removeClass('fa-clock-o');
+                                            parent.find('i.fa').addClass('fa-remove');
+                                            $.mobile.loading('hide');
+                                        });
+                                    });
+                                });
                             }
                         },
                         {
@@ -563,12 +676,14 @@ function refreshWidgets(page){
                             for(var i=0;i<totalDays;i++){
                                 var thisCurDate = new Date(year,thisDate.getMonth(),i+1);
                                 var diaNumero = thisCurDate.getDate();
+                                /*
                                 if(diaNumero<10){
                                     diaNumero = '0'+diaNumero;
                                 } else {
                                     diaNumero = String(diaNumero);
                                 }
-                                var query = "SELECT (SELECT COUNT(1) FROM alumno WHERE curso=11682) AS total, (SELECT COUNT(1) FROM alumno_asistencia WHERE id_curso=11682 AND estado=1 AND fecha='"+year+"-"+mes+"-"+diaNumero+"') AS presentes, '"+diaNumero+"-"+mes+"-"+year+"' as currentdate;";
+                                //*/
+                                var query = "SELECT (SELECT COUNT(1) FROM alumno WHERE curso='"+curso+"') AS total, (SELECT COUNT(1) FROM alumno_asistencia WHERE estado=0 AND id IN (SELECT max(id) FROM alumno_asistencia WHERE id_curso='"+curso+"' AND estado=0 AND fecha='"+year+"-"+(mes>10?mes:'0'+parseInt(mes))+"-"+(diaNumero>10?diaNumero:'0'+parseInt(diaNumero))+"' group by id_alumno)) AS presentes, '"+diaNumero+"-"+mes+"-"+year+"' as currentdate;";
                                 tx.executeSql(
                                     query,
                                     [],
@@ -827,15 +942,26 @@ function refreshWidgets(page){
 function setListeners(){
     $('input').off('focus');
     $('input').on('focus', function() {
-        var pos = $(this).offset().top-100;
-        $(document.body).animate({"top":"+="+pos+"px"});
+        var topOffset = parseInt(($('#document-page').css('top')).replace('px',''))*(-1);
+        var pos = $(this).offset().top-180+topOffset;
+        var css = {top:"-"+pos+"px"};
+        $('#document-page').animate(css);
+        $(this).on('blur',function(ev){
+            if( ev.relatedTarget==null || ev.relatedTarget.tagName !== 'INPUT' ){
+                $('#document-page').animate({top:'0px'});
+            }
+            $(this).off('blur');
+        });
     });
+    /* NO SACAR, SE PUEDE REUTILIZAR.
     $('input').off('blur')
     $('input').on('blur', function(ev) {
+        console.log(ev.originalEvent.target==this);
         if(ev.target.tagName!='INPUT'){
-            $(document.body).animate({scrollTop:0});
+            $('#document-page').animate({top:'0px'});
         }
     });
+    //*/
     $("#btn-login").on("click",function(ev){
         ev.preventDefault();
         $.mobile.loading('show');
@@ -875,11 +1001,13 @@ function login()
             data: params,
             dataType:'json',
             success : function(resp){
+                console.log(JSON.stringify(resp.userData));
                 if(resp.state==0){
                     window.localStorage.setItem('user', resp.user);
                     window.localStorage.setItem('token', resp.hash);
                     window.localStorage.setItem('colegio', resp.userData.idcolegio);
                     window.localStorage.setItem('rol', resp.userData.idrol);
+                    window.localStorage.setItem('userData',JSON.stringify(resp.userData));
                     sql.transaction(function(tx){
                         new Usuario(
                             tx,
@@ -989,6 +1117,7 @@ function downloadData(callback){
                                             dataType:'json',
                                             async:false,
                                             success:function(res){
+                                                console.log(JSON.stringify(res));
                                                 if(res.status==0){
                                                     delete tmpObj[table];
                                                     tmpObj = JSON.stringify(tmpObj);
@@ -1283,7 +1412,6 @@ function createMenu(items,direction,trigger){
                 display : 'block !important'
             });
             menuDom.show();
-            console.log(menuDom);
             menuOpen = true;
         }
     }
@@ -1390,6 +1518,22 @@ function postProcessAsistencia(mes,curso){
         elements = {'dia':dia, 'curso':curso, 'mes':mes}
         loadPage('lista-asistencia');
     });
+}
+function getWorkday(year,month,day,downward){
+    if( (downward==null) || (typeof downward=='undefined') ){
+        downward = false;
+    }
+    var locDay = day;
+    var d = new Date(Date.UTC(year,month-1,day+1));
+    if( d.getDay() == 6 || d.getDay() == 0 ){
+        if(downward){
+            locDay--;
+        } else {
+            locDay ++;
+        }
+        locDay = getWorkday(year,month,locDay,downward);
+    }
+    return locDay;
 }
 /*
 (function(){

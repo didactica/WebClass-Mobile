@@ -9,6 +9,7 @@ var Asistencia = function(tx,id,callback,json)
     this.observaciones = null;
     this.id_curso = null;
     this.informado = null;
+    this.class = null;
 
     if(json!=null){
         this.initWithJson(json);

@@ -109,6 +109,65 @@ input[type="text"],input[type="password"]{
 .login-container div, .login-container .ui-input-text{
 	border:none !important;
 }
+#menu_lateral{
+	background-color: rgb(32, 138, 212);
+	color:rgba(255,255,255,.8);
+	-webkit-box-shadow: inset 3px 0 3px rgba(0,0,0,.3);
+	-moz-box-shadow: inset 3px 0 3px rgba(0,0,0,.3);
+	box-shadow: inset 3px 0 3px rgba(0,0,0,.3);
+}
+#menu_lateral ul{
+	margin:-0.8em 0;
+}
+/* #menu_lateral li,#menu_lateral a,#menu_lateral ul */
+#menu_lateral li{
+	background: rgba(0,0,0,0) !important;
+	color:rgba(255,255,255,.5);
+	font-weight: lighter;
+	height: 3em;
+	line-height:3em;
+}
+#menu_lateral a{
+	line-height:2em;
+	color:rgba(255,255,255,.5);
+	margin-top:0.2em;
+	font-weight: lighter;
+}
+#menu_lateral li:focus{
+	background-color: rgb(22, 128, 202)!important;
+}
+#menu_lateral li i{
+	padding-right:2.2em;
+	font-size:1.3em;
+}
+#btn-logout{
+	position: absolute;
+	bottom: 1em;
+	left: 0px;
+	width: 100%;
+	padding-left:2em!important;
+}
+#btn-logout i{
+	padding-right:2.2em;
+	font-size:1.3em;
+}
+.tarjetaPresentacion{
+	margin: -0.9em;
+	padding: 2.3em 1em;
+	background-color: #fff;
+	color: #000000;
+	font-size: 1.1em;
+	-webkit-box-shadow: inset 3px 0 3px rgba(0,0,0,.3);
+	-moz-box-shadow: inset 3px 0 3px rgba(0,0,0,.3);
+	box-shadow: inset 3px 0 3px rgba(0,0,0,.3);	
+}
+.tarjetaPresentacion i{
+	color: rgb(32, 138, 212);
+	padding-left: 0.2em;
+}
+.tarjetaPresentacion .muted{
+	color: rgb(180, 180, 180);
+}
 ul#eventos, ul#eventos li, ul.eventos, ul.eventos li{
 	/*width:100%;*/
 }
@@ -522,7 +581,7 @@ html body .ui-btn.ui-btn-a:hover{
 	margin:-1em 0;
 }
 #alumno-lista li{
-	padding:0 1em 0 1.5em;
+	padding:0 0.2em;
 }
 #alumno-lista li .alumno-detail{
 	height:4.5em; 
@@ -537,8 +596,16 @@ html body .ui-btn.ui-btn-a:hover{
 	position:relative;
 }
 #alumno-lista li .menu i{
+	border-radius:50%;
+	moz-border-radius:50%;
+	webkit-border-radius:50%;
+	width:2em;
+	height:2em;
 	line-height: 2.2em;
 	color:#000;
+	background-color:#cccccc;
+	text-align:center;
+	margin-top:0.1em;
 }
 #alumno-lista li div{
 	z-index:11;
@@ -552,31 +619,26 @@ html body .ui-btn.ui-btn-a:hover{
 ul#alumno-lista li.header{
 	position:relative;
 	text-align: center;
-	width:100%;
-	line-height: 1.5em;
 	text-decoration: none;
 	color:#666;
-	font-weight: bolder;
 	font-size: 1.5em;
 	border:none;
 	background:#ddd;
 	border-top:1px solid #999;
 	border-bottom:1px solid #999;
-	padding:0 0.2em;
 }
-ul#alumno-lista li.header #month{
+ul#alumno-lista li.header p, ul#alumno-lista li.header strong{
 	margin:0 auto;
 	display: inline-block;
 	width:100%;
 	position:relative;
-	left:-0.5em;
+}
+ul#alumno-lista li.header span{
+	display:block;
 }
 ul#alumno-lista li.header .control{
 	position:absolute;
-	display:inline-block;
-	clear:both;
-	height:1em;
-	line-height: 1em;
+	line-height: 1.5em;
 	width:1em;
 	color:#666;
 	font-size:1.5em;
@@ -584,11 +646,14 @@ ul#alumno-lista li.header .control{
 }
 ul#alumno-lista li.header .control.prev{
 	float:left;
+	left:0;
 }
 ul#alumno-lista li.header .control.next{
 	float:right;
 	right:0;
-	padding-right:1.5em;
+}
+.presente{
+	background-color:#8AE68A !important;
 }
 /*.menu-container{
 	display:block;
@@ -634,7 +699,7 @@ ul#alumno-lista li.header .control.next{
 }
 
 /* Standard syntax */
-@keyframes rightArrow changeState{
+@keyframes changeState{
     0%   {background-color:#E68A8A;}
     25%  {background-color:#C3AC8A;}
     50%  {background-color:#ACC38A;}
@@ -649,7 +714,7 @@ ul#alumno-lista li.header .control.next{
 }
 
 /* Standard syntax */
-@keyframes rightArrow removeState{
+@keyframes removeState{
     0%   {background-color:#8AE68A;}
     25%  {background-color:#ACC38A;}
     50%  {background-color:#C3AC8A;}

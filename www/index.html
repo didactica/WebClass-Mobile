@@ -17,13 +17,23 @@
     </head>
     <body>
         <div id="document-page" data-role="page" data-theme="a">
-            <div data-role="panel" id="menu_lateral" data-position="right" data-display="reveal" data-position-fixed="true">
-                <ul data-role="listview">
-                    <li><a href="#" data-transition="slide" class="menuItem" template="home"><i class="fa fa-home"></i> Home</a></li>
-                    <li><a href="#" data-transition="slide" class="menuItem" template="planificacion"><i class="fa fa-calendar"></i> Planificación</a></li>
-                    <li><a href="#" data-transition="slide" class="menuItem" template="asistencia"><i class="fa fa-users"></i> Asistencia</a></li>
-                    <li><a href="#" id="btn-logout"><i class="fa fa-sign-out"></i> Cerrar Sesi&oacute;n</a></li>
+            <div data-role="panel" id="menu_lateral" data-position="right" data-display="push" data-position-fixed="true">
+                <div class="tarjetaPresentacion">
+                    <div class="row">
+                        <div class="col-xs-4"><i class="fa fa-user fa-3x"></i></div>
+                        <div class="col-xs-8">
+                            <small class="muted">Profesor</small><br>
+                            <span id="nombreUsuario">Nombre Apellido</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+                <ul class="menuWebClass" data-role="listview">
+                    <li data-icon="false"><a href="#" data-transition="slide" class="menuItem" template="home"><i class="fa fa-home"></i> Home</a></li>
+                    <li data-icon="false"><a href="#" data-transition="slide" class="menuItem" template="planificacion"><i class="fa fa-calendar"></i> Planificación</a></li>
+                    <li data-icon="false"><a href="#" data-transition="slide" class="menuItem" template="asistencia"><i class="fa fa-users"></i> Asistencia</a></li>
                 </ul>
+                <a href="#" id="btn-logout"><i class="fa fa-power-off"></i> Cerrar sesi&oacute;n</a>
             </div>
             <div id="nav-header" data-role="header" data-position="fixed" data-tap-toggle="false" class="ui-bar">
                 <span id="backButton" class="fa-stack">
