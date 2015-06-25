@@ -652,8 +652,11 @@ ul#alumno-lista li.header .control.next{
 	float:right;
 	right:0;
 }
-.presente{
-	background-color:#8AE68A !important;
+.presente i.fa{
+	color:#8AE68A !important;
+}
+.ausent i.fa{
+	color:#E68A8A !important;
 }
 /*.menu-container{
 	display:block;
