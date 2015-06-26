@@ -59,7 +59,7 @@ Asistencia.prototype.selectById = function(callback)
         }
     );
 }
-Asistencia.prototype.insert = function(vals)
+Asistencia.prototype.insert = function(vals,callback)
 {
     var query = "INSERT OR REPLACE INTO alumno_asistencia VALUES(?,?,?,?,?,?,?,?)";
     if( typeof vals !== 'undefined' ){
@@ -82,7 +82,7 @@ Asistencia.prototype.insert = function(vals)
         this.id_curso,
         this.informado
     ];
-    this.tx.executeSql(query,insertObject,null,function(tx,error){
+    this.tx.executeSql(query,insertObject,callback,function(tx,error){
         console.log(error.message);
     });
 }

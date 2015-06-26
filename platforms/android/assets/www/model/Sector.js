@@ -15,7 +15,7 @@ Sector.prototype.createTable = function() {
     ");";
     this.tx.executeSql(query,[]);
 }
-Sector.prototype.insert = function(vals){
+Sector.prototype.insert = function(vals,callback){
     var query = "INSERT OR REPLACE INTO sector VALUES(?,?,?,?,?,?,?,?)";
     if( typeof vals != 'undefined' ){
         this.id = vals.id;
@@ -37,7 +37,7 @@ Sector.prototype.insert = function(vals){
         this.visible,
         this.id_ant
     ];
-    this.tx.executeSql(query,insertObject,null,function(tx,error){
+    this.tx.executeSql(query,insertObject,callback,function(tx,error){
         console.log(error.message);
     });
 }

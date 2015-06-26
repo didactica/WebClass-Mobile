@@ -23,7 +23,7 @@ Usuario.prototype.createTable = function() {
     ");";
     this.tx.executeSql(query,[]);
 }
-Usuario.prototype.insert = function(vals){
+Usuario.prototype.insert = function(vals,callback){
     var query = "INSERT OR REPLACE INTO usuario VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
     if( typeof vals != 'undefined' ){
         this.id = vals.id;
@@ -53,7 +53,7 @@ Usuario.prototype.insert = function(vals){
         this.imagen,
         this.id_ant
     ];
-    this.tx.executeSql(query,insertObject,null,function(tx,error){
+    this.tx.executeSql(query,insertObject,callback,function(tx,error){
         console.log(error.message);
     });
 }

@@ -176,7 +176,7 @@ Alumno.prototype.selectById = function(callback)
         }
     );
 }
-Alumno.prototype.insert = function(vals)
+Alumno.prototype.insert = function(vals,callback)
 {
     var query = "INSERT OR REPLACE INTO alumno VALUES(?,?,?,?,?,?,?,?,?)";
     if( typeof vals !== 'undefined' ){
@@ -201,7 +201,7 @@ Alumno.prototype.insert = function(vals)
         this.habilitado,
         this.numLista
     ];
-    this.tx.executeSql(query,insertObject,null,function(tx,error){
+    this.tx.executeSql(query,insertObject,callback,function(tx,error){
         console.log(error.message);
     });
 }

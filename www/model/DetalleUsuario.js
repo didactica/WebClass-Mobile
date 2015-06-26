@@ -39,7 +39,7 @@ DetalleUsuario.prototype.createTable = function() {
     ");";
     this.tx.executeSql(query,[]);
 }
-DetalleUsuario.prototype.insert = function(vals){
+DetalleUsuario.prototype.insert = function(vals,callback){
     var query = "INSERT OR REPLACE INTO usuario_detalle VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     if( typeof vals != 'undefined' ){
         this.id = vals.id;
@@ -101,7 +101,7 @@ DetalleUsuario.prototype.insert = function(vals){
         this.sms_disponible,
         this.pass_mail
     ];
-    this.tx.executeSql(query,insertObject,null,function(tx,error){
+    this.tx.executeSql(query,insertObject,callback,function(tx,error){
         console.log(error.message);
     });
 }

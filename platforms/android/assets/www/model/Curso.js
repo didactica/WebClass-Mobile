@@ -51,7 +51,7 @@ Curso.prototype.selectById = function(callback)
         }
     );
 }
-Curso.prototype.insert = function(vals){
+Curso.prototype.insert = function(vals,callback){
     var query = "INSERT OR REPLACE INTO curso VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
     if( typeof vals != 'undefined' ){
         this.id = vals.id;
@@ -81,7 +81,7 @@ Curso.prototype.insert = function(vals){
         this.prcmatricula,
         this.jornada
     ];
-    this.tx.executeSql(query,insertObject,null,function(tx,error){
+    this.tx.executeSql(query,insertObject,callback,function(tx,error){
         console.log(error.message);
     });
 }

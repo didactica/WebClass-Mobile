@@ -9,7 +9,7 @@ SectorGrupo.prototype.createTable = function() {
     ");";
     this.tx.executeSql(query,[]);
 }
-SectorGrupo.prototype.insert = function(vals){
+SectorGrupo.prototype.insert = function(vals,callback){
     var query = "INSERT OR REPLACE INTO sector_grupo VALUES(?,?)";
     if( typeof vals != 'undefined' ){
         this.id = vals.id;
@@ -19,7 +19,7 @@ SectorGrupo.prototype.insert = function(vals){
         this.id,
         this.nombre,
     ];
-    this.tx.executeSql(query,insertObject,null,function(tx,error){
+    this.tx.executeSql(query,insertObject,callback,function(tx,error){
         console.log(error.message);
     });
 }

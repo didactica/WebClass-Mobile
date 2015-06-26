@@ -43,7 +43,7 @@ Evento.prototype.selectId = function(id,callback){
         }
     });
 }
-Evento.prototype.insert = function(vals){
+Evento.prototype.insert = function(vals,callback){
     var query = "INSERT OR REPLACE INTO evento VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     if( typeof vals != 'undefined' ){
         this.id = parseInt(vals.id);
@@ -77,7 +77,7 @@ Evento.prototype.insert = function(vals){
         this.visible,
         this.colegio
     ];
-    this.tx.executeSql(query,insertObject,null,function(tx,error){
+    this.tx.executeSql(query,insertObject,callback,function(tx,error){
         console.log(error.message);
     });
 }

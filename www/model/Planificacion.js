@@ -96,7 +96,7 @@ Planificacion.prototype.selectById = function(callback){
 Planificacion.prototype.setField = function(field,value){
     this[field] = value;
 }
-Planificacion.prototype.insert = function(vals){
+Planificacion.prototype.insert = function(vals,callback){
     var query = "INSERT OR REPLACE INTO unidad VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     if( typeof vals != 'undefined' ){
         if( 
@@ -160,7 +160,7 @@ Planificacion.prototype.insert = function(vals){
         this.edicion,
         this.pae
     ];
-    this.tx.executeSql(query,insertObject,null,function(tx,error){
+    this.tx.executeSql(query,insertObject,callback,function(tx,error){
         console.log(error.message);
     });
 }

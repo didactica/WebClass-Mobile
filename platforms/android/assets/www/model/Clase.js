@@ -36,7 +36,7 @@ Clase.prototype.createTable = function() {
     ");";
     this.tx.executeSql(query,[]);
 }
-Clase.prototype.insert = function(vals){
+Clase.prototype.insert = function(vals,callback){
     var query = "INSERT OR REPLACE INTO clase VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     if( typeof vals != 'undefined' ){
         if( 
@@ -99,6 +99,7 @@ Clase.prototype.insert = function(vals){
         function(tx){
             //window.localStorage.setItem("modificacion",SDate.now());
             self.syncToServer();
+            callback();
         },
         function(tx,error){
             console.log(JSON.stringify(error));

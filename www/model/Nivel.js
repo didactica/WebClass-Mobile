@@ -36,7 +36,7 @@ Nivel.prototype.createTable = function() {
         }
     );
 }
-Nivel.prototype.insert = function(vals){
+Nivel.prototype.insert = function(vals,callback){
     var query = "INSERT OR REPLACE INTO nivel VALUES(?,?,?,?,?,?,?,?,?,?)";
     if( typeof vals != 'undefined' ){
         this.id = vals.id;
@@ -62,7 +62,7 @@ Nivel.prototype.insert = function(vals){
         this.codigo_tipo_ensenanza,
         this.codigo_grado
     ];
-    this.tx.executeSql(query,insertObject,null,function(tx,error){
+    this.tx.executeSql(query,insertObject,callback,function(tx,error){
         console.log(error.message);
     });
 }
