@@ -255,7 +255,6 @@ function functions(title,callback){
                 }
                 
             });
-            //*/
             break;
         case 'asistencia':
             var d = new Date();
@@ -308,22 +307,22 @@ function functions(title,callback){
                     "ulj.*,"+
                     "n.nombre AS nivelNombre, "+
                     "(SELECT COUNT(1) AS totalClases FROM clase WHERE clase.unidad=ulj.id and clase.ejecucion=1) as clasesTerminadas " +
-                "FROM (SELECT " + 
+                " FROM (SELECT " + 
                         "u.*, " +
                         "s.nombre as sectorNombre " + 
-                    "FROM " + 
-                        "unidad u " + 
-                    "LEFT OUTER JOIN " + 
-                        "sector s " + 
-                    "ON " + 
-                        "u.sector = s.id " + 
-                    "WHERE " + 
+                    " FROM " + 
+                        " unidad u " + 
+                    " LEFT OUTER JOIN " + 
+                        " sector s " + 
+                    " ON " + 
+                        " u.sector = s.id " + 
+                    " WHERE " + 
                         where + // debug only
                     " ORDER BY " + 
                         "u.fechaini desc) ulj " + 
-                "LEFT OUTER JOIN " + 
-                    "nivel n " + 
-                "ON " + 
+                " LEFT OUTER JOIN " + 
+                    " nivel n " + 
+                " ON " + 
                     " n.id = ulj.nivel";
             setUpDatabase();
             sql.transaction(
@@ -1044,6 +1043,26 @@ function logout(){
     $("#nav-header").hide();
     window.localStorage.removeItem('user');
     window.localStorage.removeItem('token');
+    window.localStorage.removeItem('secuencia');
+    for(var id in tables){
+        window.localStorage.removeItem('sizeof-'+tables[id]);
+    }
+    sql.transaction(
+        function(tx){
+            tx.executeSql("DROP TABLE evento");
+            tx.executeSql("DROP TABLE sector");
+            tx.executeSql("DROP TABLE sector_grupo");
+            tx.executeSql("DROP TABLE unidad");
+            tx.executeSql("DROP TABLE clase");
+            tx.executeSql("DROP TABLE nivel");
+            tx.executeSql("DROP TABLE curso");
+            tx.executeSql("DROP TABLE alumno");
+            tx.executeSql("DROP TABLE alumno_asistencia");
+            tx.executeSql("DROP TABLE usuario");
+            tx.executeSql("DROP TABLE usuario_detalle");
+        }
+    );
+    downloaded = false;
     user = null;
     historyStack = [];
     loadPage('login');
@@ -1072,6 +1091,19 @@ function include(script){
     document.body.appendChild(js);
 }
 function downloadData(callback){
+    sql.transaction(function(tx){
+        new Evento(tx);
+        new Sector(tx);
+        new SectorGrupo(tx);
+        new Planificacion(tx);
+        new Clase(tx);
+        new Nivel(tx);
+        new Curso(tx);
+        new Alumno(tx);
+        new Asistencia(tx);
+        new Usuario(tx);
+        new DetalleUsuario(tx);
+    });
     $("#nav-header").hide();
     if(!callback){
         loadPage('home');
@@ -1113,7 +1145,6 @@ function downloadData(callback){
                                             dataType:'json',
                                             async:false,
                                             success:function(res){
-                                                console.log(JSON.stringify(res));
                                                 if(res.status==0){
                                                     delete tmpObj[table];
                                                     tmpObj = JSON.stringify(tmpObj);
@@ -1144,36 +1175,34 @@ var tableIndex = 0;
 var lastId = 0;
 var syncSize = 0;
 var totalSyncs = 0;
+var inserts = {};
 function getTableFromServer(callback)
 {
     var table = tables[tableIndex];
     if( typeof table === 'undefined' ){
-        callback();
+        insertIntoDatabase(callback);
     } else {
-        var modificacion = window.localStorage.getItem('modificacion');
-        if( typeof modificacion === 'undefined' || modificacion==null){
-            modificacion = "{}";
+        //*
+        var secuencia = window.localStorage.getItem('secuencia');
+        if( typeof secuencia === 'undefined' || secuencia==null){
+            secuencia = 0;
         }
-        // console.log(JSON.stringify(modificacion));
-        if( typeof modificacion === 'string' ){
-            modificacion = JSON.parse(modificacion);
-        }
-        if( typeof modificacion[table] === 'undefined' ){
-            modificacion[table] = 0;
-        }
+        //*/
         var params = {
             service     : 'syncData',
             user        : user,
-            modificacion:modificacion[table],
+            secuencia   : secuencia,
             table       : table,
             offset      : lastId
         };
+        if(lastId<1){
+            console.log(JSON.stringify(params));
+        }
         var colegio = window.localStorage.getItem('colegio');
         if( (typeof colegio === 'undefined') || (colegio==null) || (colegio.length<=0) ){
             colegio = 0;
         }
         params.colegio = colegio;
-        console.log(JSON.stringify(params));
         var urlString = 'http://didactica.pablogarin.cl/getJSON.php';
         $.ajax({
             url     : urlString,
@@ -1181,102 +1210,90 @@ function getTableFromServer(callback)
             type    : 'POST',
             dataType: 'json',
             success : function(resp){
-                // console.log(JSON.stringify(resp));
+                var curT = resp.table;
                 if( typeof resp.syncSize !== 'undefined' ){
                     syncSize = resp.syncSize;
+                    if(parseInt(syncSize)<1){
+                        callback();
+                        return;
+                    }
                 }
                 if( lastId==0 ){
-                    window.localStorage.setItem('sizeof-'+table,resp.size);
-                    lastId++;
+                    window.localStorage.setItem('sizeof-'+curT,resp.size);
+                    lastId=1;
+                    if(String(resp.size) === '0'){
+                        tableIndex++;
+                        lastId=0;
+                    }
                     getTableFromServer(callback);
                 } else {
-                    var tableSize = window.localStorage.getItem('sizeof-'+table);
-                    tableSize = parseInt(tableSize);
                     $("#theRoadSoFar").html(Math.ceil(100*totalSyncs/syncSize)+'%');
-                    sql.transaction(
-                        function(tx){
-                            elements = [];
-                            if(typeof resp.rows != 'undefined'){
-                                var res = resp.rows;
-                                for(var className in res){
-                                    var curRow = res[className];
-                                    if( curRow.length>0 ){
-                                        for(var id in curRow){
-                                            var ins = curRow[id];
-                                            switch(table){
-                                                case 'usuario':
-                                                    if( ins.fecha_modificacion>modificacion[table] ){
-                                                        modificacion[table] = ins.fecha_modificacion;
-                                                        window.localStorage.setItem('modificacion',JSON.stringify(modificacion));
-                                                    }
-                                                    break;
-                                                case 'unidad':
-                                                    if( ins.modificacion>modificacion[table] ){
-                                                        modificacion[table] = ins.modificacion;
-                                                        window.localStorage.setItem('modificacion',JSON.stringify(modificacion));
-                                                    }
-                                                    break;
-                                                case 'clase':
-                                                    if( ins.modificacion>modificacion[table] ){
-                                                        modificacion[table] = ins.modificacion;
-                                                        window.localStorage.setItem('modificacion',JSON.stringify(modificacion));
-                                                    }
-                                                    break;
-                                                case 'alumno_asistencia':
-                                                    if( ins.fecha>modificacion[table] ){
-                                                        modificacion[table] = ins.fecha;
-                                                        window.localStorage.setItem('modificacion',JSON.stringify(modificacion));
-                                                    }
-                                                    break;
-                                            }
-                                            var obj = eval("new "+className+"(tx)");
-                                            obj.insert(ins,function(){
-                                                if(lastId>tableSize){
-                                                    tableIndex++;
-                                                    if(tableIndex==tables.length){
-                                                        callback();
-                                                    } else {
-                                                        lastId = 0;
-                                                        getTableFromServer(callback);
-                                                    }
-                                                } else {
-                                                    lastId++;
-                                                    totalSyncs++;
-                                                    getTableFromServer(callback);
-                                                }
-                                            });
-                                        }
-                                    } else {
-                                        tableIndex++;
-                                        lastId = 0;
-                                        getTableFromServer(callback);
+                    var tableSize = window.localStorage.getItem('sizeof-'+curT);
+                    if(typeof resp.rows !== 'undefined'){
+                        lastId+=10;
+                        totalSyncs+=10;
+                        if(lastId>parseInt(tableSize)){
+                            lastId=0;
+                            tableIndex++;
+                        } else {
+                            var res = resp.rows;
+                            for(var className in res){
+                                var curRow = res[className];
+                                for(var id in curRow){
+                                    if( typeof inserts[className] === 'undefined' ){
+                                        inserts[className] = [];
                                     }
+                                    var curObj = (res[className])[id];
+                                    (inserts[className]).push(curObj);
+
                                 }
-                            } else {
-                                tableIndex++;
-                                lastId = 0;
-                                getTableFromServer(callback);
                             }
-                        },
-                        function(error){
-                            console.log("Error de SQL");
-                            console.dir(JSON.stringify(error));
-                            getTableFromServer(callback);
-                            //callback();
-                        },
-                        null//callback
-                    );
+                        }
+                        getTableFromServer(callback);
+                    } else {
+                        // it shouldn't come to this, but just in case...
+                        console.log('Warning: Handling download with wrong parameters. Please check the WebService.');
+                        console.log('Response from server was: '+JSON.stringify(resp));
+                        getTableFromServer(callback);
+                    }
                 }
             },
             error   : function(resp,err){
-                //console.log("Error en la conexión");
-                //console.log(JSON.stringify(resp));
-                //console.log(err);
                 getTableFromServer(callback)
-                //callback();
             }
         });
     }
+}
+function insertIntoDatabase(callback){
+    var secuencia = window.localStorage.getItem("secuencia");
+    if( typeof secuencia === 'undefined' ){
+        secuencia = 0;
+    } else {
+        secuencia = parseInt(secuencia);
+        if(isNaN(secuencia)){
+            secuencia = 0;
+        }
+    }
+    sql.transaction(
+        function(tx){
+            for(var className in inserts){
+                for(var id in inserts[className]){
+                    var curIns = (inserts[className])[id];
+                    //*
+                    if( parseInt(curIns.secuencia)>parseInt(secuencia) ){
+                        secuencia = curIns.secuencia;
+                    }
+                    //*/
+                    var obj = eval("new "+className+"(tx)");
+                    obj.insert(curIns,function(){
+                        
+                    });
+                }
+            }
+            window.localStorage.setItem("secuencia",secuencia);
+            callback();
+        }
+    );
 }
 function setRadialPercentage(id,percentage){
     var canvas  = document.getElementById(id);

@@ -99,7 +99,9 @@ Clase.prototype.insert = function(vals,callback){
         function(tx){
             //window.localStorage.setItem("modificacion",SDate.now());
             self.syncToServer();
-            callback();
+            if( typeof callback !== 'undefined' ){
+                callback();
+            }
         },
         function(tx,error){
             console.log(JSON.stringify(error));
