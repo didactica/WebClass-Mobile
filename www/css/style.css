@@ -132,6 +132,7 @@ input[type="text"],input[type="password"]{
 	color:rgba(255,255,255,.5);
 	margin-top:0.2em;
 	font-weight: lighter;
+	text-align: left;
 }
 #menu_lateral li:focus{
 	background-color: rgb(22, 128, 202)!important;
@@ -657,6 +658,33 @@ ul#alumno-lista li.header .control.next{
 }
 .ausente i.fa{
 	color:#E68A8A !important;
+}
+#background-blur{
+	position:fixed;
+	top:0;
+	left:0;
+	bottom:0;
+	right:0;
+	background:rgba(0, 0, 0, 0.8) none repeat scroll 0 0;
+	z-index: 99999;
+}
+#dialogBox{
+	background-color:#FFFFFF;
+	width:95%;
+	height:auto;
+	position:relative;
+	margin:25% auto;
+	padding:1em;
+}
+#dialogBox *{
+	display:block;
+	margin:1em 0;
+}
+#dialogBox a.btn{
+	display: inline-block;
+	margin: 0 0.5%;
+	padding: 0.5em;
+	width: 49%;
 }
 /*.menu-container{
 	display:block;

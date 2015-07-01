@@ -58,6 +58,7 @@
 *   la referencia, y luego dentro del codigo delegar al modelo la busqueda de
 *   ese usuario y grabarlo en la base de datos para uso futuro.
 */
+// HEADER START
 include('js/SQLHelper.js');
 include('model/Evento.js');
 include('model/Planificacion.js');
@@ -70,6 +71,7 @@ include('model/Alumno.js');
 include('model/Asistencia.js');
 include('model/Curso.js');
 include('model/DetalleUsuario.js');
+include('js/md5.js');
 
 document.addEventListener("deviceready",onDeviceReady,false);
 document.addEventListener("backbutton",backButton, false);
@@ -91,6 +93,18 @@ var where;
 var lastObject = [];
 var d = new Date();
 var year = d.getFullYear();
+var tableIndex = 0;
+var lastId = 0;
+var syncSize = 0;
+var totalSyncs = 0;
+var inserts = {};
+var menuOpen = false;
+var changing = false;
+var touchOffsetX = 0;
+var touchOffsetY = 0;
+var go = false;
+var changing = false;
+var editAsistencia = false;
 
 $.event.special.swipe.scrollSupressionThreshold = 10; // More than this horizontal displacement, and we will suppress scrolling.
 $.event.special.swipe.horizontalDistanceThreshold = 30; // Swipe horizontal displacement must be more than this.
@@ -98,7 +112,8 @@ $.event.special.swipe.durationThreshold = 500;  // More time than this, and it i
 $.event.special.swipe.verticalDistanceThreshold = 75;
 
 $.mobile.filterable.prototype.options.filterCallback = filtrarPlanificaciones;
-
+// HEADER END
+// IMPLEMENTATION START
 function onDeviceReady()
 {
     setUpDatabase();
@@ -150,7 +165,6 @@ function setUpDatabase(){
 function functions(title,callback){
     switch(title){
         case 'lista-asistencia':
-            // REUTILIZAR CODIGO!!! LOS PROCESOS SE ESTAN VOLVIENDO COMPLEJOS, Y LA MANTENCION SERA UNA PESADILLA.
             var curso = elements.curso;
             var dia = elements.dia;
             var mes = elements.mes;
@@ -527,8 +541,6 @@ function backButton(){
         }
     }
 }
-var menuOpen = false;
-var changing = false;
 function refreshWidgets(page){
     $("#nav-header").show();
     $("#backButton").show();
@@ -567,95 +579,159 @@ function refreshWidgets(page){
     //*/
     switch(page){
         case 'lista-asistencia':
-            $(".header .control.next, .header .control.prev").on("click",function(ev){
-                var mes = elements.fecha.mes;
-                var curso = elements.curso.id;
-                var d = new Date(Date.UTC(year,mes,1));
-                var dia = parseInt(elements.fecha.dia);
-                var downward = false;
-                if( $(this).hasClass('prev') && dia>1 ){
-                    downward = true;
-                    dia--;
-                }
-                if( $(this).hasClass('next') && dia<d.getDate()){
-                    downward = false;
-                    dia++;
-                }
-                dia = getWorkday(year,mes,dia,downward);
-                current = 'null';
-                elements = {'dia':dia, 'curso':curso, 'mes':mes}
-                if( historyStack[historyStack.length-1]=='lista-asistencia' ){
-                    historyStack.pop();   
-                }
-                loadPage('lista-asistencia');
-            });
-            $("#alumno-lista .menu").each(function(k,v){
-                $(v).on("click",function(evt){
-                    var dom = v;
-                    var parent = $(v).parents('li');
-                    var id = $(v).attr("href");
-                    id = id.substring(1);
-                    var menu = [
-                        {
-                            text:'Asistente',
-                            rel:'',
-                            anchor:'#',
-                            action:function(){
-                                $.mobile.loading('show').promise().done(function(){
-                                    setUpDatabase();
-                                    sql.transaction(function(tx){
-                                        var al = new Alumno(tx,id,function(){
-                                            al.setAsistencia(0);
-                                            parent.addClass('presente');
-                                            parent.find('i.fa').addClass('fa-check');
-                                            parent.find('i.fa').removeClass('fa-clock-o');
-                                            parent.find('i.fa').removeClass('fa-remove');
-                                            $.mobile.loading('hide');
-                                        });
-                                    });
-                                });
-                            }
-                        },
-                        {
-                            text:'Ausente...',
-                            rel:'',
-                            anchor:'#',
-                            action:function(){
-                                $.mobile.loading('show').promise().done(function(){
-                                    setUpDatabase();
-                                    sql.transaction(function(tx){
-                                        var al = new Alumno(tx,id,function(){
-                                            al.setAsistencia(1);
-                                            parent.addClass('ausente');
-                                            parent.find('i.fa').removeClass('fa-check');
-                                            parent.find('i.fa').removeClass('fa-clock-o');
-                                            parent.find('i.fa').addClass('fa-remove');
-                                            $.mobile.loading('hide');
-                                        });
-                                    });
-                                });
-                            }
-                        },
-                        {
-                            text:'Atrasado...',
-                            rel:'',
-                            anchor:'#',
-                            action:function(){
-                                alert('TODO');
-                            }
-                        },
-                        {
-                            text:'Sin Registro',
-                            rel:'',
-                            anchor:'#',
-                            action:function(){
-                                alert('TODO');
-                            }
-                        }
-                    ]
-                    createMenu(menu,1,dom);
+            if(!editAsistencia){
+                $(".header .control.next, .header .control.prev").on("click",function(ev){
+                    var mes = ( typeof elements.fecha.mes !== 'undefined' )?elements.fecha.mes:elements.mes;
+                    var curso = elements.curso.id;
+                    var d = new Date(Date.UTC(year,mes,1));
+                    var dia = parseInt(elements.fecha.dia);
+                    var downward = false;
+                    if( $(this).hasClass('prev') && dia>1 ){
+                        downward = true;
+                        dia--;
+                    }
+                    if( $(this).hasClass('next') && dia<d.getDate()){
+                        downward = false;
+                        dia++;
+                    }
+                    dia = getWorkday(year,mes,dia,downward);
+                    current = 'null';
+                    elements = {'dia':dia, 'curso':curso, 'mes':mes}
+                    if( historyStack[historyStack.length-1]=='lista-asistencia' ){
+                        historyStack.pop();   
+                    }
+                    elements = {'dia':dia, 'curso':curso, 'mes':mes}
+                    loadPage('lista-asistencia');
                 });
-            });
+            } else {
+                $(".header .control.next, .header .control.prev").off("click")
+            }
+            // Si el mes seleccionado es el en curso, debe permitir editar
+            if( elements.fecha.mes == curDate.m ){
+                console.log('1 ok');
+                $("#nav-more").show();
+                if(editAsistencia){
+                    console.log('2 ok');
+                    $("#alumno-lista .menu").each(function(k,v){
+                        console.log('3 ok');
+                        $(v).on("click",function(evt){
+                            var dom = v;
+                            var parent = $(v).parents('li');
+                            var id = $(v).attr("href");
+                            id = id.substring(1);
+                            var menu = [
+                                {
+                                    text:'Asistente',
+                                    rel:'',
+                                    anchor:'#',
+                                    action:function(){
+                                        $.mobile.loading('show').promise().done(function(){
+                                            setUpDatabase();
+                                            sql.transaction(function(tx){
+                                                var al = new Alumno(tx,id,function(){
+                                                    al.setAsistencia(0);
+                                                    parent.addClass('presente');
+                                                    parent.find('i.fa').addClass('fa-check');
+                                                    parent.find('i.fa').removeClass('fa-clock-o');
+                                                    parent.find('i.fa').removeClass('fa-remove');
+                                                    $.mobile.loading('hide');
+                                                });
+                                            });
+                                        });
+                                    }
+                                },
+                                {
+                                    text:'Ausente...',
+                                    rel:'',
+                                    anchor:'#',
+                                    action:function(){
+                                        $.mobile.loading('show').promise().done(function(){
+                                            setUpDatabase();
+                                            sql.transaction(function(tx){
+                                                var al = new Alumno(tx,id,function(){
+                                                    al.setAsistencia(1);
+                                                    parent.addClass('ausente');
+                                                    parent.find('i.fa').removeClass('fa-check');
+                                                    parent.find('i.fa').removeClass('fa-clock-o');
+                                                    parent.find('i.fa').addClass('fa-remove');
+                                                    $.mobile.loading('hide');
+                                                });
+                                            });
+                                        });
+                                    }
+                                },
+                                {
+                                    text:'Atrasado...',
+                                    rel:'',
+                                    anchor:'#',
+                                    action:function(){
+                                        alert('TODO');
+                                    }
+                                },
+                                {
+                                    text:'Sin Registro',
+                                    rel:'',
+                                    anchor:'#',
+                                    action:function(){
+                                        alert('TODO');
+                                    }
+                                }
+                            ]
+                            createMenu(menu,1,dom);
+                        });
+                    });
+                } else {
+                    $("#nav-more").off('click');
+                    $("#nav-more").on('click',function(evt){
+                        var mes = elements.fecha.mes;
+                        var curso = elements.curso.id;
+                        var dia = parseInt(elements.fecha.dia);
+                        var menu = [
+                            {
+                                text:'Tomar Asistencia',
+                                rel:'',
+                                anchor:'#',
+                                action:function(){
+                                    promptWindow(
+                                        'Por favor ingrese su contraseña',
+                                        function(results){
+                                            var pass = results.input1;
+                                            if(results.buttonIndex==1){
+                                                var userData = window.localStorage.getItem('userData');
+                                                if( typeof userData === 'string' ){
+                                                    userData = JSON.parse(userData);
+                                                }
+                                                var realPass = userData.clave;
+                                                console.log(realPass);
+                                                console.log(md5(pass));
+                                                if( md5(pass)!==realPass ){
+                                                    navigator.notification.alert(
+                                                        'La clave ingresada es incorrecta',
+                                                        null,
+                                                        'Error',
+                                                        'Aceptar'
+                                                    );
+                                                } else {
+                                                    editAsistencia = true;
+                                                    elements = {'dia':dia, 'curso':curso, 'mes':mes}
+                                                    loadPage('lista-asistencia');
+                                                }
+                                            }
+                                        },
+                                        'Identificación',
+                                        ['Cancelar','Aceptar'],
+                                        ['password']
+                                    );
+                                }
+                            }
+                        ];
+                        createMenu(menu);
+                    });
+                }
+                
+            } else {
+                editAsistencia = false;
+            }
             break;
         case 'asistencia':
             $("#filtrarAsistencia").off("click");
@@ -1092,6 +1168,7 @@ function include(script){
 }
 function downloadData(callback){
     sql.transaction(function(tx){
+        //  THE CONSTRUCTOR FOR EACH MODEL CREATES THE TABLE THAT REPRESENTS THAT ENTITY.
         new Evento(tx);
         new Sector(tx);
         new SectorGrupo(tx);
@@ -1108,8 +1185,7 @@ function downloadData(callback){
     if(!callback){
         loadPage('home');
     }
-    if( (!downloaded) && (typeof navigator.connection!='undefined' && navigator.connection.type!=Connection.NONE) ){
-        downloaded = true;
+    if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
         $.mobile.loading('hide');
         $("#contenido").html(compileTemplate('descargando')).promise().done(function(){
             var pendientes = window.localStorage.getItem("pendientes");
@@ -1171,23 +1247,17 @@ function downloadData(callback){
         callback();
     }
 }
-var tableIndex = 0;
-var lastId = 0;
-var syncSize = 0;
-var totalSyncs = 0;
-var inserts = {};
 function getTableFromServer(callback)
 {
     var table = tables[tableIndex];
     if( typeof table === 'undefined' ){
         insertIntoDatabase(callback);
+        return;
     } else {
-        //*
         var secuencia = window.localStorage.getItem('secuencia');
         if( typeof secuencia === 'undefined' || secuencia==null){
             secuencia = 0;
         }
-        //*/
         var params = {
             service     : 'syncData',
             user        : user,
@@ -1195,9 +1265,6 @@ function getTableFromServer(callback)
             table       : table,
             offset      : lastId
         };
-        if(lastId<1){
-            console.log(JSON.stringify(params));
-        }
         var colegio = window.localStorage.getItem('colegio');
         if( (typeof colegio === 'undefined') || (colegio==null) || (colegio.length<=0) ){
             colegio = 0;
@@ -1227,15 +1294,16 @@ function getTableFromServer(callback)
                     }
                     getTableFromServer(callback);
                 } else {
-                    $("#theRoadSoFar").html(Math.ceil(100*totalSyncs/syncSize)+'%');
+                    // resolution shouldn't be over 100.
+                    setRadialPercentage("theRoadSoFar",((Math.ceil((totalSyncs/syncSize)*100))/100));
                     var tableSize = window.localStorage.getItem('sizeof-'+curT);
                     if(typeof resp.rows !== 'undefined'){
                         lastId+=10;
-                        totalSyncs+=10;
                         if(lastId>parseInt(tableSize)){
                             lastId=0;
                             tableIndex++;
                         } else {
+                            totalSyncs+=10;
                             var res = resp.rows;
                             for(var className in res){
                                 var curRow = res[className];
@@ -1265,6 +1333,7 @@ function getTableFromServer(callback)
     }
 }
 function insertIntoDatabase(callback){
+    tableIndex = 0;
     var secuencia = window.localStorage.getItem("secuencia");
     if( typeof secuencia === 'undefined' ){
         secuencia = 0;
@@ -1279,11 +1348,9 @@ function insertIntoDatabase(callback){
             for(var className in inserts){
                 for(var id in inserts[className]){
                     var curIns = (inserts[className])[id];
-                    //*
                     if( parseInt(curIns.secuencia)>parseInt(secuencia) ){
                         secuencia = curIns.secuencia;
                     }
-                    //*/
                     var obj = eval("new "+className+"(tx)");
                     obj.insert(curIns,function(){
                         
@@ -1549,11 +1616,6 @@ function getPosition(element) {
     }
     return { x: xPosition, y: yPosition };
 }
-
-var touchOffsetX = 0;
-var touchOffsetY = 0;
-var go = false;
-var changing = false;
 function slideUnlock(ev){
     // METODO GRAFICO
     var li = $(this);
@@ -1657,6 +1719,43 @@ function getWorkday(year,month,day,downward){
     }
     return locDay;
 }
+function promptWindow(message,action,title,buttons,inputTypes){
+    // message: string, action: function(), title: string, buttons:[strings...],inputTypes:[strings...]
+    var backgroundBlur = document.createElement('div');
+    backgroundBlur.id = 'background-blur';
+    var dialog = document.createElement("div");
+    dialog.id = "dialogBox";
+    var titleDom = document.createElement('h3');
+    titleDom.appendChild(document.createTextNode(title));
+    dialog.appendChild(titleDom);
+    dialog.appendChild(document.createTextNode(message));
+    // dialog.className = "dialogBox";
+    for(var i=0;i<inputTypes.length;i++){
+        var inp = document.createElement('input');
+        inp.type = inputTypes[i];
+        inp.className='form-control';
+        dialog.appendChild(inp);
+    }
+    for(var i=0;i<2;i++){
+        var btn = document.createElement('a');
+        btn.setAttribute('href','#');
+        btn.id='indexSelected'+i;
+        btn.className = 'btn btn-info';
+        btn.appendChild(document.createTextNode(buttons[i]));
+        btn.addEventListener('click',function(evt){
+            var ind = (evt.target.id).replace('indexSelected','');
+            var result = {buttonIndex:ind};
+            $('#dialogBox input').each(function(k,v){
+                result['input'+(k+1)] = v.value;
+            });
+            action(result);
+            $("#background-blur").remove();
+        },null);
+        dialog.appendChild(btn);
+    }
+    backgroundBlur.appendChild(dialog);
+    document.body.appendChild(backgroundBlur);
+}
 /*
 (function(){
   var cache = {};
@@ -1698,3 +1797,4 @@ Handlebars.registerHelper('ifCond', function(v1, v2, options) {
   }
   return options.inverse(this);
 });
+// IMPLEMENTATION END
