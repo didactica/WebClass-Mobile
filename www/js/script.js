@@ -713,6 +713,7 @@ function refreshWidgets(page){
                                                     );
                                                 } else {
                                                     editAsistencia = true;
+                                                    
                                                     elements = {'dia':dia, 'curso':curso, 'mes':mes}
                                                     loadPage('lista-asistencia');
                                                 }
