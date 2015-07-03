@@ -104,6 +104,7 @@ var touchOffsetX = 0;
 var touchOffsetY = 0;
 var go = false;
 var changing = false;
+var asistencia = {};
 var editAsistencia = false;
 
 $.event.special.swipe.scrollSupressionThreshold = 10; // More than this horizontal displacement, and we will suppress scrolling.
@@ -226,6 +227,9 @@ function functions(title,callback){
                                                     estado = 'atrasado'; 
                                                     icon = 'fa-clock-o';
                                                     break;
+                                                default:
+                                                    estado = 'sinconfirmar';
+                                                    icon = 'fa-question';
                                             }
                                             asistenciaAlumnos[cur.id_alumno] = {estado:estado,icon:icon};
                                         }
@@ -245,9 +249,10 @@ function functions(title,callback){
                                     if( (res.rows!=null) && (res.rows.length>0) ){
                                         for(var i=0;i<res.rows.length;i++){
                                             var cur = res.rows.item(i);
+                                            asistencia[(cur.id)] = {};
                                             var resObj = asistenciaAlumnos[cur.id];
                                             if( typeof resObj == 'undefined' ){
-                                                resObj = {estado:'presente',icon:'fa-check'}
+                                                resObj = {estado:'sinconfirmar',icon:'fa-question'}
                                             }
                                             cur.class = resObj.estado;
                                             cur.icon = resObj.icon;
@@ -512,6 +517,9 @@ function backButton(){
     } else {
         if(historyStack.length>1){
             $.mobile.loading('show').promise().done(function(){
+                if(editAsistencia){
+                    editAsistencia = false;
+                }
                 historyStack.pop();
                 var last = historyStack.pop();
                 if(typeof last != 'undefined'){
@@ -581,7 +589,7 @@ function refreshWidgets(page){
         case 'lista-asistencia':
             if(!editAsistencia){
                 $(".header .control.next, .header .control.prev").on("click",function(ev){
-                    var mes = ( typeof elements.fecha.mes !== 'undefined' )?elements.fecha.mes:elements.mes;
+                    var mes = elements.fecha.mes;
                     var curso = elements.curso.id;
                     var d = new Date(Date.UTC(year,mes,1));
                     var dia = parseInt(elements.fecha.dia);
@@ -608,23 +616,39 @@ function refreshWidgets(page){
             }
             // Si el mes seleccionado es el en curso, debe permitir editar
             if( elements.fecha.mes == curDate.m ){
-                console.log('1 ok');
                 $("#nav-more").show();
                 if(editAsistencia){
-                    console.log('2 ok');
                     $("#alumno-lista .menu").each(function(k,v){
-                        console.log('3 ok');
                         $(v).on("click",function(evt){
                             var dom = v;
                             var parent = $(v).parents('li');
                             var id = $(v).attr("href");
+                            var secuencia = window.localStorage.getItem('secuencia');
                             id = id.substring(1);
+                            var mes = elements.fecha.mes;
+                            var curso = elements.curso.id;
+                            var dia = parseInt(elements.fecha.dia);
                             var menu = [
                                 {
                                     text:'Asistente',
                                     rel:'',
                                     anchor:'#',
                                     action:function(){
+                                        parent.addClass('presente');
+                                        parent.find('i.fa').removeClass('fa-question');
+                                        parent.find('i.fa').addClass('fa-check');
+                                        parent.find('i.fa').removeClass('fa-clock-o');
+                                        parent.find('i.fa').removeClass('fa-remove');
+                                        var tmp = {
+                                            id_alumno:id,
+                                            fecha:(year+'-'+mes+'-'+(dia<10?'0'+dia:dia)),
+                                            justificacion:'',
+                                            estado:0,
+                                            observaciones:'',
+                                            id_curso:curso
+                                        }
+                                        asistencia[id] = tmp;
+                                        /*
                                         $.mobile.loading('show').promise().done(function(){
                                             setUpDatabase();
                                             sql.transaction(function(tx){
@@ -638,6 +662,7 @@ function refreshWidgets(page){
                                                 });
                                             });
                                         });
+                                        //*/
                                     }
                                 },
                                 {
@@ -645,6 +670,31 @@ function refreshWidgets(page){
                                     rel:'',
                                     anchor:'#',
                                     action:function(){
+                                        promptWindow(
+                                            'Justificación',
+                                            function(results){
+                                                if(results.buttonIndex==1){
+                                                    parent.addClass('ausente');
+                                                    parent.find('i.fa').removeClass('fa-question');
+                                                    parent.find('i.fa').removeClass('fa-check');
+                                                    parent.find('i.fa').removeClass('fa-clock-o');
+                                                    parent.find('i.fa').addClass('fa-remove');
+                                                    var tmp = {
+                                                        id_alumno:id,
+                                                        fecha:(year+'-'+mes+'-'+(dia<10?'0'+dia:dia)),
+                                                        justificacion:(results.input1),
+                                                        estado:1,
+                                                        observaciones:'',
+                                                        id_curso:curso
+                                                    }
+                                                    asistencia[id] = tmp;
+                                                }
+                                            },
+                                            'Ausente',
+                                            ['Cancelar','Grabar'],
+                                            ['text','checkbox']
+                                        );
+                                        /*
                                         $.mobile.loading('show').promise().done(function(){
                                             setUpDatabase();
                                             sql.transaction(function(tx){
@@ -658,6 +708,7 @@ function refreshWidgets(page){
                                                 });
                                             });
                                         });
+                                        //*/
                                     }
                                 },
                                 {
@@ -665,15 +716,30 @@ function refreshWidgets(page){
                                     rel:'',
                                     anchor:'#',
                                     action:function(){
-                                        alert('TODO');
-                                    }
-                                },
-                                {
-                                    text:'Sin Registro',
-                                    rel:'',
-                                    anchor:'#',
-                                    action:function(){
-                                        alert('TODO');
+                                        promptWindow(
+                                            'Observaciones',
+                                            function(results){
+                                                if(results.buttonIndex==1){
+                                                    parent.addClass('atrasado');
+                                                    parent.find('i.fa').removeClass('fa-question');
+                                                    parent.find('i.fa').removeClass('fa-check');
+                                                    parent.find('i.fa').addClass('fa-clock-o');
+                                                    parent.find('i.fa').removeClass('fa-remove');
+                                                    var tmp = {
+                                                        id_alumno:id,
+                                                        fecha:(year+'-'+mes+'-'+(dia<10?'0'+dia:dia)),
+                                                        justificacion:'',
+                                                        estado:2,
+                                                        observaciones:(results.input1),
+                                                        id_curso:curso
+                                                    }
+                                                    asistencia[id] = tmp;
+                                                }
+                                            },
+                                            'Atrasado',
+                                            ['Cancelar','Grabar'],
+                                            ['text','checkbox']
+                                        );
                                     }
                                 }
                             ]
@@ -686,46 +752,142 @@ function refreshWidgets(page){
                         var mes = elements.fecha.mes;
                         var curso = elements.curso.id;
                         var dia = parseInt(elements.fecha.dia);
-                        var menu = [
-                            {
-                                text:'Tomar Asistencia',
-                                rel:'',
-                                anchor:'#',
-                                action:function(){
-                                    promptWindow(
-                                        'Por favor ingrese su contraseña',
-                                        function(results){
-                                            var pass = results.input1;
-                                            if(results.buttonIndex==1){
-                                                var userData = window.localStorage.getItem('userData');
-                                                if( typeof userData === 'string' ){
-                                                    userData = JSON.parse(userData);
+                        if(!editAsistencia){
+                            var menu = [
+                                {
+                                    text:'Tomar Asistencia',
+                                    rel:'',
+                                    anchor:'#',
+                                    action:function(){
+                                        promptWindow(
+                                            'Por favor ingrese su contraseña',
+                                            function(results){
+                                                var pass = results.input1;
+                                                if(results.buttonIndex==1){
+                                                    var userData = window.localStorage.getItem('userData');
+                                                    if( typeof userData === 'string' ){
+                                                        userData = JSON.parse(userData);
+                                                    }
+                                                    var realPass = userData.clave;
+                                                    if( md5(pass)!==realPass ){
+                                                        navigator.notification.alert(
+                                                            'La clave ingresada es incorrecta',
+                                                            null,
+                                                            'Error',
+                                                            'Aceptar'
+                                                        );
+                                                    } else {
+                                                        editAsistencia = true;
+                                                        current = 'null';
+                                                        if( historyStack[historyStack.length-1]=='lista-asistencia' ){
+                                                            historyStack.pop();   
+                                                        }
+                                                        elements = {'dia':dia, 'curso':curso, 'mes':mes}
+                                                        loadPage('lista-asistencia');
+                                                    }
                                                 }
-                                                var realPass = userData.clave;
-                                                console.log(realPass);
-                                                console.log(md5(pass));
-                                                if( md5(pass)!==realPass ){
-                                                    navigator.notification.alert(
-                                                        'La clave ingresada es incorrecta',
-                                                        null,
-                                                        'Error',
-                                                        'Aceptar'
-                                                    );
-                                                } else {
-                                                    editAsistencia = true;
-                                                    elements = {'dia':dia, 'curso':curso, 'mes':mes}
-                                                    loadPage('lista-asistencia');
-                                                }
-                                            }
-                                        },
-                                        'Identificación',
-                                        ['Cancelar','Aceptar'],
-                                        ['password']
-                                    );
+                                            },
+                                            'Identificación',
+                                            ['Cancelar','Aceptar'],
+                                            ['password']
+                                        );
+                                    }
                                 }
-                            }
-                        ];
-                        createMenu(menu);
+                            ];
+                            createMenu(menu);
+                        } else {
+                            // IS EDITING
+                            var menu = [
+                                {
+                                    text:'Grabar',
+                                    rel:'',
+                                    anchor:'#',
+                                    action:function(){
+                                        // TODO: add attendance to an object with user:attendanceValue. Then, read that attendace when save is pressed, not before.
+                                        var querys = [];
+                                        for( var id in asistencia ){
+                                            var obj = asistencia[id];
+                                            var fields = '';
+                                            var values = '';
+                                            for(var fieldName in obj){
+                                                if(fields!=''){
+                                                    fields+=',';
+                                                }
+                                                fields+=fieldName;
+                                                if(values!=''){
+                                                    values+=',';
+                                                }
+                                                values+="'"+obj[fieldName]+"'"
+                                            }
+                                            if(values!=''){
+                                                querys.push("INSERT OR REPLACE INTO alumno_asistencia("+fields+") VALUES("+values+")");
+                                            }
+                                        }
+                                        var pendientes = window.localStorage.getItem('pendientes');
+                                        if( typeof pendientes === 'string' ){
+                                            pendientes = JSON.parse(pendientes);
+                                        }
+                                        setUpDatabase();
+                                        sql.transaction(function(tx){
+                                            for(var i=0;i<querys.length;i++){
+                                                console.log(querys[i]);
+                                                tx.executeSql(
+                                                    querys[i],
+                                                    [],
+                                                    function(tx,result){
+                                                        var thisId = result.insertId;
+                                                        console.log(thisId);
+                                                        if( typeof pendientes.alumno_asistencia === 'undefined' ){
+                                                            pendientes.alumno_asistencia = ['id'];
+                                                        }
+                                                        pendientes.alumno_asistencia.push(thisId);
+                                                    },
+                                                    function(tx,error){
+                                                        console.log(error);
+                                                        console.log(JSON.stringify(error));
+                                                    }
+                                                );
+                                            }
+                                            downloaded = false;
+                                            downloadData(function(){
+                                                editAsistencia = false;
+                                                current = 'null';
+                                                if( historyStack[historyStack.length-1]=='lista-asistencia' ){
+                                                    historyStack.pop();   
+                                                }
+                                                elements = {'dia':dia, 'curso':curso, 'mes':mes}
+                                                loadPage('lista-asistencia');
+                                            });
+                                        });
+                                        /*$.mobile.loading('show').promise().done(function(){
+                                            setUpDatabase();
+                                            sql.transaction(function(tx){
+                                                for(var id in asistencia){
+                                                    var curAl = asistencia[id];
+                                                    console.log(JSON.stringify(curAl));
+                                                }
+                                            });
+                                        });
+                                        //*/
+                                    }
+                                },
+                                {
+                                    text:'Descartar',
+                                    rel:'',
+                                    anchor:'#',
+                                    action:function(){
+                                        editAsistencia = false;
+                                        current = 'null';
+                                        if( historyStack[historyStack.length-1]=='lista-asistencia' ){
+                                            historyStack.pop();   
+                                        }
+                                        elements = {'dia':dia, 'curso':curso, 'mes':mes}
+                                        loadPage('lista-asistencia');
+                                    }
+                                }
+                            ];
+                            createMenu(menu);
+                        }
                     });
                 }
                 
