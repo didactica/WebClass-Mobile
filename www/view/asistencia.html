@@ -1,9 +1,9 @@
-<div class="container-fluid filtrosAsistencia" style="padding:1.5em">
+<div class="container-fluid filtrosAsistencia" style="padding:5em 1.5em">
 	<div class="row text-center">
 		<strong>Seleccione mes y curso para empezar:</strong>
 	</div>
 	<div class="row">
-		<select name="mes-asistencia">
+		<select name="mes-asistencia" data-icon="false">
 			<option value="empty">Mes</option>
 			{{#each this.months}}
 				{{#.}}
@@ -13,7 +13,7 @@
 		</select>
 	</div>
 	<div class="row">
-		<select name="curso-asistencia">
+		<select name="curso-asistencia" data-icon="false">
 		    <option value="empty">Curso</option>
 		{{#each this.cursos}}
 		    {{#.}}
@@ -23,6 +23,6 @@
 		</select>	
 	</div>
 	<div class="row">
-		<button id="filtrarAsistencia">Filtrar <i class="fa fa-check-square-o"></i></button>
+		<button id="filtrarAsistencia">Filtrar</button>
 	</div>
 </div>

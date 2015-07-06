@@ -565,7 +565,7 @@ html body .ui-btn.ui-btn-a:hover{
 	position:absolute;
 	top:.54em;
 	left:.4em;
-	line-height:1.9em;
+	margin-left:0.2em;
 	font-weight: normal;
 }
 .header-btn{
@@ -608,6 +608,18 @@ html body .ui-btn.ui-btn-a:hover{
 }
 #diasMes li .row, #diasMes li .calendar-detail{
 	margin-top:0.3em;
+}
+#diasMes li .calendar-detail i.fa{
+	line-height: 1.5em;
+	color:rgb(32, 138, 212)!important;
+	margin-right: 0.5em;
+}
+.diaAsistencia{
+	background:#e6e6e6!important;
+	margin: 0.1em!important;
+	-webkit-box-shadow: 3px 3px 8px rgba(0,0,0,.3);
+	-moz-box-shadow: 3px 3px 8px rgba(0,0,0,.3);
+	box-shadow: 3px 3px 8px rgba(0,0,0,.3);
 }
 .calendar-content{
 	float:left;
@@ -656,12 +668,23 @@ ul#alumno-lista li.header{
 	position:relative;
 	text-align: center;
 	text-decoration: none;
-	color:#666;
+	color:#333;
 	font-size: 1.5em;
 	border:none;
-	background:#ddd;
+	background:#fff;
 	border-top:1px solid #999;
 	border-bottom:1px solid #999;
+	height:4em;
+	line-height:1.5em;
+	padding-top:0.8em;
+}
+ul#alumno-lista li.li-alumno{
+	background:#e6e6e6;
+	margin:0.2em 0em;
+	padding-left:1em;
+	-webkit-box-shadow: 0px 3px 8px rgba(0,0,0,.3);
+	-moz-box-shadow: 0px 3px 8px rgba(0,0,0,.3);
+	box-shadow: 0px 3px 8px rgba(0,0,0,.3);
 }
 ul#alumno-lista li.header p, ul#alumno-lista li.header strong{
 	margin:0 auto;
@@ -674,9 +697,9 @@ ul#alumno-lista li.header span{
 }
 ul#alumno-lista li.header .control{
 	position:absolute;
-	line-height: 1.5em;
+	line-height: 2em;
 	width:1em;
-	color:#666;
+	color:rgb(32, 138, 212);
 	font-size:1.5em;
 	z-index:5;
 }
@@ -724,12 +747,49 @@ ul#alumno-lista li.header .control.next{
 	padding: 0.5em;
 	width: 49%;
 }
+.filtrosAsistencia .ui-btn{
+	color:#333!important;
+	background-color:#e6e6e6 !important;
+	-webkit-box-shadow: 3px 3px 8px rgba(0,0,0,.3);
+	-moz-box-shadow: 3px 3px 8px rgba(0,0,0,.3);
+	box-shadow: 3px 3px 8px rgba(0,0,0,.3);
+}
+.filtrosAsistencia .ui-select div span:after{
+	font-family: 'FontAwesome';
+	color:rgb(38, 174, 223)!important;
+	content:"\f078";
+	display:inline-block;
+	position:absolute;
+	right:1em;
+	vertical-align: middle;
+}
+#filtrarAsistencia{
+	background: rgb(38, 174, 223)!important;
+	color:#fff!important;
+}
+#filtrarAsistencia:after{
+	font-family: 'FontAwesome';
+	content:"\f054";
+	display:inline-block;
+	position:absolute;
+	right:1em;
+	vertical-align: middle;
+}
 /*.menu-container{
 	display:block;
 	width:1.5em;
 }*/
 /* DE ACA PARA ABAJO SOLO ANIMACIONES, KEYFRAMES, ETC */
 /* Chrome, Safari, Opera */
+@font-face {
+font-family: 'FontAwesome';
+src: url('../fonts/fontawesome-webfont.eot');
+src: url('../fonts/fontawesome-webfont.eot?#iefix') format('embedded-opentype'),
+     url('../fonts/fontawesome-webfont.woff') format('woff'),
+     url('../fonts/fontawesome-webfont.ttf') format('truetype');
+font-weight: normal;
+font-style: normal;
+}
 @-webkit-keyframes leftArrow {
     0%   {left:0px;}
     25%  {left:3px;}

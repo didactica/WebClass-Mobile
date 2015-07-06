@@ -776,12 +776,16 @@ function refreshWidgets(page){
                                                     }
                                                     var realPass = userData.clave;
                                                     if( md5(pass)!==realPass ){
-                                                        navigator.notification.alert(
-                                                            'La clave ingresada es incorrecta',
-                                                            null,
-                                                            'Error',
-                                                            'Aceptar'
-                                                        );
+                                                        if( typeof navigator.notification !== 'undefined' ){
+                                                                navigator.notification.alert(
+                                                                'La clave ingresada es incorrecta',
+                                                                null,
+                                                                'Error',
+                                                                'Aceptar'
+                                                            );  
+                                                        } else {
+                                                            alert('La clave ingresada es incorrecta');
+                                                        }
                                                     } else {
                                                         editAsistencia = true;
                                                         current = 'null';
@@ -870,15 +874,21 @@ function refreshWidgets(page){
                                         if( (result!==null) && (result.rows.length>0) ){
                                             var res = result.rows.item(0);
                                             var total = res.total;
+                                            if(isNaN(total)){
+                                                total = 0;
+                                            }
                                             var presentes = res.presentes;
                                             var progress = (parseInt(presentes)*100)/parseInt(total);
+                                            if(isNaN(progress)){
+                                                progress=0;
+                                            }
                                             var resultDate = (res.currentdate).split('-');
                                             var dateObj = new Date(Date.UTC(resultDate[2],parseInt(resultDate[1])-1,parseInt(resultDate[0])+1,0,0,0));
                                             // OJO con el modulo 7, sin eso solo los primeros 7 días tienen el día de la semana a la q corresponden.
                                             // Domingo es Cero bajo éste concepto.
                                             if( dateObj.getDay() != 0 && dateObj.getDay() != 6 ){
                                                 var diaDeLaSemana = days[dateObj.getDay()];
-                                                elements.diasMes.push({'fecha':diaDeLaSemana,'dia':resultDate[0],'progress':progress});
+                                                elements.diasMes.push({'fecha':diaDeLaSemana,'dia':(resultDate[0]<10?'0'+resultDate[0]:resultDate[0]),'progress':progress});
                                             }
                                             if(resultDate[0]==totalDays){
                                                 postProcessAsistencia(mes,curso);
@@ -1482,11 +1492,11 @@ function setRadialPercentage(id,percentage){
     // definimos el ancho de la linea
     context.lineWidth = 5;
     // creamos una gradiente para el color del circulo.
-    var gradiente = context.createLinearGradient(0,0,x*2,0);
+    //var gradiente = context.createLinearGradient(0,0,x*2,0);
     //color verde/azulado
-    gradiente.addColorStop(0,"#007070");
+    //gradiente.addColorStop(0,"#007070");
     // color verde medio-claro
-    gradiente.addColorStop(1,"#00AF00");
+    //gradiente.addColorStop(1,"#00AF00");
     // iniciamos el proceso de dibujo
     context.beginPath();
     // establecemos el recorrido de la circunferencia con sus puntos de coordenada (x,y), 
@@ -1498,7 +1508,8 @@ function setRadialPercentage(id,percentage){
     // establecemos el porcentaje en el centro del circulo
     context.fillText(String(Math.ceil(percentage*100))+'%',x,y*1.15);
     // definimos el color de la linea de la circunferencia
-    context.strokeStyle = gradiente;
+    //context.strokeStyle = gradiente;
+    context.strokeStyle = "rgb(32, 138, 212)";
     // dibujamos todo.
     context.stroke();
 }

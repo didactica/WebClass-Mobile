@@ -1,19 +1,19 @@
 <ul id="alumno-lista" data-role="listview" data-inset="false">
 	<li class="header" data-role="list-divider" role="heading">
         {{#if this.prev}}
-        <a href="#prev_month" class="control prev"><i class="fa fa-chevron-circle-left"></i></a>
+        <a href="#prev_month" class="control prev"><i class="fa fa-chevron-left"></i></a>
         {{/if}}
         <p>
         	<strong id="month">{{this.curso.nombre}}</strong>
         	<span>{{this.fecha.formated}}</span>
         </p>
         {{#if this.next}}
-        <a href="#next_month" class="control next"><i class="fa fa-chevron-circle-right"></i></a> 
+        <a href="#next_month" class="control next"><i class="fa fa-chevron-right"></i></a> 
         {{/if}}
     </li>
 {{#each this.alumnos}}
 	{{#.}}
-	<li data-icon="false" class="{{this.class}}">
+	<li data-icon="false" class="li-alumno {{this.class}}">
 		<div class="col-90 alumno-detail">
 			{{this.apellido_paterno}}, {{this.nombre_usuario}}
 		</div>
