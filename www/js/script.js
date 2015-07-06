@@ -1437,6 +1437,7 @@ function getTableFromServer(callback)
 }
 function insertIntoDatabase(callback){
     tableIndex = 0;
+    totalSyncs = 0;
     var secuencia = window.localStorage.getItem("secuencia");
     if( typeof secuencia === 'undefined' ){
         secuencia = 0;
