@@ -1301,63 +1301,66 @@ function downloadData(callback){
     if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
         $.mobile.loading('hide');
         $("#contenido").html(compileTemplate('descargando')).promise().done(function(){
-            var pendientes = window.localStorage.getItem("pendientes");
-            if(pendientes!=null && pendientes!='null'){
-                pendientes = JSON.parse(pendientes);
-                sql.transaction(function(tx){
-                    var tmpObj = pendientes;
-                    for( var table in tmpObj ){
-                        var arr = tmpObj[table];
-                        var key = arr[0];
-                        if(typeof key=='string'){
-                            arr.splice(0,1);
-                            var query = 'SELECT * FROM '+table+' WHERE '+key+' IN ('+arr.join(',')+')';
-                            tx.executeSql(
-                                query,
-                                [],
-                                function(tx,res){
-                                    if( res && res.rows ){
-                                        var data = [];
-                                        for(var i=0;i<res.rows.length;i++){
-                                            data.push(res.rows.item(i));
-                                        }
-                                        var params = {
-                                            'service':'syncToServer',
-                                            'key':key,
-                                            'table':table,
-                                            'user':user,
-                                            'data':data
-                                        }
-                                        $.ajax({
-                                            url:urlWS+'/getJSON.php',
-                                            data:params,
-                                            dataType:'json',
-                                            async:false,
-                                            success:function(res){
-                                                if(res.status==0){
-                                                    delete tmpObj[table];
-                                                    tmpObj = JSON.stringify(tmpObj);
-                                                    window.localStorage.setItem('pendientes',tmpObj);
-                                                }
-                                            }
-                                        });
-                                    }
-                                },
-                                function(tx,err){
-                                    console.log(JSON.stringify(tx));
-                                    console.log(JSON.stringify(err));
-                                }
-                            );
-                        } else {
-                            tmpObj[table] = [];
-                        }
-                    }
-                });
-            }
+            syncToServer();
             getTableFromServer(callback);
         });
     } else {
         callback();
+    }
+}
+function syncToServer(){
+    var pendientes = window.localStorage.getItem("pendientes");
+    if(pendientes!=null && pendientes!='null'){
+        pendientes = JSON.parse(pendientes);
+        sql.transaction(function(tx){
+            var tmpObj = pendientes;
+            for( var table in tmpObj ){
+                var arr = tmpObj[table];
+                var key = arr[0];
+                if(typeof key=='string'){
+                    arr.splice(0,1);
+                    var query = 'SELECT * FROM '+table+' WHERE '+key+' IN ('+arr.join(',')+')';
+                    tx.executeSql(
+                        query,
+                        [],
+                        function(tx,res){
+                            if( res && res.rows ){
+                                var data = [];
+                                for(var i=0;i<res.rows.length;i++){
+                                    data.push(res.rows.item(i));
+                                }
+                                var params = {
+                                    'service':'syncToServer',
+                                    'key':key,
+                                    'table':table,
+                                    'user':user,
+                                    'data':data
+                                }
+                                $.ajax({
+                                    url:urlWS+'/getJSON.php',
+                                    data:params,
+                                    dataType:'json',
+                                    async:false,
+                                    success:function(res){
+                                        if(res.status==0){
+                                            delete tmpObj[table];
+                                            tmpObj = JSON.stringify(tmpObj);
+                                            window.localStorage.setItem('pendientes',tmpObj);
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                        function(tx,err){
+                            console.log(JSON.stringify(tx));
+                            console.log(JSON.stringify(err));
+                        }
+                    );
+                } else {
+                    tmpObj[table] = [];
+                }
+            }
+        });
     }
 }
 function getTableFromServer(callback)
@@ -1672,6 +1675,9 @@ function createMenu(items,direction,trigger){
                     item.appendChild(anchor);
                     itemRel.value = cur.rel;
                     item.setAttributeNode(itemRel);
+                    var icon = document.createAttribute("data-icon");
+                    icon.value = "false";
+                    item.setAttributeNode(icon);
                     item.addEventListener("click",cur.action);
                     item.addEventListener("click",function(){
                         $("#menu-moreover").hide();
@@ -1874,6 +1880,9 @@ function grabarAsistencia(mes,curso,dia){
                     console.log(JSON.stringify(error));
                 }
             );
+        }
+        if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
+            syncToServer();
         }
         navigator.notification.alert('Exito',null,'La asistencia fue guardada con éxito.','Aceptar');
         editAsistencia = false;

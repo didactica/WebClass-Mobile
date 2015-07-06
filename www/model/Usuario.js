@@ -61,7 +61,7 @@ Usuario.prototype.fetchUser = function(id,errorCallback){
     var user_name;
     if( (typeof navigator.connection !='undefined') && (navigator.connection.type!=Connection.NONE) ){
         $.ajax({
-            url:'http://didactica.pablogarin.cl/getJSON.php?service=usuario&id='+id,
+            url:urlWS+'/getJSON.php?service=usuario&id='+id,
             dataType:'json',
             async:false,
             success:function(res){

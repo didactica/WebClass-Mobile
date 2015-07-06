@@ -241,7 +241,7 @@ Clase.prototype.syncToServer = function(){
                 }
             }
             $.ajax({
-                url:'http://didactica.pablogarin.cl/getJSON.php',
+                url:urlWS+'/getJSON.php',
                 data: data,
                 dataType: 'json',
                 success: function(resp){
