@@ -185,45 +185,60 @@ ul#eventos li.headerMes{
 	position:relative;
 	text-align: center;
 	width:100%;
-	line-height: 1.5em;
+	line-height: 2em;
 	text-decoration: none;
-	color:#666;
-	font-weight: bolder;
+	color:#333;
+	font-weight: normal;
 	font-size: 1.5em;
 	border:none;
-	background:#ddd;
-	border-top:1px solid #999;
-	border-bottom:1px solid #999;
+	background:#ebebeb;
+	/*border-top:1px solid #999;
+	border-bottom:1px solid #999;*/
+}
+.ui-listview > .ui-li-static, .ui-listview > .ui-li-divider, .ui-listview > li > a.ui-btn{
+	border-width:0px!important;
+	border-style:hidden!important;
 }
 ul#eventos li.header{
 	position:relative;
 	text-align: center;
-	width:100%;
-	line-height: 1.5em;
+	line-height: 4em;
 	text-decoration: none;
 	color:#fff;
 	font-weight: bolder;
 	font-size: 1em;
 	border:none;
-	background:#555;
+	background:#fff;
 	border-top:1px solid #999;
 	border-bottom:1px solid #999;
+	margin: 0.2em auto;
+  	width: 90%;
+  	border-radius:3%;
+	moz-border-radius:3%;
+	webkit-border-radius:3%;
+	padding: 1.3em 1em;
+	-webkit-box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+	-moz-box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+	box-shadow: 0px 2px 5px rgba(0,0,0,.2);
+}
+ul#eventos li.header.disabled{
+	color:#666666;
+	background:#E6E6E6;
 }
 ul#eventos li.headerMes #month{
 	margin:0 auto;
 	display: inline-block;
 	width:100%;
 	position:relative;
-	left:-0.5em;
 }
 ul#eventos li.headerMes .control{
 	position:absolute;
 	display:inline-block;
 	clear:both;
 	height:1em;
-	line-height: 1em;
+	line-height: 1.5em;
 	width:1em;
-	color:#666;
+	color:rgb(32, 138, 212);
 	font-size:1.5em;
 	z-index:5;
 }
@@ -293,6 +308,14 @@ ul.eventos li .detalles-evento .fecha{
 	margin-left:0.5em;
 	font-size:1em;
 	font-weight: normal;
+}
+/*.ui-btn-icon-left:after, .ui-btn-icon-right:after, .ui-btn-icon-top:after, .ui-btn-icon-bottom:after, .ui-btn-icon-notext:after{
+	background: rgb(32, 138, 212) !important;
+	content:"&#xf067;";
+}
+*/
+.ui-collapsible-content.ui-body-inherit{
+	border-width:0px!important;
 }
 .evento-1 .badge-evento{
 	background-color:#D9C6E2;
@@ -493,17 +516,29 @@ html body div.ui-slider-track.ui-body-a .ui-btn-active{
 	z-index:1000;
 	width:50%;
 	list-style: none;
-	background-color:rgba(0,0,0,0.8);
-	color:#FFFFFF;
+	background-color:#ffffff;
+	color:#333;
 	right:-15%;
 	top:10%;
+	-webkit-box-shadow: 3px 3px 8px rgba(0,0,0,.3);
+	-moz-box-shadow: 3px 3px 8px rgba(0,0,0,.3);
+	box-shadow: 3px 3px 8px rgba(0,0,0,.3);
 }
 .menu-flotante a, .menu-flotante a:visited{
-	color:#D8D8D8;
+	color:#333;
 }
 #nav-header{
-	height:3em;
-	background: rgba(0, 0, 0, 0) linear-gradient(91deg, rgb(32, 138, 212) 0%, rgb(38, 174, 223) 70%) repeat scroll 0 0 !important;
+	height:3.5em;
+	line-height: 2.5em;
+	background: rgb(32, 138, 212)!important;
+	-webkit-box-shadow: 0px 3px 8px rgba(0,0,0,.3);
+	-moz-box-shadow: 0px 3px 8px rgba(0,0,0,.3);
+	box-shadow: 0px 3px 8px rgba(0,0,0,.3);
+	border-color:rgb(32, 138, 212);
+}
+#nav-header h1{
+	font-size: 1.3em;
+	line-height: 1.2em;
 }
 html .ui-page-theme-a .ui-btn, 
 html .ui-bar-a .ui-btn, 
@@ -658,6 +693,9 @@ ul#alumno-lista li.header .control.next{
 }
 .ausente i.fa{
 	color:#E68A8A !important;
+}
+.atrasado i.fa{
+	color:#E6E68A !important;
 }
 #background-blur{
 	position:fixed;
