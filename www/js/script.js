@@ -520,7 +520,10 @@ function setTitle(page){
             title = elements.nombre;
             break;
         case 'verunidad':
-            title = elements.nombre;
+            title = "Detalle Unidad";
+            break
+        case 'home':
+            title = "Calendario";
             break;
         default:
             if( typeof elements.title != 'undefined' ){
@@ -967,25 +970,6 @@ function refreshWidgets(page){
                                     });
                                 });
                             }
-                        },
-                        {
-                            text:'Eliminar',
-                            rel:'',
-                            anchor:'#',
-                            action:function(){
-                                var c = confirm('Seguro desea eliminar el elemento seleccionado?');
-                                if(c){
-                                    alert('Borrado! (No realmente xDD)');
-                                }
-                            }
-                        },
-                        {
-                            text:'Tarea',
-                            rel:'',
-                            anchor:'#',
-                            action:function(){
-                                alert('tarea!');
-                            }
                         }
                     ]
                     createMenu(menu,1,dom);
@@ -1015,17 +999,6 @@ function refreshWidgets(page){
                                     navigator.notification.alert('No se pudo abrir la planificacion seleccionada.',null,'Error','Aceptar');
                                 }
                             );
-                        }
-                    },
-                    {
-                        text:'Eliminar',
-                        rel:'',
-                        anchor:'#',
-                        action:function(){
-                            var c = confirm('Seguro desea eliminar el elemento seleccionado?');
-                            if(c){
-                                alert('Borrado! (No realmente xDD)');
-                            }
                         }
                     }
                 ];

@@ -137,7 +137,7 @@ Clase.prototype.selectById = function(callback){
     var self = this;
     var query = 
         "SELECT " + 
-        "   c.*, u.nombre_usuario " + 
+        "   c.*, u.nombre_usuario||' '||u.apellido_paterno as autor " + 
         " FROM " + 
         " (" + 
         "   SELECT " + 
@@ -176,9 +176,9 @@ Clase.prototype.selectById = function(callback){
         "       c2.unidadSector=s.id" + 
         " ) c " + 
         " LEFT JOIN " + 
-        "   usuario u " + 
+        "   usuario_detalle u " + 
         " ON " + 
-        "   c.profesor=u.id;";
+        "   c.profesor=u.idusuario;";
     this.tx.executeSql(
         query,
         [],

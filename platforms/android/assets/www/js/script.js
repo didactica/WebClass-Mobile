@@ -1385,8 +1385,11 @@ function syncToServer(getTables){
                                             if(res.status==0){
                                                 delete tmpObj[table];
                                                 tmpObj = JSON.stringify(tmpObj);
-                                                console.log(JSON.stringify(tmpObj));
-                                                window.localStorage.setItem('pendientes',tmpObj);
+                                                if(tmpObj=='{}'){
+                                                    window.localStorage.removeItem('pendientes');
+                                                } else {
+                                                    window.localStorage.setItem('pendientes',tmpObj);
+                                                }
                                             }
                                         },
                                         error:function(res,error,errorThrown){
