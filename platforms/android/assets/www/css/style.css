@@ -14,6 +14,7 @@ body,html{
 	width:100%;
 	height:2em;
 }
+/*
 .ui-header .ui-title, .ui-footer .ui-title{
 	margin:0 20%!important;
 }
@@ -30,6 +31,7 @@ body,html{
 .ui-li-static.ui-collapsible > .ui-collapsible-content {
     border-bottom-width: 0;
 }
+/*
 html .ui-body-a,
 html .ui-page-theme-a .ui-body-inherit,
 html .ui-bar-a .ui-body-inherit,
@@ -38,6 +40,7 @@ html body .ui-group-theme-a .ui-body-inherit,
 html .ui-panel-page-container-a{
 	border-color:#afafaf;
 }
+*/
 .hidden{
 	display:none;
 }
@@ -61,7 +64,7 @@ h3.mc-text-danger  {
 	moz-border-radius:5px;
 	webkit-border-radius:5px;
 }
-input.full-input{
+/*input.full-input{
 	box-sizing: border-box;
 	padding:1em;
 	margin-bottom: 0.7em;
@@ -80,9 +83,36 @@ input.full-input:focus{
 	outline: none;
 }
 input.full-input.last{
-	border-top:1px solid #888;
-	margin-bottom: 0;
-	padding-top: 1.3em;
+
+}
+*/
+.login-container .ui-input-text{
+	box-sizing: border-box;
+	background-color: transparent!important;
+	width: 100%;
+	color: #fff!important;
+	margin:0;
+	padding:1em;
+	/*padding:1em;
+	margin-bottom: 0.7em;
+	line-height: 1em;
+	font-size:1em;
+	width:100%;
+	border:none;
+	background-color:#31366d;
+	color:#fff;
+	border-radius:0px;
+	moz-border-radius:0px;
+	webkit-border-radius:0px;*/
+}
+.login-container .ui-input-text:first-child{
+	padding-bottom:0em;
+}
+.login-container .ui-input-text:first-child:after{
+	border-bottom:1px solid #ccc;
+	display:block;
+	content:"";
+	margin-top:1em;
 }
 input[type="text"],input[type="password"]{
     font-family: FontAwesome, Helvetica;
@@ -109,7 +139,7 @@ input[type="text"],input[type="password"]{
 	padding:0.5em;
 	margin-top:-1em;
 }
-.login-container div, .login-container .ui-input-text{
+.login-container div, .login-container .ui-input-text, .login-container .ui-body-inherit{
 	border:none !important;
 }
 #menu_lateral{
@@ -490,6 +520,7 @@ canvas.radialLoader{
 	-webkit-border-radius:2%;
 	background-color:rgba(127,127,127,.1);
 }
+/*
 .switch-clases .ui-flipswitch.ui-flipswitch-active{
 	background-color:#2ca850 !important;
 	border-color:#2ca850 !important;
@@ -498,9 +529,11 @@ canvas.radialLoader{
 	background-color:#a86d8d !important;
 	border-color:#a86d8d !important;
 }
+*/
 .text-center{
 	text-align: center;
 }
+/*
 .ui-flipswitch.ui-flipswitch-active{
 	width:5.875em !important;
 }
@@ -522,6 +555,7 @@ html body div.ui-slider-track.ui-body-a .ui-btn-active{
 	background-color: inherit;
 	border: none;
 }
+*/
 .menu-flotante{
 	position:absolute;
 	z-index:1000;
@@ -736,7 +770,7 @@ ul#alumno-lista li.header .control.next{
 	right:0;
 }
 .presente i.fa{
-	color:#8AE68A !important;
+	color:#569B56 !important;
 }
 .ausente i.fa{
 	color:#E68A8A !important;
@@ -761,11 +795,17 @@ ul#alumno-lista li.header .control.next{
 	margin:25% auto;
 	padding:1em;
 }
+/*
 #dialogBox *{
+	display:inline-block;
+	margin:0.3em 0;
+}
+*/
+#dialogBox h3{
 	display:block;
-	margin:1em 0;
 }
 #dialogBox a.btn{
+	color:#fff;
 	display: inline-block;
 	margin: 0 0.5%;
 	padding: 0.5em;
@@ -839,6 +879,21 @@ ul#alumno-lista li.header .control.next{
 	position:absolute;
 	right:0.6em;
 	vertical-align: middle;
+}
+#promptWindow .promptLabel{
+	display:block;
+}
+#promptWindow .ui-controlgroup-controls{
+	width:100%;
+}
+#promptWindow .ui-radio{
+	width:50%;
+}
+#promptWindow .ui-radio label{
+	text-align: center;
+}
+#promptWindow a.btn{
+	color:#ffffff;
 }
 /*.menu-container{
 	display:block;

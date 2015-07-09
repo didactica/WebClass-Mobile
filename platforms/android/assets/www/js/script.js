@@ -77,6 +77,7 @@ document.addEventListener("deviceready",onDeviceReady,false);
 document.addEventListener("backbutton",backButton, false);
 
 var urlWS = "http://proyecto.webescuela.cl/sistema/testing/mobile";
+//var urlWS = "http://didactica.pablogarin.cl/mobile";
 var sql;
 var user;
 var token;
@@ -109,6 +110,17 @@ var changing = false;
 var asistencia = {};
 var editAsistencia = false;
 var transferConectionSize = 200; // CANTIDAD DE REGISTROS POR CONEXION.
+/*
+var transferInterval = setInterval(function(){
+    if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
+        syncToServer();
+        getTableFromServer(function(){
+            var d = new Date();
+            console.log('update: '+d.toLocaleTimeString());
+        });
+    }
+},60000);
+//*/
 
 $.event.special.swipe.scrollSupressionThreshold = 10; // More than this horizontal displacement, and we will suppress scrolling.
 $.event.special.swipe.horizontalDistanceThreshold = 30; // Swipe horizontal displacement must be more than this.
@@ -215,6 +227,8 @@ function functions(title,callback){
                                     if( result.rows!=null && result.rows.length>0 ){
                                         for(var i=0;i<result.rows.length;i++){
                                             var cur = result.rows.item(i);
+                                            // usar campo id de la tabla alumno.
+                                            asistencia[(cur.id_alumno)] = cur;
                                             var estado = '';
                                             var icon = '';
                                             switch(cur.estado){
@@ -227,7 +241,12 @@ function functions(title,callback){
                                                     icon = 'fa-remove';
                                                     break;
                                                 case 2:
-                                                    estado = 'atrasado'; 
+                                                    if(cur.estadoFinal==1){
+                                                        estado = 'presente'; 
+                                                    }
+                                                    if(cur.estadoFinal==0){
+                                                        estado = 'ausente'; 
+                                                    }
                                                     icon = 'fa-clock-o';
                                                     break;
                                                 default:
@@ -243,7 +262,7 @@ function functions(title,callback){
                                 }
                             );
                             elements.alumnos = [];
-                            var query = "SELECT * FROM alumno a LEFT JOIN usuario_detalle u ON a.alumno=u.idusuario WHERE a.curso="+curso;
+                            var query = "SELECT *, a.id as realId FROM alumno a LEFT JOIN usuario_detalle u ON a.alumno=u.idusuario WHERE a.estado=1 AND a.habilitado=1 AND a.curso='"+curso+"' AND a.alumno in (SELECT id FROM usuario WHERE visible=1) ORDER BY u.apellido_paterno";
                             tx.executeSql(
                                 query,
                                 [],
@@ -252,8 +271,13 @@ function functions(title,callback){
                                     if( (res.rows!=null) && (res.rows.length>0) ){
                                         for(var i=0;i<res.rows.length;i++){
                                             var cur = res.rows.item(i);
-                                            asistencia[(cur.id)] = {};
-                                            var resObj = asistenciaAlumnos[cur.id];
+                                            //*
+                                            // usar campo id de la tabla alumno.
+                                            if( typeof asistencia[(cur.realId)] === 'undefined' ){
+                                                asistencia[(cur.realId)] = null;
+                                            }
+                                            //*/
+                                            var resObj = asistenciaAlumnos[cur.realId];
                                             if( typeof resObj == 'undefined' ){
                                                 if(editAsistencia){
                                                     resObj = {estado:'presente',icon:'fa-check'}
@@ -486,6 +510,9 @@ function loadPage(page){
 function setTitle(page){
     var title = page;
     switch(page){
+        case 'lista-asistencia':
+            title = "Asistencia";
+            break;
         case 'asistencia':
             title = "Asistencia";
             break;
@@ -521,6 +548,8 @@ function backButton(){
         $("#menu_lateral").panel('close');
     } else if( $("#menu-moreover").length>0 ) {
         $("#menu-moreover").remove();
+    } else if($("#background-blur").css('display')=='block'){
+        $("#background-blur").remove();
     } else {
         if(historyStack.length>1){
             $.mobile.loading('show').promise().done(function(){
@@ -642,7 +671,6 @@ function refreshWidgets(page){
                                     anchor:'#',
                                     action:function(){
                                         parent.addClass('presente');
-                                        parent.removeClass('atrasado');
                                         parent.removeClass('ausente');
                                         parent.find('i.fa').removeClass('fa-question');
                                         parent.find('i.fa').addClass('fa-check');
@@ -665,11 +693,10 @@ function refreshWidgets(page){
                                     anchor:'#',
                                     action:function(){
                                         promptWindow(
-                                            'Justificación',
+                                            null,
                                             function(results){
                                                 if(results.buttonIndex==1){
                                                     parent.removeClass('presente');
-                                                    parent.removeClass('atrasado');
                                                     parent.addClass('ausente');
                                                     parent.find('i.fa').removeClass('fa-question');
                                                     parent.find('i.fa').removeClass('fa-check');
@@ -678,9 +705,9 @@ function refreshWidgets(page){
                                                     var tmp = {
                                                         id_alumno:id,
                                                         fecha:(year+'-'+mes+'-'+(dia<10?'0'+dia:dia)),
-                                                        justificacion:(results.input1),
+                                                        justificacion:results.checkbox1,
                                                         estado:1,
-                                                        observaciones:'',
+                                                        observaciones:(results.text1),
                                                         id_curso:curso
                                                     }
                                                     asistencia[id] = tmp;
@@ -688,7 +715,7 @@ function refreshWidgets(page){
                                             },
                                             'Ausente',
                                             ['Cancelar','Grabar'],
-                                            ['text']
+                                            [{type:'text',label:'Observaciones'},{type:'checkbox',label:'Justificado'}]
                                         );
                                     }
                                 },
@@ -698,12 +725,18 @@ function refreshWidgets(page){
                                     anchor:'#',
                                     action:function(){
                                         promptWindow(
-                                            'Observaciones',
+                                            null,
                                             function(results){
                                                 if(results.buttonIndex==1){
-                                                    parent.addClass('presente');
-                                                    parent.addClass('atrasado');
-                                                    parent.removeClass('ausente');
+                                                    if( results.radio3[1] ){
+                                                        parent.addClass('presente');
+                                                        parent.removeClass('ausente');
+                                                    } else {
+                                                        parent.removeClass('presente');
+                                                        parent.addClass('ausente');
+                                                    }
+                                                    //parent.addClass('atrasado');
+                                                    //parent.removeClass('ausente');
                                                     parent.find('i.fa').removeClass('fa-question');
                                                     parent.find('i.fa').removeClass('fa-check');
                                                     parent.find('i.fa').addClass('fa-clock-o');
@@ -711,17 +744,24 @@ function refreshWidgets(page){
                                                     var tmp = {
                                                         id_alumno:id,
                                                         fecha:(year+'-'+mes+'-'+(dia<10?'0'+dia:dia)),
-                                                        justificacion:'',
+                                                        justificacion:results.checkbox1,
                                                         estado:2,
-                                                        observaciones:(results.input1),
-                                                        id_curso:curso
+                                                        observaciones:(results.text1),
+                                                        id_curso:curso,
+                                                        estadoFinal:(results.radio3[1]?1:0),
+                                                        horaLlegada:results.time1
                                                     }
                                                     asistencia[id] = tmp;
                                                 }
                                             },
                                             'Atrasado',
                                             ['Cancelar','Grabar'],
-                                            ['text']
+                                            [
+                                                {type:'text',label:'Observaciones'},
+                                                {type:'time',label:'Hora de llegada'},
+                                                {type:'checkbox',label:'Justificado'},
+                                                {type:'radio',label:'Estado Final',values:{'presente':'1','ausente':'0'} }
+                                            ]
                                         );
                                     }
                                 },
@@ -731,7 +771,6 @@ function refreshWidgets(page){
                                     anchor:'#',
                                     action:function(){
                                         parent.removeClass('presente');
-                                        parent.removeClass('atrasado');
                                         parent.removeClass('ausente');
                                         parent.find('i.fa').addClass('fa-question');
                                         parent.find('i.fa').removeClass('fa-check');
@@ -768,7 +807,7 @@ function refreshWidgets(page){
                                         promptWindow(
                                             'Por favor ingrese su contraseña',
                                             function(results){
-                                                var pass = results.input1;
+                                                var pass = results.password1;
                                                 if(results.buttonIndex==1){
                                                     var userData = window.localStorage.getItem('userData');
                                                     if( typeof userData === 'string' ){
@@ -866,7 +905,7 @@ function refreshWidgets(page){
                                     diaNumero = String(diaNumero);
                                 }
                                 //*/
-                                var query = "SELECT (SELECT COUNT(1) FROM alumno WHERE curso='"+curso+"') AS total, (SELECT COUNT(1) FROM alumno_asistencia WHERE estado=0 AND id IN (SELECT max(id) FROM alumno_asistencia WHERE id_curso='"+curso+"' AND estado=0 AND fecha='"+year+"-"+(mes>10?mes:'0'+parseInt(mes))+"-"+(diaNumero>10?diaNumero:'0'+parseInt(diaNumero))+"' group by id_alumno)) AS presentes, '"+diaNumero+"-"+mes+"-"+year+"' as currentdate;";
+                                var query = "SELECT (SELECT COUNT(1) FROM alumno a WHERE a.estado=1 AND a.habilitado=1 AND a.curso='"+curso+"' AND a.alumno in (SELECT id FROM usuario WHERE visible=1)) AS total, (SELECT COUNT(1) FROM alumno_asistencia WHERE estado=0 AND id IN (SELECT max(id) FROM alumno_asistencia WHERE id_curso='"+curso+"' AND estado=0 AND fecha='"+year+"-"+(mes>10?mes:'0'+parseInt(mes))+"-"+(diaNumero>10?diaNumero:'0'+parseInt(diaNumero))+"' group by id_alumno)) AS presentes, '"+diaNumero+"-"+mes+"-"+year+"' as currentdate;";
                                 tx.executeSql(
                                     query,
                                     [],
@@ -874,18 +913,16 @@ function refreshWidgets(page){
                                         if( (result!==null) && (result.rows.length>0) ){
                                             var res = result.rows.item(0);
                                             var total = res.total;
-                                            if(isNaN(total)){
+                                            /*if(isNaN(total)){
                                                 total = 0;
-                                            }
+                                            }*/
                                             var presentes = res.presentes;
-                                            var progress = (parseInt(presentes)*100)/parseInt(total);
-                                            if(isNaN(progress)){
-                                                progress=0;
+                                            var progress = Math.floor((parseInt(presentes)*100)/parseInt(total));
+                                            if( isNaN(progress) ){
+                                                progress = 0;
                                             }
                                             var resultDate = (res.currentdate).split('-');
                                             var dateObj = new Date(Date.UTC(resultDate[2],parseInt(resultDate[1])-1,parseInt(resultDate[0])+1,0,0,0));
-                                            // OJO con el modulo 7, sin eso solo los primeros 7 días tienen el día de la semana a la q corresponden.
-                                            // Domingo es Cero bajo éste concepto.
                                             if( dateObj.getDay() != 0 && dateObj.getDay() != 6 ){
                                                 var diaDeLaSemana = days[dateObj.getDay()];
                                                 elements.diasMes.push({'fecha':diaDeLaSemana,'dia':(resultDate[0]<10?'0'+resultDate[0]:resultDate[0]),'progress':progress});
@@ -1175,7 +1212,7 @@ function login()
     var _user = $("[name='user']").val();
     var _pass = $("[name='pass']").val();
     var params = { 'user':_user,'pass':_pass };
-    if(navigator.connection.type==Connection.NONE){
+    if( (typeof navigator.connection !== 'undefined') && (navigator.connection.type==Connection.NONE) ){
         navigator.notification.alert(
             "Para realizar login debe tener conexión a internet.",
             function(){
@@ -1301,14 +1338,15 @@ function downloadData(callback){
     if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
         $.mobile.loading('hide');
         $("#contenido").html(compileTemplate('descargando')).promise().done(function(){
-            syncToServer();
-            getTableFromServer(callback);
+            syncToServer(function(){
+                getTableFromServer(callback);
+            });
         });
     } else {
         callback();
     }
 }
-function syncToServer(){
+function syncToServer(getTables){
     var pendientes = window.localStorage.getItem("pendientes");
     if(pendientes!=null && pendientes!='null'){
         pendientes = JSON.parse(pendientes);
@@ -1329,26 +1367,35 @@ function syncToServer(){
                                 for(var i=0;i<res.rows.length;i++){
                                     data.push(res.rows.item(i));
                                 }
-                                var params = {
-                                    'service':'syncToServer',
-                                    'key':key,
-                                    'table':table,
-                                    'user':user,
-                                    'data':data
-                                }
-                                $.ajax({
-                                    url:urlWS+'/getJSON.php',
-                                    data:params,
-                                    dataType:'json',
-                                    async:false,
-                                    success:function(res){
-                                        if(res.status==0){
-                                            delete tmpObj[table];
-                                            tmpObj = JSON.stringify(tmpObj);
-                                            window.localStorage.setItem('pendientes',tmpObj);
-                                        }
+                                if(data.length>0){
+                                    var params = {
+                                        'service':'syncToServer',
+                                        'key':key,
+                                        'table':table,
+                                        'user':user,
+                                        'data':data
                                     }
-                                });
+                                    $.ajax({
+                                        url:urlWS+'/getJSON.php',
+                                        type:'POST',
+                                        data:params,
+                                        dataType:'json',
+                                        // async:false, // ojo con esto, ya que a veces provoca "parsererror". <- TODO: averiguar más acerca de este error.
+                                        success:function(res){
+                                            if(res.status==0){
+                                                delete tmpObj[table];
+                                                tmpObj = JSON.stringify(tmpObj);
+                                                console.log(JSON.stringify(tmpObj));
+                                                window.localStorage.setItem('pendientes',tmpObj);
+                                            }
+                                        },
+                                        error:function(res,error,errorThrown){
+                                            console.log(JSON.stringify(res));
+                                            console.log(error);
+                                            console.log(errorThrown);
+                                        }
+                                    });
+                                }
                             }
                         },
                         function(tx,err){
@@ -1360,7 +1407,14 @@ function syncToServer(){
                     tmpObj[table] = [];
                 }
             }
+            if(getTables){
+                getTables();
+            }
         });
+    } else {
+        if(getTables){
+            getTables();
+        }
     }
 }
 function getTableFromServer(callback)
@@ -1475,12 +1529,17 @@ function insertIntoDatabase(callback){
                 }
             }
             window.localStorage.setItem("secuencia",secuencia);
-            callback();
+            if(callback){
+                callback();
+            }
         }
     );
 }
 function setRadialPercentage(id,percentage){
     var canvas  = document.getElementById(id);
+    while(canvas==null){
+        canvas  = document.getElementById(id);
+    }
     var context = canvas.getContext('2d');
     // limpiamos primero.
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -1830,7 +1889,7 @@ function grabarAsistencia(mes,curso,dia){
         var obj = asistencia[id];
         var fields = '';
         var values = '';
-        if( typeof obj.estado === 'undefined' ){
+        if( obj === null ){
             obj = {
                 id_alumno:id,
                 fecha:(year+'-'+mes+'-'+(dia<10?'0'+dia:dia)),
@@ -1881,9 +1940,6 @@ function grabarAsistencia(mes,curso,dia){
                 }
             );
         }
-        if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
-            syncToServer();
-        }
         navigator.notification.alert('Exito',null,'La asistencia fue guardada con éxito.','Aceptar');
         editAsistencia = false;
         current = 'null';
@@ -1892,6 +1948,11 @@ function grabarAsistencia(mes,curso,dia){
         }
         elements = {'dia':dia, 'curso':curso, 'mes':mes}
         loadPage('lista-asistencia');
+        setTimeout(function(){
+            if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
+                syncToServer();
+            }
+        },10000);
     });
 }
 function getWorkday(year,month,day,downward){
@@ -1912,6 +1973,7 @@ function getWorkday(year,month,day,downward){
 }
 function promptWindow(message,action,title,buttons,inputTypes){
     // message: string, action: function(), title: string, buttons:[strings...],inputTypes:[strings...]
+    $("#background-blur").remove();
     var backgroundBlur = document.createElement('div');
     backgroundBlur.id = 'background-blur';
     var dialog = document.createElement("div");
@@ -1919,14 +1981,77 @@ function promptWindow(message,action,title,buttons,inputTypes){
     var titleDom = document.createElement('h3');
     titleDom.appendChild(document.createTextNode(title));
     dialog.appendChild(titleDom);
-    dialog.appendChild(document.createTextNode(message));
-    // dialog.className = "dialogBox";
-    for(var i=0;i<inputTypes.length;i++){
-        var inp = document.createElement('input');
-        inp.type = inputTypes[i];
-        inp.className='form-control';
-        dialog.appendChild(inp);
+    if(message!=null){
+        dialog.appendChild(document.createTextNode(message));
     }
+    // dialog.className = "dialogBox";
+    var form = document.createElement('form');
+    form.id = "promptWindow";
+    var checkSetted = false;
+    for(var i=0;i<inputTypes.length;i++){
+        if( typeof (inputTypes[i]) === 'object' ){
+            var label = document.createElement('label');
+            label.className = "promptLabel";
+            var inpObj = inputTypes[i];
+            var inp = document.createElement('input');
+            inp.type = inpObj.type;
+            switch(inp.type){
+                case 'text':
+                    inp.className='form-control';
+                    label.appendChild(document.createTextNode('  '+inpObj.label));
+                    label.appendChild(inp);
+                    break;
+                case 'checkbox':
+                    inp.value=inpObj.label;
+                    label.appendChild(inp);
+                    label.appendChild(document.createTextNode('  '+inpObj.label));
+                    break;
+                case 'radio':
+                    var fieldset = document.createElement('fieldset');
+                    var itemRel = document.createAttribute("data-type");
+                    itemRel.value = "horizontal";
+                    fieldset.setAttributeNode(itemRel);
+                    itemRel = document.createAttribute("data-role");
+                    itemRel.value = "controlgroup";
+                    fieldset.setAttributeNode(itemRel);
+                    var legend = document.createElement('legend');
+                    legend.appendChild(document.createTextNode(inpObj.label));
+                    fieldset.appendChild(legend);
+                    for(var est in inpObj.values){
+                        var cVal = (inpObj.values)[est];
+                        var inp = document.createElement('input');
+                        inp.value=cVal;
+                        inp.id = "radio-"+est;
+                        inp.name = "radio"+i;
+                        inp.type = inpObj.type;
+                        fieldset.appendChild(inp);
+                        var label = document.createElement('label');
+                        itemRel = document.createAttribute("for");
+                        itemRel.value = "radio-"+est;
+                        label.setAttributeNode(itemRel); 
+                        label.appendChild(document.createTextNode(' '+capitalize(est)+'  '));
+                        fieldset.appendChild(label);
+                    }
+                    label = fieldset;
+                    break;
+                default:
+                    inp.className='form-control';
+                    label.appendChild(document.createTextNode('  '+inpObj.label));
+                    label.appendChild(inp);
+                    break;
+            }
+            form.appendChild(label);
+        } else if( typeof (inputTypes[i]) === 'string' ){
+            var cont = document.createElement('div');
+            cont.className = "form-group"
+            var inp = document.createElement('input');
+            inp.type = inputTypes[i];
+            inp.className='form-control';
+            form.appendChild(inp);
+        }
+    }
+    dialog.appendChild(form);
+    var indexes = {};
     for(var i=0;i<2;i++){
         var btn = document.createElement('a');
         btn.setAttribute('href','#');
@@ -1937,7 +2062,21 @@ function promptWindow(message,action,title,buttons,inputTypes){
             var ind = (evt.target.id).replace('indexSelected','');
             var result = {buttonIndex:ind};
             $('#dialogBox input').each(function(k,v){
-                result['input'+(k+1)] = v.value;
+                var t = v.type;
+                if( typeof indexes[t] === 'undefined' ){
+                    indexes[t] = 1;
+                }
+                if( t === 'checkbox' ){
+                    result[t+indexes[t]] = ($(v).is(':checked')?1:0);
+                } else if( t === 'radio' ){
+                    if( typeof result[v.name] === 'undefined' ){
+                        result[v.name] = {};
+                    }
+                    result[v.name][v.value] = $(v).is(':checked');
+                } else {
+                    result[t+indexes[t]] = v.value;
+                }
+                indexes[t]++;
             });
             action(result);
             $("#background-blur").remove();
@@ -1945,7 +2084,8 @@ function promptWindow(message,action,title,buttons,inputTypes){
         dialog.appendChild(btn);
     }
     backgroundBlur.appendChild(dialog);
-    document.body.appendChild(backgroundBlur);
+    document.getElementById('document-page').appendChild(backgroundBlur);
+    $("#dialogBox").trigger('create');
 }
 /*
 (function(){

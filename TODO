@@ -1,0 +1,2 @@
+- En el login, si un usuario profesor pertenece a mas de un colegio, debe ofrecer una vista para seleccionar el colegio al que se desea conectar.
+- En la asistencia, se debe agregar un timestamp para que la toma de asistencia más reciente sea la que se considere como final.

@@ -9,6 +9,8 @@ var Asistencia = function(tx,id,callback,json)
     this.observaciones = null;
     this.id_curso = null;
     this.informado = null;
+    this.horaLlegada = null;
+    this.estadoFinal = null;
     this.class = null;
 
     if(json!=null){
@@ -32,7 +34,10 @@ Asistencia.prototype.createTable = function()
         " estado INTEGER," + 
         " observaciones varchar(256)," + 
         " id_curso INTEGER," + 
-        " informado INTEGER" + 
+        " informado INTEGER," +
+        " horaLlegada varchar(32)," +
+        " estadoFinal INTEGER," +
+        " CONSTRAINT asisUnica UNIQUE(id_alumno, fecha, id_curso)" + 
     ");";
     this.tx.executeSql(query,[]);
 }
@@ -61,7 +66,7 @@ Asistencia.prototype.selectById = function(callback)
 }
 Asistencia.prototype.insert = function(vals,callback)
 {
-    var query = "INSERT OR REPLACE INTO alumno_asistencia VALUES(?,?,?,?,?,?,?,?)";
+    var query = "INSERT OR REPLACE INTO alumno_asistencia VALUES(?,?,?,?,?,?,?,?,?,?)";
     if( typeof vals !== 'undefined' ){
         this.id = vals.id;
         this.id_alumno = vals.id_alumno;
@@ -71,6 +76,8 @@ Asistencia.prototype.insert = function(vals,callback)
         this.observaciones = vals.observaciones;
         this.id_curso = vals.id_curso;
         this.informado = vals.informado;
+        this.horaLlegada = vals.horaLlegada;
+        this.estadoFinal = vals.estadoFinal;
     }
     var insertObject = [
         this.id,
@@ -80,7 +87,9 @@ Asistencia.prototype.insert = function(vals,callback)
         this.estado,
         this.observaciones,
         this.id_curso,
-        this.informado
+        this.informado,
+        this.horaLlegada,
+        this.estadoFinal
     ];
     this.tx.executeSql(query,insertObject,callback,function(tx,error){
         console.log(error.message);
