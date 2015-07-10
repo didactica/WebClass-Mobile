@@ -14,6 +14,12 @@ body,html{
 	width:100%;
 	height:2em;
 }
+.tituloWrapEllipsis{
+	/*white-space: nowrap; 
+    width: 100%; 
+   	overflow: hidden;
+    text-overflow: ellipsis;*/
+}
 /*
 .ui-header .ui-title, .ui-footer .ui-title{
 	margin:0 20%!important;
@@ -792,7 +798,7 @@ ul#alumno-lista li.header .control.next{
 	width:95%;
 	height:auto;
 	position:relative;
-	margin:25% auto;
+	margin:5% auto;
 	padding:1em;
 }
 /*

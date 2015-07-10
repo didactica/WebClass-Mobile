@@ -51,7 +51,7 @@ Planificacion.prototype.initWithJson = function(json,callback){
 Planificacion.prototype.selectById = function(callback){
     // this es una variable contextual, por lo que reservamos la global para trabajar con un subcontexto
     var self = this;
-    var query = "SELECT un3.*, us.nombre_usuario as autor " + 
+    var query = "SELECT un3.*, us.nombre_usuario||' '||us.apellido_paterno as autor " + 
         "FROM (" + 
         "   SELECT un2.*, s.nombre as sectorNombre " + 
         "   FROM (" + 
@@ -64,8 +64,8 @@ Planificacion.prototype.selectById = function(callback){
         "   LEFT JOIN sector s" + 
         "   ON s.id=un2.sector" + 
         ") un3 " + 
-        "LEFT JOIN usuario us " + 
-        "ON un3.usuario=us.id;";
+        "LEFT JOIN usuario_detalle us " + 
+        "ON un3.usuario=us.idusuario;";
     this.tx.executeSql(
         query,
         [],

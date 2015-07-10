@@ -64,6 +64,7 @@ include('model/Evento.js');
 include('model/Planificacion.js');
 include('model/Sector.js');
 include('model/Clase.js');
+include('model/ClaseDetalle.js');
 include('model/Nivel.js');
 include('model/Sector_Grupo.js');
 include('model/Usuario.js');
@@ -84,7 +85,7 @@ var token;
 var historyStack = [];
 var current;
 var elements = [];
-var tables = ['evento','sector','sector_grupo','unidad','clase','nivel','curso','alumno','alumno_asistencia','usuario','usuario_detalle'];
+var tables = ['evento','sector','sector_grupo','unidad','clase','clase_detalle','nivel','curso','alumno','alumno_asistencia','usuario','usuario_detalle'];
 var curDate;
 var months = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -598,6 +599,7 @@ function refreshWidgets(page){
             $("#menu_lateral").panel('open');
         }
     });
+    $('html, body').animate({scrollTop: 0}, 300);
     // OJO!! puede dejar la cagaa esta leserita.
     //*
     $('html').off("click");
@@ -948,6 +950,25 @@ function refreshWidgets(page){
                 }
             });
             break;
+        case 'verunidad':
+            $("#clasesUnidad .clase .verclase").each(function(k,v){
+                $(v).off("click");
+                $(v).on("click",function(evt){
+                    var dom = v;
+                    var id = $(v).attr("href");
+                    id = id.substring(1);
+                    $.mobile.loading('show').promise().done(function(){
+                        sql.transaction(function(tx){
+                            var clase = new Clase(tx,id,function(){
+                                lastObject.push(elements);
+                                elements = clase;
+                                loadPage('clase');
+                            });
+                        });
+                    });
+                });
+            });
+            break;
         case 'unidad':
             $("#clases").listview();
             $("#clases .menu").each(function(k,v){
@@ -1116,6 +1137,7 @@ function refreshWidgets(page){
                         var tmpDay = elements.eventos[id].eventos[i];
                         if(tmpDay.id==selected){
                             var det = tmpDay.descripcion == null ? 'Sin Descripción' : tmpDay.descripcion;
+                            det = strip(det);
                             var message = "Titulo: " + tmpDay.nombre + "\n" + "Fecha Inicio:" + tmpDay.fechaini + " a las " + tmpDay.horaini + "\n" + "Fecha Fin: " + tmpDay.fechafin + " a las " + tmpDay.horafin + "\n" + "Descripción: " + det + "\n";
                             if(navigator.notification){
                                 navigator.notification.alert(message,null,'Detalle de Evento','Aceptar');
@@ -1180,11 +1202,15 @@ function setListeners(){
     });
     //*/
 }
-function login()
+function login(colegio)
 {
     var _user = $("[name='user']").val();
     var _pass = $("[name='pass']").val();
     var params = { 'user':_user,'pass':_pass };
+    if(colegio){
+        params.idusuario = colegio;
+        console.log(params);
+    }
     if( (typeof navigator.connection !== 'undefined') && (navigator.connection.type==Connection.NONE) ){
         navigator.notification.alert(
             "Para realizar login debe tener conexión a internet.",
@@ -1201,25 +1227,48 @@ function login()
             dataType:'json',
             success : function(resp){
                 if(resp.state==0){
-                    window.localStorage.setItem('user', resp.user);
-                    window.localStorage.setItem('token', resp.hash);
-                    window.localStorage.setItem('colegio', resp.userData.idcolegio);
-                    window.localStorage.setItem('rol', resp.userData.idrol);
-                    window.localStorage.setItem('userData',JSON.stringify(resp.userData));
-                    sql.transaction(function(tx){
-                        new Usuario(
-                            tx,
-                            null,
-                            function(){
-                                $("#nav-header").show();
-                                user = resp.user;
-                                downloadData(function(){
-                                    loadPage('home');
-                                });
+                    if( typeof resp.selectColegio !== 'undefined' ){
+                        $.mobile.loading('hide');
+                        var options = [];
+                        for( var id in resp.selectColegio ){
+                            var curOpt = (resp.selectColegio)[id];
+                            options.push({value:id,label:curOpt})
+                        }
+                        promptWindow(
+                            'asdasdasd',
+                            function(result){ 
+                                if(result.buttonIndex==1){
+                                    $.mobile.loading('show');
+                                    var idusuario = result['select-one1'];
+                                    login(idusuario);
+                                }
                             },
-                            resp.userData
+                            'asd',
+                            ['Cancelar','Aceptar'],
+                            [{type:'select',label:'Seleccione el colegio:',options:options}]
                         );
-                    });
+                    } else {
+                        window.localStorage.setItem('user', resp.user);
+                        window.localStorage.setItem('token', resp.hash);
+                        window.localStorage.setItem('colegio', resp.userData.idcolegio);
+                        window.localStorage.setItem('rol', resp.userData.idrol);
+                        window.localStorage.setItem('userData',JSON.stringify(resp.userData));
+                        sql.transaction(function(tx){
+                            new Usuario(
+                                tx,
+                                null,
+                                function(){
+                                    $("#nav-header").show();
+                                    user = resp.user;
+                                    downloadData(function(){
+                                        loadPage('home');
+                                    });
+                                },
+                                resp.userData
+                            );
+                        });
+                    }
+                    
                 } else {
                     if(resp.state==1){
                         navigator.notification.alert(resp.message,function(){$("input[name='pass']").val('');$('input[name=user]').focus();},'Error de Login','Aceptar');
@@ -1441,7 +1490,8 @@ function getTableFromServer(callback)
                     getTableFromServer(callback);
                 } else {
                     // resolution shouldn't be over 100.
-                    setRadialPercentage("theRoadSoFar",((Math.ceil((totalSyncs/syncSize)*100))/100));
+                    var prog = ((Math.ceil((totalSyncs/syncSize)*100))/100);
+                    setRadialPercentage("theRoadSoFar",(prog>1?1:prog));
                     var tableSize = window.localStorage.getItem('sizeof-'+curT);
                     if(typeof resp.rows !== 'undefined'){
                         lastId+=transferConectionSize;
@@ -1971,7 +2021,7 @@ function promptWindow(message,action,title,buttons,inputTypes){
             var inpObj = inputTypes[i];
             var inp = document.createElement('input');
             inp.type = inpObj.type;
-            switch(inp.type){
+            switch(inpObj.type){
                 case 'text':
                     inp.className='form-control';
                     label.appendChild(document.createTextNode('  '+inpObj.label));
@@ -2010,6 +2060,19 @@ function promptWindow(message,action,title,buttons,inputTypes){
                     }
                     label = fieldset;
                     break;
+                case 'select':
+                    inp = document.createElement('select');
+                    inp.id="selectColegio";
+                    for( var i in inpObj.options ){
+                        var curOpt = (inpObj.options)[i];
+                        var opt = document.createElement('option');
+                        opt.value = curOpt.value;
+                        opt.appendChild(document.createTextNode(curOpt.label));
+                        inp.appendChild(opt);
+                    }
+                    label.appendChild(document.createTextNode('  '+inpObj.label));
+                    label.appendChild(inp);
+                    break;
                 default:
                     inp.className='form-control';
                     label.appendChild(document.createTextNode('  '+inpObj.label));
@@ -2037,8 +2100,8 @@ function promptWindow(message,action,title,buttons,inputTypes){
         btn.addEventListener('click',function(evt){
             var ind = (evt.target.id).replace('indexSelected','');
             var result = {buttonIndex:ind};
-            $('#dialogBox input').each(function(k,v){
-                var t = v.type;
+            $('#dialogBox input, #dialogBox select').each(function(k,v){
+                var t = v.type || 'select';
                 if( typeof indexes[t] === 'undefined' ){
                     indexes[t] = 1;
                 }
@@ -2062,6 +2125,12 @@ function promptWindow(message,action,title,buttons,inputTypes){
     backgroundBlur.appendChild(dialog);
     document.getElementById('document-page').appendChild(backgroundBlur);
     $("#dialogBox").trigger('create');
+}
+function strip(html)
+{
+    var tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
 }
 /*
 (function(){

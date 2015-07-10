@@ -1,5 +1,5 @@
 <div class="container-fluid">
-	<h2>{{nombre}}</h2>
+	<h2 class="tituloWrapEllipsis">{{nombre}}</h2>
 	<div class="clearfix"></div>
 	<table class="detailUnit">
 		<tr>
@@ -45,11 +45,11 @@
 	{{#if this.clases}}
 		<h2>Clases</h2>
 		<div class="clearfix"></div>
-		<ul data-role="listview">
+		<ul id="clasesUnidad" data-role="listview">
 		{{#each this.clases}}
 			{{#.}}
-			<li data-icon="false">
-				<a href="#">
+			<li class="clase" data-icon="false">
+				<a class="verclase" href="#{{this.id}}">
 					<h3>{{this.nombre}}</h3>
 					<p>{{this.fechainibonita}} - {{this.fechafinbonita}}</p>
 				</a>

@@ -1,32 +1,61 @@
 <div class="container-fluid">
-	<h2>{{nombre}}</h2>
-	<div class="row">
-		<div class="col-xs-3">Profesor</div>
-		<div class="col-xs-3">{{autor}}</div>
-		<div class="col-xs-3">Inicio</div>
-		<div class="col-xs-3">{{fechaBonitaIni}}</div>
-	</div>
-	<div class="row">
-		<div class="col-xs-3">Asignatura</div>
-		<div class="col-xs-3">{{sectorNombre}}</div>
-		<div class="col-xs-3">T&eacute;rmino</div>
-		<div class="col-xs-3">{{fechaBonitaFin}}</div>
-	</div>
-	<div class="row">
-		<div class="col-xs-3">Nivel</div>
-		<div class="col-xs-3">{{nivelNombre}}</div>
-		<div class="col-xs-3">Duración</div>
-		<div class="col-xs-3">{{horas}}</div>
-	</div>
-	<div class="row">
-		<div class="col-xs-3">Clases</div>
-		<div class="col-xs-3">{{totalClases}}</div>
-		<div class="col-xs-3">Validado Por</div>
-		<div class="col-xs-3"></div>
-	</div>
-	<div class="row">
-		<p>
+	<h2 class="tituloWrapEllipsis">{{nombre}}</h2>
+	<div class="clearfix"></div>
+	<table class="detailUnit">
+		<tr>
+			<th>Profesor</th><th>&nbsp;:&nbsp;</th>
+			<td>{{autor}}</td>
+		</tr>
+		<tr>
+			<th>Asignatura</th><th>&nbsp;:&nbsp;</th>
+			<td>{{sectorNombre}}</td>
+		</tr>
+		<tr>
+			<th>Nivel</th><th>&nbsp;:&nbsp;</th>
+			<td>{{nivelNombre}}</td>
+		</tr>
+
+		<tr>
+			<th>Inicio</th><th>&nbsp;:&nbsp;</th>
+			<td>{{fechaBonitaIni}}</td>
+		</tr>
+		<tr>
+			<th>T&eacute;rmino</th><th>&nbsp;:&nbsp;</th>
+			<td>{{fechaBonitaFin}}</td>
+		</tr>		<tr>
+			<th>Duración</th><th>&nbsp;:&nbsp;</th>
+			<td>{{horas}}</td>
+		</tr>
+		<tr>
+			<th>Clases</th><th>&nbsp;:&nbsp;</th>
+			<td>{{numeroClases}}</td>
+		</tr>
+		<!--
+		<tr>
+			<th>Validado Por</th><th>&nbsp;:&nbsp;</th>
+			<td>  </td>
+		</tr>
+		-->
+	</table>
+	<div class="row" style="border-bottom:1px solid #333;">
+		<p style="padding:1em;">
 			{{observacion}}
 		</p>
 	</div>
+	{{#if this.clases}}
+		<h2>Clases</h2>
+		<div class="clearfix"></div>
+		<ul id="clasesUnidad" data-role="listview">
+		{{#each this.clases}}
+			{{#.}}
+			<li class="clase" data-icon="false">
+				<a class="verclase" href="#{{this.id}}">
+					<h3>{{this.nombre}}</h3>
+					<p>{{this.fechainibonita}} - {{this.fechafinbonita}}</p>
+				</a>
+			</li>
+			{{/.}}
+		{{/each}}
+		</ul>
+	{{/if}}
 </div>

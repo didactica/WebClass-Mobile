@@ -137,7 +137,12 @@ Clase.prototype.selectById = function(callback){
     var self = this;
     var query = 
         "SELECT " + 
-        "   c.*, u.nombre_usuario||' '||u.apellido_paterno as autor " + 
+        "   c.*, " +
+        "   u.nombre_usuario||' '||u.apellido_paterno as autor, " + 
+        "   cdet.inicio as detalleInicio," +
+        "   cdet.desarrollo as detalleDesarrollo," +
+        "   cdet.cierre as detalleCierre," +
+        "   cdet.evaluacion as detalleEvaluacion" +
         " FROM " + 
         " (" + 
         "   SELECT " + 
@@ -178,7 +183,12 @@ Clase.prototype.selectById = function(callback){
         " LEFT JOIN " + 
         "   usuario_detalle u " + 
         " ON " + 
-        "   c.profesor=u.idusuario;";
+        "   c.profesor=u.idusuario" + 
+        " LEFT JOIN " +
+        "   clase_detalle cdet " + 
+        " ON " +
+        "   cdet.idclase='"+self.id+"'"
+        ;
     this.tx.executeSql(
         query,
         [],

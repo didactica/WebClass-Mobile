@@ -1,5 +1,5 @@
 <div class="container-fluid">
-	<h2>{{nombre}}</h2>
+	<h2 class="tituloWrapEllipsis">{{nombre}}</h2>
 	<div class="clearfix"></div>
 	<table>
 		<tr>
@@ -28,12 +28,16 @@
 		</tr>
 		<tr>
 			<th>Duración</th><th>&nbsp;:&nbsp;</th>
-			<td>{{horas}}</td>
+			<td>{{horas}} Horas</td>
 		</tr>
 	</table>
-	<div class="row">
+	<div class="row" style="padding:1em; border-top:1px solid #333; margin-top:0.5em;">
+		<h3>Detalles</h3>
 		<p>
-			{{observacion}}
+			<strong>Inicio: </strong>{{{detalleInicio}}}<br/><br/>
+			<strong>Desarrollo: </strong>{{{detalleDesarrollo}}}<br/><br/>
+			<strong>Cierre: </strong>{{{detalleCierre}}}<br/><br/>
+			<strong>Evaluación: </strong>{{{detalleEvaluacion}}}<br/><br/>
 		</p>
 	</div>
 </div>
