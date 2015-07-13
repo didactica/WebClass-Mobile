@@ -217,7 +217,9 @@ function functions(title,callback){
                                     }
                                 },
                                 function(tx,err){
-                                    console.log(JSON.stringify(err));
+                                    if( typeof console !== 'undefiend' ){
+                                        console.log(JSON.stringify(err));
+                                    }
                                 }
                             );
                             var asistenciaAlumnos = {};
@@ -259,7 +261,9 @@ function functions(title,callback){
                                     }
                                 },
                                 function(tx,error){
-                                    console.log(error);
+                                    if( typeof console !== 'undefiend' ){
+                                        console.log(error);
+                                    }
                                 }
                             );
                             elements.alumnos = [];
@@ -296,8 +300,10 @@ function functions(title,callback){
                                     callback();
                                 },
                                 function(arg1, arg2){
-                                    console.log("arg1: "+JSON.stringify(arg1));
-                                    console.log("arg2: "+JSON.stringify(arg2));
+                                    if( typeof console !== 'undefiend' ){
+                                        console.log("arg1: "+JSON.stringify(arg1));
+                                        console.log("arg2: "+JSON.stringify(arg2));
+                                    }
                                     callback();
                                 }
                             );
@@ -342,7 +348,9 @@ function functions(title,callback){
                             callback();
                         },
                         function(tx,err){
-                            console.log(JSON.stringify(err.message));
+                            if( typeof console !== 'undefiend' ){
+                                console.log(JSON.stringify(err.message));
+                            }
                             callback();
                         }
                     );
@@ -405,7 +413,9 @@ function functions(title,callback){
                             }
                         },
                         function(tx,err){
-                            console.log(JSON.stringify(err.message));
+                            if( typeof console !== 'undefiend' ){
+                                console.log(JSON.stringify(err.message));
+                            }
                         }
                     );
                     tx.executeSql(
@@ -422,12 +432,16 @@ function functions(title,callback){
                             callback();
                         },
                         function(tx,err){
-                            console.log(JSON.stringify(err.message));
+                            if( typeof console !== 'undefiend' ){
+                                console.log(JSON.stringify(err.message));
+                            }
                         }
                     );
                 },
                 function(tx,error){
-                    console.log("Error:"+tx.message);
+                    if( typeof console !== 'undefiend' ){
+                        console.log("Error:"+tx.message);
+                    }
                     callback();
                 }
             );
@@ -467,7 +481,9 @@ function functions(title,callback){
                     callback();
                 },
                 function(tx,error){
-                    console.log("Error:"+error.message);
+                    if( typeof console !== 'undefiend' ){
+                        console.log("Error:"+error.message);
+                    }
                     callback();
                 }
             );
@@ -938,9 +954,11 @@ function refreshWidgets(page){
                                         }
                                     },
                                     function(arg1,arg2){
-                                        console.log('Error de SQL:');
-                                        console.log(JSON.stringify(arg1));
-                                        console.log(JSON.stringify(arg2));
+                                        if( typeof console !== 'undefiend' ){
+                                            console.log('Error de SQL:');
+                                            console.log(JSON.stringify(arg1));
+                                            console.log(JSON.stringify(arg2));
+                                        }
                                         workTransaction = false;
                                     }
                                 );
@@ -1016,7 +1034,9 @@ function refreshWidgets(page){
                                     });
                                 },
                                 function(error){
-                                    console.log("Transaction error: " + error.message );
+                                    if( typeof console !== 'undefiend' ){
+                                        console.log("Transaction error: " + error.message );
+                                    }
                                     navigator.notification.alert('No se pudo abrir la planificacion seleccionada.',null,'Error','Aceptar');
                                 }
                             );
@@ -1079,7 +1099,9 @@ function refreshWidgets(page){
                         });
                     },
                     function(error){
-                        console.log("Transaction error: " + error.message );
+                        if( typeof console !== 'undefiend' ){
+                            console.log("Transaction error: " + error.message );
+                        }
                         navigator.notification.alert('No se pudo abrir la planificacion seleccionada.',null,'Error','Aceptar');
                     }
                 );
@@ -1142,7 +1164,9 @@ function refreshWidgets(page){
                             if(navigator.notification){
                                 navigator.notification.alert(message,null,'Detalle de Evento','Aceptar');
                             } else {
-                                console.log(message);
+                                if( typeof console !== 'undefiend' ){
+                                    console.log(message);
+                                }
                             }
                         }
                     }
@@ -1164,7 +1188,7 @@ function setListeners(){
     $('input').off('focus');
     $('input').on('focus', function() {
         var topOffset = parseInt(($('#document-page').css('top')).replace('px',''))*(-1);
-        var pos = $(this).offset().top-180+topOffset;
+        var pos = $(this).offset().top-($(this).height()+50)+topOffset;
         var css = {top:"-"+pos+"px"};
         $('#document-page').animate(css);
         $(this).on('blur',function(ev){
@@ -1209,7 +1233,9 @@ function login(colegio)
     var params = { 'user':_user,'pass':_pass };
     if(colegio){
         params.idusuario = colegio;
-        console.log(params);
+        if( typeof console !== 'undefiend' ){
+            console.log(params);
+        }
     }
     if( (typeof navigator.connection !== 'undefined') && (navigator.connection.type==Connection.NONE) ){
         navigator.notification.alert(
@@ -1324,8 +1350,10 @@ function compileTemplate(template){
             ret = Handlebars.compile(html)(elements);
         },
         error:function(res,error){
-            console.log(JSON.stringify(res));
-            console.log(JSON.stringify(error));
+            if( typeof console !== 'undefiend' ){
+                console.log(JSON.stringify(res));
+                console.log(JSON.stringify(error));
+            }
             ret = "<h3>Template no encontrado.</h3>";
         },
         async: false
@@ -1415,17 +1443,21 @@ function syncToServer(getTables){
                                             }
                                         },
                                         error:function(res,error,errorThrown){
-                                            console.log(JSON.stringify(res));
-                                            console.log(error);
-                                            console.log(errorThrown);
+                                            if( typeof console !== 'undefiend' ){
+                                                console.log(JSON.stringify(res));
+                                                console.log(error);
+                                                console.log(errorThrown);
+                                            }
                                         }
                                     });
                                 }
                             }
                         },
                         function(tx,err){
-                            console.log(JSON.stringify(tx));
-                            console.log(JSON.stringify(err));
+                            if( typeof console !== 'undefiend' ){
+                                console.log(JSON.stringify(tx));
+                                console.log(JSON.stringify(err));
+                            }
                         }
                     );
                 } else {
@@ -1516,8 +1548,10 @@ function getTableFromServer(callback)
                         getTableFromServer(callback);
                     } else {
                         // it shouldn't come to this, but just in case...
-                        console.log('Warning: Handling download with wrong parameters. Please check the WebService.');
-                        console.log('Response from server was: '+JSON.stringify(resp));
+                        if( typeof console !== 'undefiend' ){
+                            console.log('Warning: Handling download with wrong parameters. Please check the WebService.');
+                            console.log('Response from server was: '+JSON.stringify(resp));
+                        }
                         getTableFromServer(callback);
                     }
                 }
@@ -1770,19 +1804,27 @@ function createMenu(items,direction,trigger){
                     menu.appendChild(item);
                 } else {
                     success = false;
-                    console.log("Los items del menu tienen un formato inválido.");
+                    if( typeof console !== 'undefiend' ){
+                        console.log("Los items del menu tienen un formato inválido.");
+                    }
                 }
             }
         } else {
             success = false;
-            console.log("Los items del menu tienen un formato inválido.");
+            if( typeof console !== 'undefiend' ){
+                console.log("Los items del menu tienen un formato inválido.");
+            }
         }
     }catch(ex){
-        console.log(ex);
+        if( typeof console !== 'undefiend' ){
+            console.log(ex);
+        }
         success = false;
     } finally {
          if(!success){
-            console.log('not success!!');
+            if( typeof console !== 'undefiend' ){
+                console.log('not success!!');
+            }
             return false;
         } else {
             document.body.appendChild(menu);
@@ -1881,7 +1923,9 @@ function changeEjecucionClase(id,newVal){
             });
         },
         function(arg0){
-            console.log(arg0);
+            if( typeof console !== 'undefiend' ){
+                console.log(arg0);
+            }
         }
     );
 }
@@ -1961,8 +2005,10 @@ function grabarAsistencia(mes,curso,dia){
                     window.localStorage.setItem('pendientes',pendientes);
                 },
                 function(tx,error){
-                    console.log(error);
-                    console.log(JSON.stringify(error));
+                    if( typeof console !== 'undefiend' ){
+                        console.log(error);
+                        console.log(JSON.stringify(error));
+                    }
                 }
             );
         }
