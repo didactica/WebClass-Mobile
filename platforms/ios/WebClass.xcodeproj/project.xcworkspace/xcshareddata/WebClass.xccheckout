@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>04A2B647-4C8E-40FE-8ED4-EABBFB9A337C</string>
+	<key>IDESourceControlProjectName</key>
+	<string>WebClass</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>D6130A1D203BB75DE4404C10AFE6EE7C1EBD8C53</key>
+		<string>https://github.com/pablogarin/WebClass-Mobile.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>platforms/ios/WebClass.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>D6130A1D203BB75DE4404C10AFE6EE7C1EBD8C53</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/pablogarin/WebClass-Mobile.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>D6130A1D203BB75DE4404C10AFE6EE7C1EBD8C53</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>D6130A1D203BB75DE4404C10AFE6EE7C1EBD8C53</string>
+			<key>IDESourceControlWCCName</key>
+			<string>WebClassMobile</string>
+		</dict>
+	</array>
+</dict>
+</plist>

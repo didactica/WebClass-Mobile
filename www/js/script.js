@@ -1188,7 +1188,7 @@ function setListeners(){
     $('input').off('focus');
     $('input').on('focus', function() {
         var topOffset = parseInt(($('#document-page').css('top')).replace('px',''))*(-1);
-        var pos = $(this).offset().top-($(this).height()+50)+topOffset;
+        var pos = Math.ceil($(this).offset().top-($(this).height()+90)+topOffset);
         var css = {top:"-"+pos+"px"};
         $('#document-page').animate(css);
         $(this).on('blur',function(ev){
