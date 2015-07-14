@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'">
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+        <link rel="stylesheet" href="css/font-awesome.min.css" />
+        <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="css/jquery.mobile.flatui.css">
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+        <script src="js/jquery.js"></script>
+        <script src="js/jquery.mobile-1.4.5.min.js"></script>
+        <title>WebClass</title>
+    </head>
+    <body>
+        <div id="document-page" data-role="page" data-theme="a">
+            <div data-role="panel" id="menu_lateral" data-position="right" data-display="push" data-position-fixed="true">
+                <div class="tarjetaPresentacion">
+                    <div class="row">
+                        <div class="col-xs-4"><i class="fa fa-user fa-3x"></i></div>
+                        <div class="col-xs-8">
+                            <small class="muted">Profesor</small><br>
+                            <span id="nombreUsuario">Nombre Apellido</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+                <ul class="menuWebClass" data-role="listview">
+                    <li data-icon="false"><a href="#" data-transition="slide" class="menuItem" template="home"><i class="fa fa-home"></i> Home</a></li>
+                    <li data-icon="false"><a href="#" data-transition="slide" class="menuItem" template="planificacion"><i class="fa fa-calendar"></i> Planificación</a></li>
+                    <li data-icon="false"><a href="#" data-transition="slide" class="menuItem" template="asistencia"><i class="fa fa-users"></i> Asistencia</a></li>
+                </ul>
+                <a href="#" id="btn-logout" class="btn"><i class="fa fa-power-off"></i> Cerrar sesi&oacute;n</a>
+            </div>
+            <div id="nav-header" data-role="header" data-position="fixed" data-tap-toggle="false" class="ui-bar">
+                <span id="backButton">
+                    <i class="fa fa-chevron-left"></i>
+                </span>
+                <h1 id="header-title">Web Class</h1>
+                <div data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
+                    <span class="header-btn" href="#more" id="nav-more"><center><i class="fa fa-ellipsis-v fa-2x"></i></center></span>
+                    <span class="header-btn" id="btn-menu_lateral"><center><i class="fa fa-bars fa-2x"></i></center></span>
+                </div>
+            </div>
+            <div  id="contenido" data-role="content">
+                <div id="logoSplash" class="logo">
+                    <div class="reset" style="position:relative; top:60%; width:180%; margin:0 auto 0 -40%">
+                        <i class="fa fa-spinner fa-pulse fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ui-loader-background"> </div>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/handlebars.js"></script>
+        <script type="text/javascript" src="js/script.js?rand=aaaa"></script>
+    </body>
+</html>

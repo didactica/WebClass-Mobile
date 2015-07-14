@@ -1,0 +1,37 @@
+<ul id="eventos" data-role="listview" data-inset="false">
+    <li class="headerMes" data-role="list-divider" role="heading">
+        <a href="#prev_month" class="control prev"><i class="fa fa-chevron-left"></i></a>
+        <span id="month">Mes año</span>
+        <a href="#next_month" class="control next"><i class="fa fa-chevron-right"></i></a> 
+    </li>
+    {{#each eventos}}
+    {{#.}}
+        {{#if this.eventos}}
+            <li class="header" value="{{this.titulo}}">
+                <div data-role="collapsible" data-icon="none" style="border-width:0px;">
+                    <h2>{{this.titulo}}</h2>
+                    <ul class="eventos" data-role="listview" data-inset="false">
+                    {{#each this.eventos}}
+                        {{#.}}
+                            {{#if this.nombre}}
+                            <li class="evento" data-icon="false">
+                                <a href="{{this.id}}" class="eventoItem evento-{{this.tipo}}">
+                                    <div class="badge-evento"></div>
+                                    <div class="detalles-evento">
+                                        <span class="titulo-evento">{{this.nombre}}</span><br/>
+                                        <span class="fecha">{{this.horaini}} - {{this.horafin}}</span>
+                                    </div>
+                                </a>
+                            </li>
+                            {{/if}}
+                        {{/.}}
+                    {{/each}}
+                    </ul>
+                </div>
+            </li>
+        {{/if}}
+    {{/.}}
+    {{else}}
+    <li class="header disabled">No hay Eventos para mostrar</li>
+    {{/each}}
+</ul>
