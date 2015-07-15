@@ -1188,7 +1188,7 @@ function setListeners(){
     $('input').off('focus');
     $('input').on('focus', function() {
         var topOffset = parseInt(($('#document-page').css('top')).replace('px',''))*(-1);
-        var pos = $(this).offset().top-($(this).height()+50)+topOffset;
+        var pos = Math.ceil($(this).offset().top-($(this).height()+topOffset));
         var css = {top:"-"+pos+"px"};
         $('#document-page').animate(css);
         $(this).on('blur',function(ev){
@@ -1261,7 +1261,7 @@ function login(colegio)
                             options.push({value:id,label:curOpt})
                         }
                         promptWindow(
-                            'asdasdasd',
+                            '',
                             function(result){ 
                                 if(result.buttonIndex==1){
                                     $.mobile.loading('show');
@@ -1269,7 +1269,7 @@ function login(colegio)
                                     login(idusuario);
                                 }
                             },
-                            'asd',
+                            'Colegio',
                             ['Cancelar','Aceptar'],
                             [{type:'select',label:'Seleccione el colegio:',options:options}]
                         );

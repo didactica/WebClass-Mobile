@@ -18,6 +18,7 @@
  */
 
 #import <UIKit/UIKit.h>
+#import "CDVAvailability.h"
 
 /**
  * Distinguishes top-level navigations from sub-frame navigations.
@@ -34,5 +35,7 @@
 }
 
 - (id)initWithDelegate:(NSObject <UIWebViewDelegate>*)delegate;
+
+- (BOOL)request:(NSURLRequest*)newRequest isEqualToRequestAfterStrippingFragments:(NSURLRequest*)originalRequest;
 
 @end

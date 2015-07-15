@@ -83,12 +83,23 @@
 #define VerboseLog(...) do {} while (0)
 
 typedef enum {
-    STATE_IDLE,
-    STATE_WAITING_FOR_LOAD_START,
-    STATE_WAITING_FOR_LOAD_FINISH,
-    STATE_IOS5_POLLING_FOR_LOAD_START,
-    STATE_IOS5_POLLING_FOR_LOAD_FINISH
+    STATE_IDLE = 0,
+    STATE_WAITING_FOR_LOAD_START = 1,
+    STATE_WAITING_FOR_LOAD_FINISH = 2,
+    STATE_IOS5_POLLING_FOR_LOAD_START = 3,
+    STATE_IOS5_POLLING_FOR_LOAD_FINISH = 4,
+    STATE_CANCELLED = 5
 } State;
+
+static NSString *stripFragment(NSString* url)
+{
+    NSRange r = [url rangeOfString:@"#"];
+
+    if (r.location == NSNotFound) {
+        return url;
+    }
+    return [url substringToIndex:r.location];
+}
 
 @implementation CDVWebViewDelegate
 
@@ -103,6 +114,20 @@ typedef enum {
     return self;
 }
 
+- (BOOL)request:(NSURLRequest*)newRequest isEqualToRequestAfterStrippingFragments:(NSURLRequest*)originalRequest
+{
+    if (originalRequest.URL && newRequest.URL) {
+        NSString* originalRequestUrl = [originalRequest.URL absoluteString];
+        NSString* newRequestUrl = [newRequest.URL absoluteString];
+
+        NSString* baseOriginalRequestUrl = stripFragment(originalRequestUrl);
+        NSString* baseNewRequestUrl = stripFragment(newRequestUrl);
+        return [baseOriginalRequestUrl isEqualToString:baseNewRequestUrl];
+    }
+
+    return NO;
+}
+
 - (BOOL)isPageLoaded:(UIWebView*)webView
 {
     NSString* readyState = [webView stringByEvaluatingJavaScriptFromString:@"document.readyState"];
@@ -114,13 +139,18 @@ typedef enum {
 {
     NSString* loadToken = [webView stringByEvaluatingJavaScriptFromString:@"window.__cordovaLoadToken"];
 
-    return [[NSString stringWithFormat:@"%d", _curLoadToken] isEqualToString:loadToken];
+    return [[NSString stringWithFormat:@"%ld", (long)_curLoadToken] isEqualToString:loadToken];
 }
 
 - (void)setLoadToken:(UIWebView*)webView
 {
     _curLoadToken += 1;
-    [webView stringByEvaluatingJavaScriptFromString:[NSString stringWithFormat:@"window.__cordovaLoadToken=%d", _curLoadToken]];
+    [webView stringByEvaluatingJavaScriptFromString:[NSString stringWithFormat:@"window.__cordovaLoadToken=%ld", (long)_curLoadToken]];
+}
+
+- (NSString*)evalForCurrentURL:(UIWebView*)webView
+{
+    return [webView stringByEvaluatingJavaScriptFromString:@"location.href"];
 }
 
 - (void)pollForPageLoadStart:(UIWebView*)webView
@@ -163,6 +193,17 @@ typedef enum {
     }
 }
 
+- (BOOL)shouldLoadRequest:(NSURLRequest*)request
+{
+    NSString* scheme = [[request URL] scheme];
+
+    if ([scheme isEqualToString:@"mailto"] || [scheme isEqualToString:@"tel"]) {
+        return YES;
+    }
+
+    return [NSURLConnection canHandleRequest:request];
+}
+
 - (BOOL)webView:(UIWebView*)webView shouldStartLoadWithRequest:(NSURLRequest*)request navigationType:(UIWebViewNavigationType)navigationType
 {
     BOOL shouldLoad = YES;
@@ -174,36 +215,57 @@ typedef enum {
     VerboseLog(@"webView shouldLoad=%d (before) state=%d loadCount=%d URL=%@", shouldLoad, _state, _loadCount, request.URL);
 
     if (shouldLoad) {
-        BOOL isTopLevelNavigation = [request.URL isEqual:[request mainDocumentURL]];
+        // When devtools refresh occurs, it blindly uses the same request object. If a history.replaceState() has occured, then
+        // mainDocumentURL != URL even though it's a top-level navigation.
+        BOOL isDevToolsRefresh = (request == webView.request);
+        BOOL isTopLevelNavigation = isDevToolsRefresh || [request.URL isEqual:[request mainDocumentURL]];
         if (isTopLevelNavigation) {
+            // Ignore hash changes that don't navigate to a different page.
+            // webView.request does actually update when history.replaceState() gets called.
+            if ([self request:request isEqualToRequestAfterStrippingFragments:webView.request]) {
+                NSString* prevURL = [self evalForCurrentURL:webView];
+                if ([prevURL isEqualToString:[request.URL absoluteString]]) {
+                    VerboseLog(@"Page reload detected.");
+                } else {
+                    VerboseLog(@"Detected hash change shouldLoad");
+                    return shouldLoad;
+                }
+            }
+
             switch (_state) {
                 case STATE_WAITING_FOR_LOAD_FINISH:
                     // Redirect case.
                     // We expect loadCount == 1.
                     if (_loadCount != 1) {
-                        NSLog(@"CDVWebViewDelegate: Detected redirect when loadCount=%d", _loadCount);
+                        NSLog(@"CDVWebViewDelegate: Detected redirect when loadCount=%ld", (long)_loadCount);
                     }
                     break;
 
                 case STATE_IDLE:
                 case STATE_IOS5_POLLING_FOR_LOAD_START:
+                case STATE_CANCELLED:
                     // Page navigation start.
                     _loadCount = 0;
                     _state = STATE_WAITING_FOR_LOAD_START;
                     break;
 
                 default:
-                    NSLog(@"CDVWebViewDelegate: Navigation started when state=%d", _state);
-                    _loadCount = 0;
-                    _state = STATE_WAITING_FOR_LOAD_START;
-                    if ([_delegate respondsToSelector:@selector(webView:didFailLoadWithError:)]) {
-                        [_delegate webView:webView didFailLoadWithError:nil];
+                    {
+                        _loadCount = 0;
+                        _state = STATE_WAITING_FOR_LOAD_START;
+                        NSString* description = [NSString stringWithFormat:@"CDVWebViewDelegate: Navigation started when state=%ld", (long)_state];
+                        NSLog(@"%@", description);
+                        if ([_delegate respondsToSelector:@selector(webView:didFailLoadWithError:)]) {
+                            NSDictionary* errorDictionary = @{NSLocalizedDescriptionKey : description};
+                            NSError* error = [[NSError alloc] initWithDomain:@"CDVWebViewDelegate" code:1 userInfo:errorDictionary];
+                            [_delegate webView:webView didFailLoadWithError:error];
+                        }
                     }
             }
         } else {
             // Deny invalid URLs so that we don't get the case where we go straight from
             // webViewShouldLoad -> webViewDidFailLoad (messes up _loadCount).
-            shouldLoad = shouldLoad && [NSURLConnection canHandleRequest:request];
+            shouldLoad = shouldLoad && [self shouldLoadRequest:request];
         }
         VerboseLog(@"webView shouldLoad=%d (after) isTopLevelNavigation=%d state=%d loadCount=%d", shouldLoad, isTopLevelNavigation, _state, _loadCount);
     }
@@ -224,16 +286,22 @@ typedef enum {
             // We could try to distinguish using [UIWebView canGoForward], but that's too much complexity,
             // and would work only on the first time it was used.
 
-            // Our work-around is to set a JS variable and poll until it disappears (from a naviagtion).
+            // Our work-around is to set a JS variable and poll until it disappears (from a navigation).
             _state = STATE_IOS5_POLLING_FOR_LOAD_START;
             _loadStartPollCount = 0;
             [self setLoadToken:webView];
             [self pollForPageLoadStart:webView];
             break;
 
+        case STATE_CANCELLED:
+            fireCallback = YES;
+            _state = STATE_WAITING_FOR_LOAD_FINISH;
+            _loadCount += 1;
+            break;
+
         case STATE_WAITING_FOR_LOAD_START:
             if (_loadCount != 0) {
-                NSLog(@"CDVWebViewDelegate: Unexpected loadCount in didStart. count=%d", _loadCount);
+                NSLog(@"CDVWebViewDelegate: Unexpected loadCount in didStart. count=%ld", (long)_loadCount);
             }
             fireCallback = YES;
             _state = STATE_WAITING_FOR_LOAD_FINISH;
@@ -253,7 +321,7 @@ typedef enum {
             break;
 
         default:
-            NSLog(@"CDVWebViewDelegate: Unexpected didStart with state=%d loadCount=%d", _state, _loadCount);
+            NSLog(@"CDVWebViewDelegate: Unexpected didStart with state=%ld loadCount=%ld", (long)_state, (long)_loadCount);
     }
     VerboseLog(@"webView didStartLoad (after). state=%d loadCount=%d fireCallback=%d", _state, _loadCount, fireCallback);
     if (fireCallback && [_delegate respondsToSelector:@selector(webViewDidStartLoad:)]) {
@@ -305,16 +373,26 @@ typedef enum {
             break;
 
         case STATE_WAITING_FOR_LOAD_START:
-            _state = STATE_IDLE;
+            if ([error code] == NSURLErrorCancelled) {
+                _state = STATE_CANCELLED;
+            } else {
+                _state = STATE_IDLE;
+            }
             fireCallback = YES;
             break;
 
         case STATE_WAITING_FOR_LOAD_FINISH:
-            if (_loadCount == 1) {
-                _state = STATE_IDLE;
+            if ([error code] != NSURLErrorCancelled) {
+                if (_loadCount == 1) {
+                    _state = STATE_IDLE;
+                    fireCallback = YES;
+                }
+                _loadCount = -1;
+            } else {
                 fireCallback = YES;
+                _state = STATE_CANCELLED;
+                _loadCount -= 1;
             }
-            _loadCount = -1;
             break;
 
         case STATE_IOS5_POLLING_FOR_LOAD_START:

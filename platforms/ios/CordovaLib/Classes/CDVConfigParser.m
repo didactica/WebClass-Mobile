@@ -40,7 +40,11 @@
         self.pluginsDict = [[NSMutableDictionary alloc] initWithCapacity:30];
         self.settings = [[NSMutableDictionary alloc] initWithCapacity:30];
         self.whitelistHosts = [[NSMutableArray alloc] initWithCapacity:30];
+        [self.whitelistHosts addObject:@"file:///*"];
+        [self.whitelistHosts addObject:@"content:///*"];
+        [self.whitelistHosts addObject:@"data:///*"];
         self.startupPluginNames = [[NSMutableArray alloc] initWithCapacity:8];
+        featureName = nil;
     }
     return self;
 }
@@ -48,12 +52,19 @@
 - (void)parser:(NSXMLParser*)parser didStartElement:(NSString*)elementName namespaceURI:(NSString*)namespaceURI qualifiedName:(NSString*)qualifiedName attributes:(NSDictionary*)attributeDict
 {
     if ([elementName isEqualToString:@"preference"]) {
-        settings[attributeDict[@"name"]] = attributeDict[@"value"];
-    } else if ([elementName isEqualToString:@"plugin"]) {
-        NSString* name = [attributeDict[@"name"] lowercaseString];
-        pluginsDict[name] = attributeDict[@"value"];
-        if ([@"true" isEqualToString : attributeDict[@"onload"]]) {
-            [self.startupPluginNames addObject:name];
+        settings[[attributeDict[@"name"] lowercaseString]] = attributeDict[@"value"];
+    } else if ([elementName isEqualToString:@"feature"]) { // store feature name to use with correct parameter set
+        featureName = [attributeDict[@"name"] lowercaseString];
+    } else if ((featureName != nil) && [elementName isEqualToString:@"param"]) {
+        NSString* paramName = [attributeDict[@"name"] lowercaseString];
+        id value = attributeDict[@"value"];
+        if ([paramName isEqualToString:@"ios-package"]) {
+            pluginsDict[featureName] = value;
+        }
+        BOOL paramIsOnload = ([paramName isEqualToString:@"onload"] && [@"true" isEqualToString : value]);
+        BOOL attribIsOnload = [@"true" isEqualToString :[attributeDict[@"onload"] lowercaseString]];
+        if (paramIsOnload || attribIsOnload) {
+            [self.startupPluginNames addObject:featureName];
         }
     } else if ([elementName isEqualToString:@"access"]) {
         [whitelistHosts addObject:attributeDict[@"origin"]];
@@ -62,9 +73,16 @@
     }
 }
 
+- (void)parser:(NSXMLParser*)parser didEndElement:(NSString*)elementName namespaceURI:(NSString*)namespaceURI qualifiedName:(NSString*)qualifiedName
+{
+    if ([elementName isEqualToString:@"feature"]) { // no longer handling a feature so release
+        featureName = nil;
+    }
+}
+
 - (void)parser:(NSXMLParser*)parser parseErrorOccurred:(NSError*)parseError
 {
-    NSAssert(NO, @"config.xml parse error line %d col %d", [parser lineNumber], [parser columnNumber]);
+    NSAssert(NO, @"config.xml parse error line %ld col %ld", (long)[parser lineNumber], (long)[parser columnNumber]);
 }
 
 @end

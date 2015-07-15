@@ -18,7 +18,7 @@
  */
 
 #import "CDVInvokedUrlCommand.h"
-#import "CDVJSON.h"
+#import "CDVJSON_private.h"
 #import "NSData+Base64.h"
 
 @implementation CDVInvokedUrlCommand
@@ -85,30 +85,7 @@
             newArgs = [NSMutableArray arrayWithArray:_arguments];
             _arguments = newArgs;
         }
-        [newArgs replaceObjectAtIndex:i withObject:[NSData dataFromBase64String:data]];
-    }
-}
-
-- (void)legacyArguments:(NSMutableArray**)legacyArguments andDict:(NSMutableDictionary**)legacyDict
-{
-    NSMutableArray* newArguments = [NSMutableArray arrayWithArray:_arguments];
-
-    for (NSUInteger i = 0; i < [newArguments count]; ++i) {
-        if ([[newArguments objectAtIndex:i] isKindOfClass:[NSDictionary class]]) {
-            if (legacyDict != NULL) {
-                *legacyDict = [newArguments objectAtIndex:i];
-            }
-            [newArguments removeObjectAtIndex:i];
-            break;
-        }
-    }
-
-    // Legacy (two versions back) has no callbackId.
-    if (_callbackId != nil) {
-        [newArguments insertObject:_callbackId atIndex:0];
-    }
-    if (legacyArguments != NULL) {
-        *legacyArguments = newArguments;
+        [newArgs replaceObjectAtIndex:i withObject:[NSData cdv_dataFromBase64String:data]];
     }
 }
 
