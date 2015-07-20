@@ -124,7 +124,7 @@ input[type="text"],input[type="password"]{
     font-family: FontAwesome, Helvetica;
 }
 .logo{
-	background:url(../img/logoWC.png) no-repeat 1px;
+	background:url("../img/logoWC.png") no-repeat scroll center / 11em auto;
 	border-radius: 50%;
     display: block;
     height: 176px;
