@@ -1214,7 +1214,29 @@ function setListeners(){
     });
     $("#btn-logout").on("click",function(ev){
         ev.preventDefault();
-        logout();
+	var menuButtons = [
+   	    {
+		text : 'Cambiar Colegio',
+		rel : '',
+		anchor: '#',
+		action : function(){
+			$.mobile.loading('show');
+			logout();
+		}
+	    },
+   	    {
+		text : 'Cerrar Sesión',
+		rel : '',
+		anchor: '#',
+		action : function(){
+			$.mobile.loading('show');
+			logout();
+		}
+	    }
+	];
+	createMenu(menuButtons,-1,this);
+        //ev.preventDefault();
+        //logout();
     });
     $("#btn-menu_lateral, #btn-menu_lateral i").off("click");
     $("#btn-menu_lateral, #btn-menu_lateral i").on("click",function(ev){

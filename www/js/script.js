@@ -1214,7 +1214,29 @@ function setListeners(){
     });
     $("#btn-logout").on("click",function(ev){
         ev.preventDefault();
+		var options = window.localStorage.getItem('colegios');
+		options = JSON.parse(options);
+		promptWindow(
+			'Cambiar de colegio o cerrar sesión',
+			function(result){ 
+				if(result.buttonIndex==1){
+					$.mobile.loading('show');
+					var idusuario = result['select-one1'];
+					logout();
+					login(idusuario);
+				}
+				if(result.buttonIndex==0){
+					logout();
+				}
+			},
+			'Sesión',
+			['Cerrar Sesión','Cambiar Colegio'],
+			[{type:'select',label:'Seleccione el colegio:',options:options}]
+		);
+		/*
+        ev.preventDefault();
         logout();
+		//*/
     });
     $("#btn-menu_lateral, #btn-menu_lateral i").off("click");
     $("#btn-menu_lateral, #btn-menu_lateral i").on("click",function(ev){
@@ -1260,6 +1282,7 @@ function login(colegio)
                             var curOpt = (resp.selectColegio)[id];
                             options.push({value:id,label:curOpt})
                         }
+						window.localStorage.setItem('colegios',JSON.stringify(options));
                         promptWindow(
                             '',
                             function(result){ 
