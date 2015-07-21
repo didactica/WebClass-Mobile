@@ -37,6 +37,7 @@ Asistencia.prototype.createTable = function()
         " informado INTEGER," +
         " horaLlegada varchar(32)," +
         " estadoFinal INTEGER," +
+        " ultima_modificacion DATETIME DEFAULT CURRENT_TIMESTAMP," +
         " CONSTRAINT asisUnica UNIQUE(id_alumno, fecha, id_curso)" + 
     ");";
     this.tx.executeSql(query,[]);
@@ -66,7 +67,7 @@ Asistencia.prototype.selectById = function(callback)
 }
 Asistencia.prototype.insert = function(vals,callback)
 {
-    var query = "INSERT OR REPLACE INTO alumno_asistencia VALUES(?,?,?,?,?,?,?,?,?,?)";
+    var query = "INSERT OR REPLACE INTO alumno_asistencia VALUES(?,?,?,?,?,?,?,?,?,?,?)";
     if( typeof vals !== 'undefined' ){
         this.id = vals.id;
         this.id_alumno = vals.id_alumno;
@@ -79,6 +80,9 @@ Asistencia.prototype.insert = function(vals,callback)
         this.horaLlegada = vals.horaLlegada;
         this.estadoFinal = vals.estadoFinal;
     }
+	if( !Date.now() ){
+		Date.now = function(){ return new Date().getTime(); }
+	}
     var insertObject = [
         this.id,
         this.id_alumno,
@@ -89,7 +93,8 @@ Asistencia.prototype.insert = function(vals,callback)
         this.id_curso,
         this.informado,
         this.horaLlegada,
-        this.estadoFinal
+        this.estadoFinal,
+		Date.now()
     ];
     this.tx.executeSql(query,insertObject,callback,function(tx,error){
         console.log(error.message);

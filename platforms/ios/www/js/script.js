@@ -1185,11 +1185,12 @@ function refreshWidgets(page){
     }
 }
 function setListeners(){
+	/*
     $('input').off('focus');
     $('input').on('focus', function() {
         var topOffset = parseInt(($('#document-page').css('top')).replace('px',''))*(-1);
         var pos = Math.ceil($(this).offset().top-($(this).height()+topOffset));
-        var css = {top:"-"+pos+"px"};
+        var css = {top:pos+"px"};
         $('#document-page').animate(css);
         $(this).on('blur',function(ev){
             if( ev.relatedTarget==null || ev.relatedTarget.tagName !== 'INPUT' ){
@@ -1198,6 +1199,7 @@ function setListeners(){
             $(this).off('blur');
         });
     });
+	//*/
     /* NO SACAR, SE PUEDE REUTILIZAR.
     $('input').off('blur')
     $('input').on('blur', function(ev) {
@@ -1214,29 +1216,29 @@ function setListeners(){
     });
     $("#btn-logout").on("click",function(ev){
         ev.preventDefault();
-	var menuButtons = [
-   	    {
-		text : 'Cambiar Colegio',
-		rel : '',
-		anchor: '#',
-		action : function(){
-			$.mobile.loading('show');
-			logout();
-		}
-	    },
-   	    {
-		text : 'Cerrar Sesión',
-		rel : '',
-		anchor: '#',
-		action : function(){
-			$.mobile.loading('show');
-			logout();
-		}
-	    }
-	];
-	createMenu(menuButtons,-1,this);
-        //ev.preventDefault();
-        //logout();
+		var options = window.localStorage.getItem('colegios');
+		options = JSON.parse(options);
+		promptWindow(
+			'Cambiar de colegio o cerrar sesión',
+			function(result){ 
+				if(result.buttonIndex==1){
+					$.mobile.loading('show');
+					var idusuario = result['select-one1'];
+					logout(false);
+					login(idusuario);
+				}
+				if(result.buttonIndex==0){
+					logout();
+				}
+			},
+			'Sesión',
+			['Cerrar Sesión','Cambiar Colegio'],
+			[{type:'select',label:'Seleccione el colegio:',options:options}]
+		);
+		/*
+        ev.preventDefault();
+        logout();
+		//*/
     });
     $("#btn-menu_lateral, #btn-menu_lateral i").off("click");
     $("#btn-menu_lateral, #btn-menu_lateral i").on("click",function(ev){
@@ -1282,6 +1284,7 @@ function login(colegio)
                             var curOpt = (resp.selectColegio)[id];
                             options.push({value:id,label:curOpt})
                         }
+						window.localStorage.setItem('colegios',JSON.stringify(options));
                         promptWindow(
                             '',
                             function(result){ 
@@ -1335,7 +1338,10 @@ function login(colegio)
     }
     return false;
 }
-function logout(){
+function logout(showLogin){
+	if( typeof showLogin === 'undefined' || showLogin===null ){
+		showLogin = true;
+	}
     $("#nav-header").hide();
     window.localStorage.removeItem('user');
     window.localStorage.removeItem('token');
@@ -1361,7 +1367,13 @@ function logout(){
     downloaded = false;
     user = null;
     historyStack = [];
-    loadPage('login');
+	if( showLogin ){
+		loadPage('login');
+	} else {
+		loadPage('descargando');
+		$( document ).off("swipeleft");
+	}
+
 }
 function compileTemplate(template){
     var ret;
@@ -1977,6 +1989,10 @@ function postProcessAsistencia(mes,curso){
 }
 function grabarAsistencia(mes,curso,dia){
     var querys = [];
+	if( !Date.now() ){
+		Date.now = function(){ return new Date().getTime(); }
+	}
+	var ultima_modificacion = Date.now();
     for( var id in asistencia ){
         var obj = asistencia[id];
         var fields = '';
@@ -1991,6 +2007,7 @@ function grabarAsistencia(mes,curso,dia){
                 id_curso:curso
             }
         }
+		obj.ultima_modificacion = ultima_modificacion;
         for(var fieldName in obj){
             if(fields!=''){
                 fields+=',';

@@ -23,6 +23,7 @@
     <preference name="exit-on-suspend" value="false" />
     <preference name="show-splash-screen-spinner" value="true" />
     <preference name="auto-hide-splash-screen" value="true" />
+    <preference name="android-windowSoftInputMode" value="adjustResize">
     <preference name="disable-cursor" value="false" />
     <preference name="android-minSdkVersion" value="11" />
     <preference name="android-installLocation" value="auto" />
@@ -85,5 +86,6 @@
     <allow-navigation href="http://*/*" />
     <allow-navigation href="https://*/*" />
     <allow-navigation href="data:*" />
+    <engine name="ios" spec="^3.8.0" />
     <engine name="android" spec="^4.0.2" />
 </widget>

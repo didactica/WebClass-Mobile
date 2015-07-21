@@ -1185,11 +1185,12 @@ function refreshWidgets(page){
     }
 }
 function setListeners(){
+	/*
     $('input').off('focus');
     $('input').on('focus', function() {
         var topOffset = parseInt(($('#document-page').css('top')).replace('px',''))*(-1);
         var pos = Math.ceil($(this).offset().top-($(this).height()+topOffset));
-        var css = {top:"-"+pos+"px"};
+        var css = {top:pos+"px"};
         $('#document-page').animate(css);
         $(this).on('blur',function(ev){
             if( ev.relatedTarget==null || ev.relatedTarget.tagName !== 'INPUT' ){
@@ -1198,6 +1199,7 @@ function setListeners(){
             $(this).off('blur');
         });
     });
+	//*/
     /* NO SACAR, SE PUEDE REUTILIZAR.
     $('input').off('blur')
     $('input').on('blur', function(ev) {
@@ -1222,7 +1224,7 @@ function setListeners(){
 				if(result.buttonIndex==1){
 					$.mobile.loading('show');
 					var idusuario = result['select-one1'];
-					logout();
+					logout(false);
 					login(idusuario);
 				}
 				if(result.buttonIndex==0){
@@ -1230,7 +1232,7 @@ function setListeners(){
 				}
 			},
 			'Sesión',
-			['Cambiar','Cerrar Sesión'],
+			['Cerrar Sesión','Cambiar Colegio'],
 			[{type:'select',label:'Seleccione el colegio:',options:options}]
 		);
 		/*
@@ -1336,7 +1338,10 @@ function login(colegio)
     }
     return false;
 }
-function logout(){
+function logout(showLogin){
+	if( typeof showLogin === 'undefined' || showLogin===null ){
+		showLogin = true;
+	}
     $("#nav-header").hide();
     window.localStorage.removeItem('user');
     window.localStorage.removeItem('token');
@@ -1362,7 +1367,13 @@ function logout(){
     downloaded = false;
     user = null;
     historyStack = [];
-    loadPage('login');
+	if( showLogin ){
+		loadPage('login');
+	} else {
+		loadPage('descargando');
+		$( document ).off("swipeleft");
+	}
+
 }
 function compileTemplate(template){
     var ret;
@@ -1455,6 +1466,7 @@ function syncToServer(getTables){
                                         dataType:'json',
                                         // async:false, // ojo con esto, ya que a veces provoca "parsererror". <- TODO: averiguar más acerca de este error.
                                         success:function(res){
+											console.log(JSON.stringify(res));
                                             if(res.status==0){
                                                 delete tmpObj[table];
                                                 tmpObj = JSON.stringify(tmpObj);
@@ -1978,6 +1990,10 @@ function postProcessAsistencia(mes,curso){
 }
 function grabarAsistencia(mes,curso,dia){
     var querys = [];
+	if( !Date.now() ){
+		Date.now = function(){ return new Date().getTime(); }
+	}
+	var ultima_modificacion = Date.now();
     for( var id in asistencia ){
         var obj = asistencia[id];
         var fields = '';
@@ -1992,6 +2008,7 @@ function grabarAsistencia(mes,curso,dia){
                 id_curso:curso
             }
         }
+		obj.ultima_modificacion = ultima_modificacion;
         for(var fieldName in obj){
             if(fields!=''){
                 fields+=',';
