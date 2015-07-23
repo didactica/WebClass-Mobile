@@ -82,34 +82,34 @@ Estos con componentes antiguos, pero no pertenecen a una framework publico, por 
 - promptWindow(message,action,title,buttons,inputTypes): despliega una ventana de dialogo editable y configurable. Acepta 6 parametros obligatorios: mensaje, accion de respuesta al presionar un botón, titulo, texto en los botones (máximo 2) y cuadros de ingreso de datos. Al presionar un boton se devuelve un objeto con la información del dialogo, tales como valores de los campos, boton presionado, etc. Si se desea anidar dialogos, se debe realizar lo siguiente:<pre>result.remove = false;</pre>El uso correcto de éste componente es como se muestra a continuación:
 <pre>
 promptWindow(
-	'Esto es un mensaje largo',
-	function(result){
-		/* la variable result trae los detalles de las acciones del dialogo */
-		/* hay 2 buttonIndex: 0 y 1, donde 0 es izquierdo y 1 es derecho */
-		if(result.buttonIndex==0){
-			// ACCION PARA EL BOTÓN IZQUIERDO
-		}
-		if(result.buttonIndex==1){
-			// ACCION PARA EL BOTÓN DERECHO
-		}
-	},
-	'Titulo de Dialogo',
-	['Left button','Right button'],
-	[{type:'text',label:'Input de Texto',options:null},{type:'select',label:'Select',options:[{value:1,label:'primera opcion'},{value:2,lable:'segunda opcion'}]}]
+		'Esto es un mensaje largo',
+		function(result){
+			/* la variable result trae los detalles de las acciones del dialogo */
+			/* hay 2 buttonIndex: 0 y 1, donde 0 es izquierdo y 1 es derecho */
+			if(result.buttonIndex==0){
+				// ACCION PARA EL BOTÓN IZQUIERDO
+			}
+			if(result.buttonIndex==1){
+				// ACCION PARA EL BOTÓN DERECHO
+			}
+		},
+		'Titulo de Dialogo',
+		['Left button','Right button'],
+		[{type:'text',label:'Input de Texto',options:null},{type:'select',label:'Select',options:[{value:1,label:'primera opcion'},{value:2,lable:'segunda opcion'}]}]
 );
 </pre>
 - createMenu(items,direction,trigger): Éste metodo crea un menú flotante con un listado de acciones (items), las cuales poseen los siguientes campos: 'text' que es el texto del botón, 'rel' que es un 'data-rel' opcional del botón, 'anchor' en caso de que queramos cambiar a otra pagina, y 'action' que es una funcion a ejecutar al presionar dicho boton. La direccion y trigger son opcionales, siempre y cuando exista un boton o ancla html llamado "menu-moreover". La dirección puede ser 0 o 1, que es izquierda o derecha respectivamente, e indica hacia que lado se abre el menu, y trigger que es un objeto DOM y representa el boton gatillante. El correcto uso es como se demuestra a continuación:
 <pre>
 /* por orden declaramos los items en una variable aparte, pero no es obligatorio */
 var items = [
-	{
-		text:'Boton 1',
-		rel:'',
-		anchor:'#',
-		action: function(){
-			alert('boton 1!!!');
+		{
+			text:'Boton 1',
+			rel:'',
+			anchor:'#',
+			action: function(){
+				alert('boton 1!!!');
+			}
 		}
-	}
 ];
 var dom = document.getElementById('ver-menu'); // este es el boton en el html que abre el menu
 createMenu(items,1,dom)
