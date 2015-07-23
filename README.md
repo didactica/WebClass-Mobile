@@ -59,13 +59,13 @@ Principales Metodos:
 - include(script): se encarga de incorporar a la aplicacion scripts de
   javascript a medida que se van requiriendo (disminución de tiempo de 
   carga inicial).
-- DownloadData(callback): inicia la descarga desde el servidor con los
+- downloadData(callback): inicia la descarga desde el servidor con los
   datos del usuario actual y guarda o actualiza los registros de la base 
   de datos local. El uso correcto de éste método es como se muestra a conitnuación:
-<pre>downloadData(
+<pre>downloadData(function(){
 		/* modificar aca las variables globales que se deseen */
 		loadPage(paginaDestino);
-);</pre>
+});</pre>
 Metodos de apoyo:
 - functions(page): Se encarga de cargar los elementos necesarios en el
   objeto global de la app (elements). Por defecto deja el objeto como un
