@@ -79,7 +79,7 @@ Metodos de apoyo:
 Componentes:
 ---------------------
 Estos con componentes antiguos, pero no pertenecen a una framework publico, por lo que no hay documentación de ellos.
-- promptWindow(message,action,title,buttons,inputTypes): despliega una ventana de dialogo editable y configurable. Acepta 6 parametros obligatorios: mensaje, accion de respuesta al presionar un botón, titulo, texto en los botones (máximo 2) y cuadros de ingreso de datos. Al presionar un boton se devuelve un objeto con la información del dialogo, tales como valores de los campos, boton presionado, etc. Si se desea anidar dialogos, se debe realizar lo siguiente:<pre>result.remove = false;</pre>.El uso correcto de éste componente es como se muestra a continuación:
+- promptWindow(message,action,title,buttons,inputTypes): despliega una ventana de dialogo editable y configurable. Acepta 6 parametros obligatorios: mensaje, accion de respuesta al presionar un botón, titulo, texto en los botones (máximo 2) y cuadros de ingreso de datos. Al presionar un boton se devuelve un objeto con la información del dialogo, tales como valores de los campos, boton presionado, etc. Si se desea anidar dialogos, se debe realizar lo siguiente:<pre>result.remove = false;</pre>El uso correcto de éste componente es como se muestra a continuación:
 <pre>
 promptWindow(
 	'Esto es un mensaje largo',
