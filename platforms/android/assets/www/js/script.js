@@ -13,6 +13,12 @@
 * - HanldeBars.js : 1.0.rc.1
 * -----------------------------
 *
+* LIBERACION DE RESPONSABILIDADES
+* ------------------------------- 
+* Se usará alternadamente inglés como idioma de documentación, y sin notificacion previa.
+* Si no entiende el comentario, favor referir a un traductor. (Sugerencia: https://translate.google.com/?hl=es-419)
+* -------------------------------
+*
 * Estructura: La aplicacion se basa en un modelo similar a un MVC:
 * tiene una capa de modelos de la base de datos que se encargan de las
 * operaciones CRUD de la tabla a la que representa cada clase (carpeta 
@@ -450,6 +456,7 @@ function functions(title,callback){
             $.mobile.loading('show',{text: "Leyendo Base de Datos...",textVisible: true,theme: "z",html: ""});
             var userData = JSON.parse(window.localStorage.getItem('userData'));
             $("#nombreUsuario").html(userData.nombre_usuario+' '+userData.apellido_paterno);
+            $("#rol-usuario").html(userData.idrol==13?'Profesor':'UTP');
             (new SQLHelper()).queryDB(
                 "SELECT * FROM evento ORDER BY fechaini",
                 [],
@@ -513,7 +520,12 @@ function loadPage(page){
         //*/
         $("#contenido").html("");
         functions(page,function(){
-            historyStack.push(page);
+			if( historyStack[(historyStack.length)-1]!=page ){
+				historyStack.push(page);
+			}
+			// MODIFICANDO
+			console.log(JSON.stringify(historyStack));
+			// FIN
             setTitle(page);
             $("#contenido").html(compileTemplate(page));
             $.mobile.loading('hide');
@@ -1109,7 +1121,7 @@ function refreshWidgets(page){
             break;
         case 'home':
             $("#month").html(months[parseInt(curDate.m)]+' '+curDate.y);
-            $("#backButton").hide();
+            // $("#backButton").hide();
             $(".control.prev").off("click");
             $(".control.next").off("click");
             $(".control.next").on("click",function(ev){
@@ -1184,6 +1196,7 @@ function refreshWidgets(page){
             break;
     }
 }
+var tries = 0;
 function setListeners(){
 	/*
     $('input').off('focus');
@@ -1222,10 +1235,22 @@ function setListeners(){
 			'Cambiar de colegio o cerrar sesión',
 			function(result){ 
 				if(result.buttonIndex==1){
-					$.mobile.loading('show');
-					var idusuario = result['select-one1'];
-					logout(false);
-					login(idusuario);
+					result.remove = false;
+					promptWindow(
+						"Seleccione el colegio al que desea ingresar",
+						function( result ){
+							if( result.buttonIndex==1 ){
+								$.mobile.loading('show');
+								var idusuario = result['select-one1'];
+								logout(false);
+								login(idusuario);
+							}
+						},
+						"Cambio de Colegio",
+						['Cancelar','Aceptar'],
+						[{type:'select',label:'Colegio',options:options}]
+					);
+					return;
 				}
 				if(result.buttonIndex==0){
 					logout();
@@ -1233,7 +1258,7 @@ function setListeners(){
 			},
 			'Sesión',
 			['Cerrar Sesión','Cambiar Colegio'],
-			[{type:'select',label:'Seleccione el colegio:',options:options}]
+			[]
 		);
 		/*
         ev.preventDefault();
@@ -1244,6 +1269,20 @@ function setListeners(){
     $("#btn-menu_lateral, #btn-menu_lateral i").on("click",function(ev){
         $("#menu_lateral").panel('open');
     });
+	$("#btn-sync").off("click");
+	$("#btn-sync").on("click",function(evt){
+        var tmpHistory = historyStack;
+		if( current == 'null' ){
+			current = 'home';
+		}
+		var returnTo = current;
+		current = "null";
+        downloadData(function(){
+            loadPage(returnTo);
+            historyStack = tmpHistory;
+        });
+	});
+	// just cant remember what this was... please do not remove...
     /*
     $(window).on("click",function(ev){
         console.log(ev.target);
@@ -1388,6 +1427,7 @@ function compileTemplate(template){
                 console.log(JSON.stringify(res));
                 console.log(JSON.stringify(error));
             }
+			console.log(template);
             ret = "<h3>Template no encontrado.</h3>";
         },
         async: false
@@ -1408,6 +1448,7 @@ function downloadData(callback){
         new SectorGrupo(tx);
         new Planificacion(tx);
         new Clase(tx);
+        new ClaseDetalle(tx);
         new Nivel(tx);
         new Curso(tx);
         new Alumno(tx);
@@ -1466,7 +1507,6 @@ function syncToServer(getTables){
                                         dataType:'json',
                                         // async:false, // ojo con esto, ya que a veces provoca "parsererror". <- TODO: averiguar más acerca de este error.
                                         success:function(res){
-											console.log(JSON.stringify(res));
                                             if(res.status==0){
                                                 delete tmpObj[table];
                                                 tmpObj = JSON.stringify(tmpObj);
@@ -1560,6 +1600,9 @@ function getTableFromServer(callback)
                     var prog = ((Math.ceil((totalSyncs/syncSize)*100))/100);
                     setRadialPercentage("theRoadSoFar",(prog>1?1:prog));
                     var tableSize = window.localStorage.getItem('sizeof-'+curT);
+					if( tableSize === 'undefined' ){
+						tableSize = 0;
+					}
                     if(typeof resp.rows !== 'undefined'){
                         lastId+=transferConectionSize;
                         if(lastId>parseInt(tableSize)){
@@ -1600,6 +1643,7 @@ function getTableFromServer(callback)
 function insertIntoDatabase(callback){
     tableIndex = 0;
     totalSyncs = 0;
+	lastId = 0;
     var secuencia = window.localStorage.getItem("secuencia");
     if( typeof secuencia === 'undefined' ){
         secuencia = 0;
@@ -2203,8 +2247,12 @@ function promptWindow(message,action,title,buttons,inputTypes){
                 }
                 indexes[t]++;
             });
+			// AVOID CLOSING PROMPT WINDOW FOR BETTER PERFORMANCE ON CERTAIN 'ACTIONS'.
+			result.remove = true;
             action(result);
-            $("#background-blur").remove();
+			if( result.remove ){
+				$("#background-blur").remove();
+			}
         },null);
         dialog.appendChild(btn);
     }

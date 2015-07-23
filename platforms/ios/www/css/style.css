@@ -601,8 +601,14 @@ html body div.ui-slider-track.ui-body-a .ui-btn-active{
 	border-color:rgb(32, 138, 212);
 }
 #nav-header h1{
+	font-family: 'FontAwesome';
 	font-size: 1.3em;
 	line-height: 1.2em;
+	width:55%;
+	margin: 0 0 0 1em!important;
+	overflow:hidden;
+	text-overflow:ellipsis;
+	text-align: left;
 }
 html .ui-page-theme-a .ui-btn, 
 html .ui-bar-a .ui-btn, 
@@ -900,6 +906,9 @@ ul#alumno-lista li.header .control.next{
 }
 #promptWindow a.btn{
 	color:#ffffff;
+}
+#btn-sync .fa-stack{
+	vertical-align:baseline;
 }
 /*.menu-container{
 	display:block;

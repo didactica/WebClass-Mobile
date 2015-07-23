@@ -450,6 +450,7 @@ function functions(title,callback){
             $.mobile.loading('show',{text: "Leyendo Base de Datos...",textVisible: true,theme: "z",html: ""});
             var userData = JSON.parse(window.localStorage.getItem('userData'));
             $("#nombreUsuario").html(userData.nombre_usuario+' '+userData.apellido_paterno);
+            $("#rol-usuario").html(userData.idrol==13?'Profesor':'UTP');
             (new SQLHelper()).queryDB(
                 "SELECT * FROM evento ORDER BY fechaini",
                 [],
@@ -514,6 +515,8 @@ function loadPage(page){
         $("#contenido").html("");
         functions(page,function(){
             historyStack.push(page);
+			// MODIFICANDO
+			console.log(JSON.stringify(historyStack));
             setTitle(page);
             $("#contenido").html(compileTemplate(page));
             $.mobile.loading('hide');
@@ -1109,7 +1112,7 @@ function refreshWidgets(page){
             break;
         case 'home':
             $("#month").html(months[parseInt(curDate.m)]+' '+curDate.y);
-            $("#backButton").hide();
+            // $("#backButton").hide();
             $(".control.prev").off("click");
             $(".control.next").off("click");
             $(".control.next").on("click",function(ev){
@@ -1244,6 +1247,16 @@ function setListeners(){
     $("#btn-menu_lateral, #btn-menu_lateral i").on("click",function(ev){
         $("#menu_lateral").panel('open');
     });
+	$("#btn-sync").on("click",function(evt){
+        var tmpHistory = historyStack;
+		var returnTo = current;
+		current = "descargando";
+        downloadData(function(){
+            historyStack = tmpHistory;
+            loadPage(returnTo);
+            // current = returnTo;
+        });
+	});
     /*
     $(window).on("click",function(ev){
         console.log(ev.target);
@@ -1388,6 +1401,7 @@ function compileTemplate(template){
                 console.log(JSON.stringify(res));
                 console.log(JSON.stringify(error));
             }
+			console.log(template);
             ret = "<h3>Template no encontrado.</h3>";
         },
         async: false
@@ -1408,6 +1422,7 @@ function downloadData(callback){
         new SectorGrupo(tx);
         new Planificacion(tx);
         new Clase(tx);
+        new ClaseDetalle(tx);
         new Nivel(tx);
         new Curso(tx);
         new Alumno(tx);
@@ -1559,6 +1574,9 @@ function getTableFromServer(callback)
                     var prog = ((Math.ceil((totalSyncs/syncSize)*100))/100);
                     setRadialPercentage("theRoadSoFar",(prog>1?1:prog));
                     var tableSize = window.localStorage.getItem('sizeof-'+curT);
+					if( tableSize === 'undefined' ){
+						tableSize = 0;
+					}
                     if(typeof resp.rows !== 'undefined'){
                         lastId+=transferConectionSize;
                         if(lastId>parseInt(tableSize)){
@@ -1599,6 +1617,7 @@ function getTableFromServer(callback)
 function insertIntoDatabase(callback){
     tableIndex = 0;
     totalSyncs = 0;
+	lastId = 0;
     var secuencia = window.localStorage.getItem("secuencia");
     if( typeof secuencia === 'undefined' ){
         secuencia = 0;
