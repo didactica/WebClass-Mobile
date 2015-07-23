@@ -18,7 +18,7 @@ Framework PhoneGap
 LIBREACION DE RESPONSABILIDADES - DISCLAIMER: RELEASE OF RESPONSABILITY
 -----------------------------
 - Se usará alternadamente inglés como idioma de documentación, y sin notificacion previa.
-- Si no entiende el comentario, favor referir a un traductor.
+- Si no entiende el comentario, favor referir a un traductor (Recomendación: https://translate.google.es/).
 
 -----------------------------
 
