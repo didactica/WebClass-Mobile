@@ -63,8 +63,8 @@ Principales Metodos:
   datos del usuario actual y guarda o actualiza los registros de la base 
   de datos local. El uso correcto de éste método es como se muestra a conitnuación:
 <pre>downloadData(
-	/* modificar aca las variables globales que se deseen */
-	loadPage(paginaDestino);
+		/* modificar aca las variables globales que se deseen */
+		loadPage(paginaDestino);
 );</pre>
 Metodos de apoyo:
 - functions(page): Se encarga de cargar los elementos necesarios en el
