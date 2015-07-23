@@ -19,6 +19,7 @@ LIBREACION DE RESPONSABILIDADES - DISCLAIMER: RELEASE OF RESPONSABILITY
 -----------------------------
 - Se usará alternadamente inglés como idioma de documentación, y sin notificacion previa.
 - Si no entiende el comentario, favor referir a un traductor.
+
 -----------------------------
 
 Para compilar la app se debe instalar "node.js" (https://nodejs.org/download/),
