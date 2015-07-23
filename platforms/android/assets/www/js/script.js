@@ -523,9 +523,6 @@ function loadPage(page){
 			if( historyStack[(historyStack.length)-1]!=page ){
 				historyStack.push(page);
 			}
-			// MODIFICANDO
-			console.log(JSON.stringify(historyStack));
-			// FIN
             setTitle(page);
             $("#contenido").html(compileTemplate(page));
             $.mobile.loading('hide');
