@@ -19,6 +19,10 @@ CLAUDICACIÓN Y LIBREACION DE RESPONSABILIDADES - DISCLAIMER AND RELEASE OF LIAB
 -----------------------------
 - Se usará alternadamente inglés como idioma de documentación, y sin notificacion previa.
 - Si no entiende el comentario, favor referir a un traductor (Recomendación: https://translate.google.es/).
+- Este software usa material de terceros, por lo que no se garantiza el correcto funcionamiento de modulos vinculados a dicho codigo.
+- El uso constante de la aplicación peuede casuar gastos debido a su uso de internet y la descarga de la base de datos. Se recomienda usar co WiFi.
+- La aplicación puede provocar aletargamiento del dispositivo, especialmente si la base de datos del usuario es muy extensa.
+- Aún se encuentra en etapa de prototipo, pero se lanzará con la última versión estable, por lo que pueden aparecer errores en la ejecución.
 
 -----------------------------
 
