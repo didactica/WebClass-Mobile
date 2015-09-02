@@ -13,6 +13,12 @@
 * - HanldeBars.js : 1.0.rc.1
 * -----------------------------
 *
+* LIBERACION DE RESPONSABILIDADES
+* ------------------------------- 
+* Se usará alternadamente inglés como idioma de documentación, y sin notificacion previa.
+* Si no entiende el comentario, favor referir a un traductor. (Sugerencia: https://translate.google.com/?hl=es-419)
+* -------------------------------
+*
 * Estructura: La aplicacion se basa en un modelo similar a un MVC:
 * tiene una capa de modelos de la base de datos que se encargan de las
 * operaciones CRUD de la tabla a la que representa cada clase (carpeta 
@@ -111,18 +117,9 @@ var changing = false;
 var asistencia = {};
 var editAsistencia = false;
 var transferConectionSize = 200; // CANTIDAD DE REGISTROS POR CONEXION.
-/*
-var transferInterval = setInterval(function(){
-    if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
-        syncToServer();
-        getTableFromServer(function(){
-            var d = new Date();
-            console.log('update: '+d.toLocaleTimeString());
-        });
-    }
-},60000);
-//*/
+var asistenciaAv = false;
 
+// Eventos especiales para el control del menu swipe y otros.
 $.event.special.swipe.scrollSupressionThreshold = 10; // More than this horizontal displacement, and we will suppress scrolling.
 $.event.special.swipe.horizontalDistanceThreshold = 30; // Swipe horizontal displacement must be more than this.
 $.event.special.swipe.durationThreshold = 500;  // More time than this, and it isn't a swipe.
@@ -154,6 +151,7 @@ function onDeviceReady()
     if( sequence==null ){
         sequence = 0;
     }
+	asistenciaAv = window.localStorage.getItem("asistencia")=="true";
     //$.mobile.defaultPageTransition = "slide";
     $(".menuItem").off("click");
     $(".menuItem").on("click",function(ev){
@@ -501,6 +499,11 @@ function functions(title,callback){
     }
 }
 function loadPage(page){
+	if( !asistenciaAv && page=='asistencia' ){
+		window.navigator.notification.alert("No tiene éste módulo habilitado",null,"Error");
+		$.mobile.loading('hide');
+		return;
+	}
     $("#menu_lateral").panel('close');
     if(current!=page){
         current = page;
@@ -514,9 +517,9 @@ function loadPage(page){
         //*/
         $("#contenido").html("");
         functions(page,function(){
-            historyStack.push(page);
-			// MODIFICANDO
-			console.log(JSON.stringify(historyStack));
+			if( historyStack[(historyStack.length)-1]!=page ){
+				historyStack.push(page);
+			}
             setTitle(page);
             $("#contenido").html(compileTemplate(page));
             $.mobile.loading('hide');
@@ -1187,6 +1190,7 @@ function refreshWidgets(page){
             break;
     }
 }
+var tries = 0;
 function setListeners(){
 	/*
     $('input').off('focus');
@@ -1212,11 +1216,13 @@ function setListeners(){
         }
     });
     //*/
+    $("#btn-login").off("click");
     $("#btn-login").on("click",function(ev){
         ev.preventDefault();
         $.mobile.loading('show');
         login();
     });
+    $("#btn-logout").off("click");
     $("#btn-logout").on("click",function(ev){
         ev.preventDefault();
 		var options = window.localStorage.getItem('colegios');
@@ -1225,10 +1231,22 @@ function setListeners(){
 			'Cambiar de colegio o cerrar sesión',
 			function(result){ 
 				if(result.buttonIndex==1){
-					$.mobile.loading('show');
-					var idusuario = result['select-one1'];
-					logout(false);
-					login(idusuario);
+					result.remove = false;
+					promptWindow(
+						"Seleccione el colegio al que desea ingresar",
+						function( result ){
+							if( result.buttonIndex==1 ){
+								$.mobile.loading('show');
+								var idusuario = result['select-one1'];
+								logout(false);
+								login(idusuario);
+							}
+						},
+						"Cambio de Colegio",
+						['Cancelar','Aceptar'],
+						[{type:'select',label:'Colegio',options:options}]
+					);
+					return;
 				}
 				if(result.buttonIndex==0){
 					logout();
@@ -1236,7 +1254,7 @@ function setListeners(){
 			},
 			'Sesión',
 			['Cerrar Sesión','Cambiar Colegio'],
-			[{type:'select',label:'Seleccione el colegio:',options:options}]
+			[]
 		);
 		/*
         ev.preventDefault();
@@ -1247,16 +1265,20 @@ function setListeners(){
     $("#btn-menu_lateral, #btn-menu_lateral i").on("click",function(ev){
         $("#menu_lateral").panel('open');
     });
+	$("#btn-sync").off("click");
 	$("#btn-sync").on("click",function(evt){
         var tmpHistory = historyStack;
+		if( current == 'null' ){
+			current = 'home';
+		}
 		var returnTo = current;
-		current = "descargando";
+		current = "null";
         downloadData(function(){
-            historyStack = tmpHistory;
             loadPage(returnTo);
-            // current = returnTo;
+            historyStack = tmpHistory;
         });
 	});
+	// just cant remember what this was... please do not remove...
     /*
     $(window).on("click",function(ev){
         console.log(ev.target);
@@ -1271,7 +1293,7 @@ function login(colegio)
     if(colegio){
         params.idusuario = colegio;
         if( typeof console !== 'undefiend' ){
-            console.log(params);
+            console.log(JSON.stringify(params));
         }
     }
     if( (typeof navigator.connection !== 'undefined') && (navigator.connection.type==Connection.NONE) ){
@@ -1317,6 +1339,8 @@ function login(colegio)
                         window.localStorage.setItem('colegio', resp.userData.idcolegio);
                         window.localStorage.setItem('rol', resp.userData.idrol);
                         window.localStorage.setItem('userData',JSON.stringify(resp.userData));
+						window.localStorage.setItem('asistencia',(resp.asistencia=="1") );
+						asistenciaAv = resp.asistencia=="1";
                         sql.transaction(function(tx){
                             new Usuario(
                                 tx,
@@ -1364,29 +1388,32 @@ function logout(showLogin){
     }
     sql.transaction(
         function(tx){
-            tx.executeSql("DROP TABLE evento");
-            tx.executeSql("DROP TABLE sector");
-            tx.executeSql("DROP TABLE sector_grupo");
-            tx.executeSql("DROP TABLE unidad");
-            tx.executeSql("DROP TABLE clase");
-            tx.executeSql("DROP TABLE nivel");
-            tx.executeSql("DROP TABLE curso");
-            tx.executeSql("DROP TABLE alumno");
-            tx.executeSql("DROP TABLE alumno_asistencia");
-            tx.executeSql("DROP TABLE usuario");
-            tx.executeSql("DROP TABLE usuario_detalle");
-        }
+            tx.executeSql("DELETE FROM evento");
+            tx.executeSql("DELETE FROM sector");
+            tx.executeSql("DELETE FROM sector_grupo");
+            tx.executeSql("DELETE FROM unidad");
+            tx.executeSql("DELETE FROM clase");
+            tx.executeSql("DELETE FROM nivel");
+            tx.executeSql("DELETE FROM curso");
+            tx.executeSql("DELETE FROM alumno");
+            tx.executeSql("DELETE FROM alumno_asistencia");
+            tx.executeSql("DELETE FROM usuario");
+            tx.executeSql("DELETE FROM usuario_detalle");
+        },
+		function(tx,error){
+			console.log("Error:"+JSON.stringify(error));
+		}, function(){
+			downloaded = false;
+			user = null;
+			historyStack = [];
+			if( showLogin ){
+				loadPage('login');
+			} else {
+				loadPage('descargando');
+				$( document ).off("swipeleft");
+			}
+		}
     );
-    downloaded = false;
-    user = null;
-    historyStack = [];
-	if( showLogin ){
-		loadPage('login');
-	} else {
-		loadPage('descargando');
-		$( document ).off("swipeleft");
-	}
-
 }
 function compileTemplate(template){
     var ret;
@@ -2221,8 +2248,12 @@ function promptWindow(message,action,title,buttons,inputTypes){
                 }
                 indexes[t]++;
             });
+			// AVOID CLOSING PROMPT WINDOW FOR BETTER PERFORMANCE ON CERTAIN 'ACTIONS'.
+			result.remove = true;
             action(result);
-            $("#background-blur").remove();
+			if( result.remove ){
+				$("#background-blur").remove();
+			}
         },null);
         dialog.appendChild(btn);
     }

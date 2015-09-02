@@ -4,6 +4,7 @@ Versión: 1.0.20150527
 
 -----------------------------
 DETALLES TECNICOS.
+-----------------------------
 
 Framework PhoneGap
 

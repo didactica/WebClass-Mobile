@@ -910,6 +910,9 @@ ul#alumno-lista li.header .control.next{
 #btn-sync .fa-stack{
 	vertical-align:baseline;
 }
+.fixed-buttons{
+	padding-top:0.4em;
+}
 /*.menu-container{
 	display:block;
 	width:1.5em;

@@ -15,6 +15,9 @@
         <param name="android-package" value="org.apache.cordova.splashscreen.SplashScreen" />
         <param name="onload" value="true" />
     </feature>
+    <feature name="InAppBrowser">
+        <param name="android-package" value="org.apache.cordova.inappbrowser.InAppBrowser" />
+    </feature>
     <allow-intent href="market:*" />
     <splash density="land-hdpi" src="www/res/screen/android/screen-hdpi-landscape.png" />
     <splash density="land-ldpi" src="www/res/screen/android/screen-ldpi-landscape.png" />

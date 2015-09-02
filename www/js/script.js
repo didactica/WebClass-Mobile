@@ -117,18 +117,9 @@ var changing = false;
 var asistencia = {};
 var editAsistencia = false;
 var transferConectionSize = 200; // CANTIDAD DE REGISTROS POR CONEXION.
-/*
-var transferInterval = setInterval(function(){
-    if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
-        syncToServer();
-        getTableFromServer(function(){
-            var d = new Date();
-            console.log('update: '+d.toLocaleTimeString());
-        });
-    }
-},60000);
-//*/
+var asistenciaAv = false;
 
+// Eventos especiales para el control del menu swipe y otros.
 $.event.special.swipe.scrollSupressionThreshold = 10; // More than this horizontal displacement, and we will suppress scrolling.
 $.event.special.swipe.horizontalDistanceThreshold = 30; // Swipe horizontal displacement must be more than this.
 $.event.special.swipe.durationThreshold = 500;  // More time than this, and it isn't a swipe.
@@ -160,6 +151,7 @@ function onDeviceReady()
     if( sequence==null ){
         sequence = 0;
     }
+	asistenciaAv = window.localStorage.getItem("asistencia")=="true";
     //$.mobile.defaultPageTransition = "slide";
     $(".menuItem").off("click");
     $(".menuItem").on("click",function(ev){
@@ -507,6 +499,11 @@ function functions(title,callback){
     }
 }
 function loadPage(page){
+	if( !asistenciaAv && page=='asistencia' ){
+		window.navigator.notification.alert("No tiene éste módulo habilitado",null,"Error");
+		$.mobile.loading('hide');
+		return;
+	}
     $("#menu_lateral").panel('close');
     if(current!=page){
         current = page;
@@ -543,7 +540,7 @@ function setTitle(page){
             title = "Asistencia";
             break;
         case 'unidad':
-            title = elements.nombre;
+            title = "Planificación";
             break;
         case 'verunidad':
             title = "Detalle Unidad";
@@ -1219,11 +1216,13 @@ function setListeners(){
         }
     });
     //*/
+    $("#btn-login").off("click");
     $("#btn-login").on("click",function(ev){
         ev.preventDefault();
         $.mobile.loading('show');
         login();
     });
+    $("#btn-logout").off("click");
     $("#btn-logout").on("click",function(ev){
         ev.preventDefault();
 		var options = window.localStorage.getItem('colegios');
@@ -1294,7 +1293,7 @@ function login(colegio)
     if(colegio){
         params.idusuario = colegio;
         if( typeof console !== 'undefiend' ){
-            console.log(params);
+            console.log(JSON.stringify(params));
         }
     }
     if( (typeof navigator.connection !== 'undefined') && (navigator.connection.type==Connection.NONE) ){
@@ -1340,6 +1339,8 @@ function login(colegio)
                         window.localStorage.setItem('colegio', resp.userData.idcolegio);
                         window.localStorage.setItem('rol', resp.userData.idrol);
                         window.localStorage.setItem('userData',JSON.stringify(resp.userData));
+						window.localStorage.setItem('asistencia',(resp.asistencia=="1") );
+						asistenciaAv = resp.asistencia=="1";
                         sql.transaction(function(tx){
                             new Usuario(
                                 tx,
@@ -1387,29 +1388,32 @@ function logout(showLogin){
     }
     sql.transaction(
         function(tx){
-            tx.executeSql("DROP TABLE evento");
-            tx.executeSql("DROP TABLE sector");
-            tx.executeSql("DROP TABLE sector_grupo");
-            tx.executeSql("DROP TABLE unidad");
-            tx.executeSql("DROP TABLE clase");
-            tx.executeSql("DROP TABLE nivel");
-            tx.executeSql("DROP TABLE curso");
-            tx.executeSql("DROP TABLE alumno");
-            tx.executeSql("DROP TABLE alumno_asistencia");
-            tx.executeSql("DROP TABLE usuario");
-            tx.executeSql("DROP TABLE usuario_detalle");
-        }
+            tx.executeSql("DELETE FROM evento");
+            tx.executeSql("DELETE FROM sector");
+            tx.executeSql("DELETE FROM sector_grupo");
+            tx.executeSql("DELETE FROM unidad");
+            tx.executeSql("DELETE FROM clase");
+            tx.executeSql("DELETE FROM nivel");
+            tx.executeSql("DELETE FROM curso");
+            tx.executeSql("DELETE FROM alumno");
+            tx.executeSql("DELETE FROM alumno_asistencia");
+            tx.executeSql("DELETE FROM usuario");
+            tx.executeSql("DELETE FROM usuario_detalle");
+        },
+		function(tx,error){
+			console.log("Error:"+JSON.stringify(error));
+		}, function(){
+			downloaded = false;
+			user = null;
+			historyStack = [];
+			if( showLogin ){
+				loadPage('login');
+			} else {
+				loadPage('descargando');
+				$( document ).off("swipeleft");
+			}
+		}
     );
-    downloaded = false;
-    user = null;
-    historyStack = [];
-	if( showLogin ){
-		loadPage('login');
-	} else {
-		loadPage('descargando');
-		$( document ).off("swipeleft");
-	}
-
 }
 function compileTemplate(template){
     var ret;
