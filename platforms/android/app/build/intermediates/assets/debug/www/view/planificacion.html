@@ -1,0 +1,54 @@
+<form id="listUnidades" class="ui-filterable" data-position="fixed">
+    <div id="inputHide">
+        <input id="filterPlanificacion" type="text" style="display:none;">
+    </div>
+    <div id="buscarUnidad">
+        <input class="filterPlanificacion" type="text" data-type="search" placeholder="Buscar">
+    </div>
+    <fieldset class="ui-grid-a">
+        <div class="ui-block-a">
+            <select class="filterPlanificacion" name="sector" data-icon="false">
+                <option value=" ">Asignatura</option>
+            {{#each this.sectores}}
+                {{#.}}
+                <option value="{{this.value}}">{{this.label}}</option>
+                {{/.}}
+            {{/each}}
+            </select>
+        </div>
+        <div class="ui-block-b">
+            <select class="filterPlanificacion" name="nivel" data-icon="false">
+                <option value=" ">Nivel</option>
+            {{#each this.niveles}}
+                {{#.}}
+                <option value="{{this.value}}">{{this.label}}</option>
+                {{/.}}
+            {{/each}}
+            </select>
+        </div>
+    </fieldset>
+</form>
+<div class="clearfix"></div>
+<ul id="unidades" data-role="listview" data-filter="true" data-filter-reveal="false" data-input="#filterPlanificacion">
+{{#each this.unidades}}
+    {{#.}}
+        {{#if this.nombre}}
+    <li class="unidad" data-icon="false">
+    	<a href="#" id="{{this.id}}" class="estado-utp-{{this.aprobacion_utp}}">
+    		<div class="col-80">
+              <h3>{{this.nombre}}</h3>
+    		  <p>
+    		      	{{this.sectorNombre}}<br/>
+                    {{this.nivelNombre}}<br/>
+                    {{this.fechaBonitaIni}} - {{this.fechaBonitaFin}}
+    		  </p>
+            </div>
+            <div class="col-20">
+                <canvas class="radialLoader" id="radial-percentage-{{this.id}}" data-progress="{{this.progress}}" width="70" height="70"></canvas>
+            </div>
+        </a>
+    </li>
+        {{/if}}
+    {{/.}}
+{{/each}}
+</ul>

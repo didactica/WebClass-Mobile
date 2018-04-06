@@ -1,72 +1,27 @@
 {
-    "prepare_queue": {
-        "installed": [],
-        "uninstalled": []
+  "prepare_queue": {
+    "installed": [],
+    "uninstalled": []
+  },
+  "config_munge": {
+    "files": {}
+  },
+  "installed_plugins": {
+    "cordova-plugin-whitelist": {
+      "PACKAGE_NAME": "cl.webclass.mobileWebClass"
     },
-    "config_munge": {
-        "files": {
-            "framework": {
-                "parents": {
-                    "AudioToolbox.framework": [
-                        {
-                            "xml": true,
-                            "count": 1
-                        }
-                    ],
-                    "SystemConfiguration.framework": [
-                        {
-                            "xml": true,
-                            "count": 1
-                        }
-                    ],
-                    "CoreGraphics.framework": [
-                        {
-                            "xml": false,
-                            "count": 2
-                        }
-                    ]
-                }
-            },
-            "config.xml": {
-                "parents": {
-                    "/*": [
-                        {
-                            "xml": "<feature name=\"Notification\"><param name=\"ios-package\" value=\"CDVNotification\" /></feature>",
-                            "count": 1
-                        },
-                        {
-                            "xml": "<feature name=\"NetworkStatus\"><param name=\"ios-package\" value=\"CDVConnection\" /></feature>",
-                            "count": 1
-                        },
-                        {
-                            "xml": "<feature name=\"SplashScreen\"><param name=\"ios-package\" value=\"CDVSplashScreen\" /><param name=\"onload\" value=\"true\" /></feature>",
-                            "count": 1
-                        },
-                        {
-                            "xml": "<feature name=\"InAppBrowser\"><param name=\"ios-package\" value=\"CDVInAppBrowser\" /></feature>",
-                            "count": 1
-                        }
-                    ]
-                }
-            }
-        }
+    "org.apache.cordova.dialogs": {
+      "PACKAGE_NAME": "cl.webclass.mobileWebClass"
     },
-    "installed_plugins": {
-        "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "cl.webclass.mobileWebClass"
-        },
-        "org.apache.cordova.dialogs": {
-            "PACKAGE_NAME": "cl.webclass.mobileWebClass"
-        },
-        "org.apache.cordova.network-information": {
-            "PACKAGE_NAME": "cl.webclass.mobileWebClass"
-        },
-        "org.apache.cordova.splashscreen": {
-            "PACKAGE_NAME": "cl.webclass.mobileWebClass"
-        },
-        "org.apache.cordova.inappbrowser": {
-            "PACKAGE_NAME": "cl.webclass.mobileWebClass"
-        }
+    "org.apache.cordova.inappbrowser": {
+      "PACKAGE_NAME": "cl.webclass.mobileWebClass"
     },
-    "dependent_plugins": {}
+    "org.apache.cordova.network-information": {
+      "PACKAGE_NAME": "cl.webclass.mobileWebClass"
+    },
+    "org.apache.cordova.splashscreen": {
+      "PACKAGE_NAME": "cl.webclass.mobileWebClass"
+    }
+  },
+  "dependent_plugins": {}
 }

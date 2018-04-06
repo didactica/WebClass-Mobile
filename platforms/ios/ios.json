@@ -1,0 +1,100 @@
+{
+  "prepare_queue": {
+    "installed": [],
+    "uninstalled": []
+  },
+  "config_munge": {
+    "files": {
+      "config.xml": {
+        "parents": {
+          "/*": [
+            {
+              "xml": "<feature name=\"Notification\"><param name=\"ios-package\" value=\"CDVNotification\" /></feature>",
+              "count": 1
+            },
+            {
+              "xml": "<feature name=\"InAppBrowser\"><param name=\"ios-package\" value=\"CDVInAppBrowser\" /></feature>",
+              "count": 1
+            },
+            {
+              "xml": "<feature name=\"NetworkStatus\"><param name=\"ios-package\" value=\"CDVConnection\" /></feature>",
+              "count": 1
+            },
+            {
+              "xml": "<feature name=\"SplashScreen\"><param name=\"ios-package\" value=\"CDVSplashScreen\" /><param name=\"onload\" value=\"true\" /></feature>",
+              "count": 1
+            }
+          ]
+        }
+      }
+    }
+  },
+  "installed_plugins": {
+    "cordova-plugin-whitelist": {
+      "PACKAGE_NAME": "cl.webclass.mobileWebClass"
+    },
+    "org.apache.cordova.dialogs": {
+      "PACKAGE_NAME": "cl.webclass.mobileWebClass"
+    },
+    "org.apache.cordova.inappbrowser": {
+      "PACKAGE_NAME": "cl.webclass.mobileWebClass"
+    },
+    "org.apache.cordova.network-information": {
+      "PACKAGE_NAME": "cl.webclass.mobileWebClass"
+    },
+    "org.apache.cordova.splashscreen": {
+      "PACKAGE_NAME": "cl.webclass.mobileWebClass"
+    }
+  },
+  "dependent_plugins": {},
+  "modules": [
+    {
+      "id": "org.apache.cordova.dialogs.notification",
+      "file": "plugins/org.apache.cordova.dialogs/www/notification.js",
+      "pluginId": "org.apache.cordova.dialogs",
+      "merges": [
+        "navigator.notification"
+      ]
+    },
+    {
+      "id": "org.apache.cordova.inappbrowser.inappbrowser",
+      "file": "plugins/org.apache.cordova.inappbrowser/www/inappbrowser.js",
+      "pluginId": "org.apache.cordova.inappbrowser",
+      "clobbers": [
+        "window.open"
+      ]
+    },
+    {
+      "id": "org.apache.cordova.network-information.network",
+      "file": "plugins/org.apache.cordova.network-information/www/network.js",
+      "pluginId": "org.apache.cordova.network-information",
+      "clobbers": [
+        "navigator.connection",
+        "navigator.network.connection"
+      ]
+    },
+    {
+      "id": "org.apache.cordova.network-information.Connection",
+      "file": "plugins/org.apache.cordova.network-information/www/Connection.js",
+      "pluginId": "org.apache.cordova.network-information",
+      "clobbers": [
+        "Connection"
+      ]
+    },
+    {
+      "id": "org.apache.cordova.splashscreen.SplashScreen",
+      "file": "plugins/org.apache.cordova.splashscreen/www/splashscreen.js",
+      "pluginId": "org.apache.cordova.splashscreen",
+      "clobbers": [
+        "navigator.splashscreen"
+      ]
+    }
+  ],
+  "plugin_metadata": {
+    "cordova-plugin-whitelist": "1.0.0",
+    "org.apache.cordova.dialogs": "0.3.0",
+    "org.apache.cordova.inappbrowser": "0.6.0",
+    "org.apache.cordova.network-information": "0.2.15",
+    "org.apache.cordova.splashscreen": "1.0.0"
+  }
+}
